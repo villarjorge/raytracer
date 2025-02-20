@@ -12,7 +12,7 @@ fn ray_color(given_ray: Ray) -> Point3 {
     // Lerp between blue and white
     let unit_direction: Point3 = unit_vector(given_ray.direction);
     let a: f32 = 0.5*(unit_direction.y + 1.0);
-    return Point3{x: 0.0, y: 0.0, z: 0.0}*(1.0 - a) + Point3{x: 0.5, y: 0.7, z: 1.0}*a;
+    return Point3{x: 1.0, y: 1.0, z: 1.0}*(1.0 - a) + Point3{x: 0.5, y: 0.7, z: 1.0}*a;
 }
 
 fn main() {
