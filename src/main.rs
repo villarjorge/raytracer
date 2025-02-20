@@ -1,4 +1,4 @@
-use std::{fs::File, io::Write};
+use std::{fs::File, io::{BufWriter, Write}};
 
 fn main() {
     // Image
@@ -6,9 +6,10 @@ fn main() {
     const IMAGE_HEIGHT: u16 = 256;
 
     // Render
-    let mut file: File = File::create("image.ppm").unwrap();
+    let image: File = File::create("image.ppm").unwrap();
+    let mut image_buffer: BufWriter<File> = BufWriter::new(image);
 
-    file.write_all(&format!("P3\n{IMAGE_WIDTH} {IMAGE_HEIGHT}\n255\n").as_bytes()).unwrap();
+    image_buffer.write_all(&format!("P3\n{IMAGE_WIDTH} {IMAGE_HEIGHT}\n255\n").as_bytes()).unwrap();
 
     for j in 0..IMAGE_HEIGHT {
         for i in 0..IMAGE_WIDTH {
@@ -22,7 +23,7 @@ fn main() {
             let gbyte: u8 = (255.999 * g) as u8;
             let bbyte: u8 = (255.999 * b) as u8;
 
-            file.write_all(&format!("{rbyte} {gbyte} {bbyte}\n").as_bytes()).unwrap();
+            image_buffer.write_all(&format!("{rbyte} {gbyte} {bbyte}\n").as_bytes()).unwrap();
         }
     }
 }
