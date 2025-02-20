@@ -1,6 +1,9 @@
 use std::ops::{Add, Sub, Mul, Div};
 
+// ToDo: Right now you can only multiply point*f32 (with the float on the left). There has to be a more general way to implement multiplication
+
 // Name is point3 to avoid warning with similarly named vec
+#[derive(Clone, Copy)]
 pub struct Point3 {
     pub x: f32,
     pub y: f32,
@@ -51,28 +54,31 @@ impl Div<f32> for Point3 {
 
 // Geometry things
 
-// Length squared
 impl Point3 {
+    // Length squared
     fn length_squared(&self) -> f32 {
         self.x*self.x + self.y*self.y + self.z*self.z
     }
-}
-// Length
-impl Point3 {
+    // Length
     fn length(&self) -> f32 {
         self.length_squared().sqrt()
     }
-}
-// Dot product
-fn dot(u: Point3, v: Point3) -> f32 {
-    u.x*v.x + u.y*v.y + u.z*v.z
-}
-// Cross product
-fn cross(u: Point3, v: Point3) -> Point3 {
-    Point3{x: u.y * v.z - u.z * v.y,
-            y: u.z * v.x - u.x * v.z,
-            z: u.x * v.y - u.y * v.x
+    // Dot product
+    fn dot(&self, other: Self) -> f32 {
+        self.x*other.x + self.y*other.y + self.z*other.z
     }
+    // Cross product
+    fn cross(&self, other: Self) -> Point3 {
+        Point3{x: self.y * other.z - self.z * other.y,
+                y: self.z * other.x - self.x * other.z,
+                z: self.x * other.y - self.y * other.x
+        }
+    }
+}
+
+// Unit vector
+pub fn  unit_vector(u: Point3) -> Point3 {
+    u*(1.0/u.length())
 }
 
 pub mod color;
