@@ -2,28 +2,19 @@ use std::{cmp, fs::File, io::{BufWriter, Write}};
 
 pub mod point3;
 pub mod ray;
+pub mod hittable;
+pub mod sphere;
 
 pub use crate::point3::{Point3, unit_vector};
 pub use crate::point3::color::write_color;
 pub use crate::ray::Ray;
-
-fn hit_sphere(center: Point3, radius: f32, ray: &Ray) -> f32 {
-    let oc: Point3 = center - ray.origin;
-    let a: f32 = ray.direction.dot(ray.direction);
-    let b: f32 = -2.0 * oc.dot(ray.direction);
-    let c: f32 = oc.dot(oc) - radius*radius;
-    let discriminant: f32 = b*b - 4.0*a*c;
-    
-    if discriminant < 0.0 {
-        return -1.0;
-    } 
-    return (-b - f32::sqrt(discriminant))/(2.0*a);
-}
+pub use crate::hittable;
+pub use crate::sphere::Sphere;
 
 fn ray_color(given_ray: Ray) -> Point3 {
     let t: f32 =  hit_sphere(Point3{x:0.0, y:0.0, z:-1.0}, 0.5, &given_ray);
     if t > 0.0 {
-        let n: Point3 = unit_vector(given_ray.at(t)) - Point3{x:0.0, y:0.0, z:1.0};
+        let n: Point3 = unit_vector(given_ray.at(t) - Point3{x:0.0, y:0.0, z:-1.0});
         return Point3{x:n.x+1.0, y:n.y+1.0, z:n.z+1.0}*0.5;
     }
 

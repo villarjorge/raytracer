@@ -56,7 +56,7 @@ impl Div<f32> for Point3 {
 
 impl Point3 {
     // Length squared
-    fn length_squared(&self) -> f32 {
+    pub fn length_squared(&self) -> f32 {
         self.x*self.x + self.y*self.y + self.z*self.z
     }
     // Length
