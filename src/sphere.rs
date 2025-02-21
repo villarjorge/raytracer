@@ -2,14 +2,13 @@ use crate::point3::Point3;
 use crate::hittable::{HitRecord, Hittable};
 use crate::ray::Ray;
 
-struct Sphere {
+pub struct Sphere {
     center: Point3,
     radius: f32,
 }
 
 impl Hittable for Sphere {
-    fn hit(self, ray: Ray, ray_tmin: f32, ray_tmax: f32, hit_record: HitRecord) -> bool {
-        // Hit_record needs to be mutable
+    fn hit(self, ray: Ray, ray_tmin: f32, ray_tmax: f32, mut hit_record: HitRecord) -> bool {
         let oc: Point3 = self.center - ray.origin;
         let a: f32 = ray.direction.length_squared();
         let h: f32 = oc.dot(ray.direction);
@@ -32,8 +31,9 @@ impl Hittable for Sphere {
         }
 
         hit_record.t = root;
-        hit_record.p = r.at(t);
-        hit_record.normal = (hit_record.p - self.center)/self.radius;
+        hit_record.p = ray.at(hit_record.t);
+        let outward_normal: Point3 = (hit_record.p - self.center)/self.radius;
+        hit_record.set_face_normal(ray, outward_normal);
 
         return true;
     }

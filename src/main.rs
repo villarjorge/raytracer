@@ -4,11 +4,11 @@ pub mod point3;
 pub mod ray;
 pub mod hittable;
 pub mod sphere;
+pub mod hittable_list;
 
 pub use crate::point3::{Point3, unit_vector};
 pub use crate::point3::color::write_color;
 pub use crate::ray::Ray;
-pub use crate::hittable;
 pub use crate::sphere::Sphere;
 
 fn ray_color(given_ray: Ray) -> Point3 {
