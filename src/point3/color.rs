@@ -3,9 +3,9 @@ use super::Point3;
 use std::{fs::File, io::{BufWriter, Write}};
 
 pub fn write_color(out_buffer: &mut BufWriter<File>, pixel_color: Point3) {
-    let r: f32 = pixel_color.x;
-    let g: f32 = pixel_color.y;
-    let b: f32 = pixel_color.z;
+    let r: f64 = pixel_color.x;
+    let g: f64 = pixel_color.y;
+    let b: f64 = pixel_color.z;
 
     // Translate the [0,1] component values to the byte range [0,255].
     let rbyte: u8 = (255.999 * r) as u8;

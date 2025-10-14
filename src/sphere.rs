@@ -1,40 +1,40 @@
 use crate::point3::Point3;
-use crate::hittable::{HitRecord, Hittable};
+use crate::hittable::{create_hit_record, HitRecord, HitResult, Hittable};
 use crate::ray::Ray;
 
 pub struct Sphere {
-    center: Point3,
-    radius: f32,
+    pub center: Point3,
+    pub radius: f64,
 }
 
+
 impl Hittable for Sphere {
-    fn hit(self, ray: Ray, ray_tmin: f32, ray_tmax: f32, mut hit_record: HitRecord) -> bool {
+    fn hit(&self, ray: &Ray, ray_tmin: f64, ray_tmax: f64) -> HitResult {
         let oc: Point3 = self.center - ray.origin;
-        let a: f32 = ray.direction.length_squared();
-        let h: f32 = oc.dot(ray.direction);
-        let c: f32 = oc.length_squared() - self.radius*self.radius;
-        let discriminant: f32 = h*h - a*c;
+        let a: f64 = ray.direction.length_squared();
+        let h: f64 = oc.dot(ray.direction);
+        let c: f64 = oc.length_squared() - self.radius*self.radius;
+
+        let discriminant: f64 = h*h - a*c;
 
         if discriminant < 0.0 {
-            return false;
+            return HitResult::DidNotHit;
         } 
-        let sqrt_discriminant: f32 = f32::sqrt(discriminant);
+        let sqrt_discriminant: f64 = f64::sqrt(discriminant);
 
         // Find the nearest root that lies in the acceptable range
-        let mut root: f32 = (h-sqrt_discriminant)/a;
+        let mut root: f64 = (h-sqrt_discriminant)/a;
         // If the first root is less than the minimum or more than the max, check other root the same way 
         if root <= ray_tmin || ray_tmax <= root {
             root = (h+sqrt_discriminant)/a;
             if root <= ray_tmin || ray_tmax <= root {
-                return false;
+                HitResult::DidNotHit;
             }
         }
 
-        hit_record.t = root;
-        hit_record.p = ray.at(hit_record.t);
-        let outward_normal: Point3 = (hit_record.p - self.center)/self.radius;
-        hit_record.set_face_normal(ray, outward_normal);
+        let outward_normal: Point3 = (ray.at(root) - self.center)/self.radius;
+        let record: HitRecord = create_hit_record(ray, root, outward_normal);
 
-        return true;
+        return HitResult::HitRecord(record);
     }
 }
