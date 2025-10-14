@@ -5,7 +5,7 @@ use rand;
 // Should I implement all the traits again for references?
 
 // Name is point3 to avoid warning with similarly named vec
-#[derive(Clone, Copy, Default)]
+#[derive(Clone, Copy, Default)] // once I get the project going, remove this to sort out references etc
 pub struct Point3 {
     pub x: f64,
     pub y: f64,

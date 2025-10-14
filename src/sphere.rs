@@ -28,7 +28,7 @@ impl Hittable for Sphere {
         if root <= ray_tmin || ray_tmax <= root {
             root = (h+sqrt_discriminant)/a;
             if root <= ray_tmin || ray_tmax <= root {
-                HitResult::DidNotHit;
+                return HitResult::DidNotHit;
             }
         }
 
