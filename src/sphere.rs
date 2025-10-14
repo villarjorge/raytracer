@@ -1,3 +1,5 @@
+use std::ops::Range;
+
 use crate::point3::Point3;
 use crate::hittable::{create_hit_record, HitRecord, HitResult, Hittable};
 use crate::ray::Ray;
@@ -9,7 +11,7 @@ pub struct Sphere {
 
 
 impl Hittable for Sphere {
-    fn hit(&self, ray: &Ray, ray_tmin: f64, ray_tmax: f64) -> HitResult {
+    fn hit(&self, ray: &Ray, ray_t: Range<f64>) -> HitResult {
         let oc: Point3 = self.center - ray.origin;
         let a: f64 = ray.direction.length_squared();
         let h: f64 = oc.dot(ray.direction);
@@ -24,10 +26,9 @@ impl Hittable for Sphere {
 
         // Find the nearest root that lies in the acceptable range
         let mut root: f64 = (h-sqrt_discriminant)/a;
-        // If the first root is less than the minimum or more than the max, check other root the same way 
-        if root <= ray_tmin || ray_tmax <= root {
+        if ray_t.contains(&root) == false {
             root = (h+sqrt_discriminant)/a;
-            if root <= ray_tmin || ray_tmax <= root {
+            if ray_t.contains(&root) == false {
                 return HitResult::DidNotHit;
             }
         }

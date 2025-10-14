@@ -1,3 +1,5 @@
+use std::ops::Range;
+
 use crate::point3::Point3;
 use crate::ray::Ray;
 
@@ -34,5 +36,5 @@ pub enum HitResult {
 }
 
 pub trait Hittable {
-    fn hit(&self, ray: &Ray, ray_tmin: f64, ray_tmax: f64) -> HitResult;
+    fn hit(&self, ray: &Ray, ray_t: Range<f64>) -> HitResult;
 }

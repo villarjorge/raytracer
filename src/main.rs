@@ -15,7 +15,7 @@ pub use crate::hittable::{HitRecord, Hittable};
 use crate::hittable_list::HittableList;
 
 fn ray_color(given_ray: &Ray, world: &HittableList) -> Point3 {
-    match world.hit(given_ray, 0.001, f64::INFINITY) {
+    match world.hit(given_ray, 0.001..f64::INFINITY) {
         HitResult::DidNotHit => {},
         HitResult::HitRecord(hit_record) => {
             return (hit_record.normal + Point3{x: 1.0, y: 1.0, z: 1.0})*0.5;
