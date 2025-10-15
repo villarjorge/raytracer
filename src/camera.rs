@@ -2,7 +2,7 @@ use std::{cmp, fs::File, io::{BufWriter, Write}};
 
 use rand;
 
-use crate::point3::{random_on_hemisphere, unit_vector, Point3};
+use crate::point3::{random_on_hemisphere, random_unit_vector, unit_vector, Point3};
 use crate::point3::color::write_color;
 use crate::ray::Ray;
 use crate::hittable::HitResult;
@@ -86,7 +86,7 @@ impl Camera {
         match world.hit(given_ray, 0.001..f64::INFINITY) {
             HitResult::DidNotHit => {},
             HitResult::HitRecord(hit_record) => {
-                let direction: Point3 = random_on_hemisphere(&hit_record.normal);
+                let direction: Point3 = hit_record.normal + random_unit_vector();
                 return 0.5*self.ray_color(&Ray { origin: hit_record.p, direction: direction }, depth-1, world);
             }
         }
