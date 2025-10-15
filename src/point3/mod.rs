@@ -5,12 +5,19 @@ use rand;
 // Should I implement all the traits again for references?
 
 // Name is point3 to avoid warning with similarly named vec
-#[derive(Clone, Copy, Default)] // once I get the project going, remove this to sort out references etc
+#[derive(Clone, Copy)] // once I get the project going, remove this to sort out references etc
 pub struct Point3 {
     pub x: f64,
     pub y: f64,
     pub z: f64,
 }
+
+impl Default for Point3 {
+    fn default() -> Self {
+        Point3 { x: 0.0f64, y: 0.0f64, z: 0.0f64 }
+    }
+}
+
 // Addition of two vectors
 impl Add for Point3 {
     type Output = Self;
