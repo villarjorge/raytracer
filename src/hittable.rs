@@ -11,6 +11,7 @@ pub struct HitRecord {
     pub front_face: bool,
 }
 
+// Not used anywhere, can be removed
 impl HitRecord {
     pub fn set_face_normal(mut self, ray: &Ray, outward_normal: Point3) {
         // Sets the hit record normal vector.
@@ -22,6 +23,8 @@ impl HitRecord {
 }
 
 pub fn create_hit_record(ray: &Ray, t: f64, outward_normal: Point3) -> HitRecord {
+    // Creates a HitRecord with all it's parameters
+    // NOTE: the parameter `outward_normal` is assumed to have unit length.
     let p: Point3 = ray.at(t);
     let front_face: bool = outward_normal.dot(ray.direction) < 0.0;
     let normal: Point3 = if front_face {outward_normal} else {-outward_normal};
