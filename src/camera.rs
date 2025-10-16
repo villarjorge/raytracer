@@ -5,7 +5,7 @@ use rand;
 use crate::point3::{random_unit_vector, unit_vector, Point3};
 use crate::point3::color::write_color;
 use crate::ray::Ray;
-use crate::hittable::HitResult;
+use crate::hittable::{Hittable, HitResult};
 use crate::hittable_list::HittableList;
 
 pub struct Camera {

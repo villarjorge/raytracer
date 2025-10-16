@@ -23,7 +23,8 @@ impl HitRecord {
 }
 
 pub fn create_hit_record(ray: &Ray, t: f64, outward_normal: Point3) -> HitRecord {
-    // Creates a HitRecord with all it's parameters
+    // Creates a HitRecord with all it's parameters from the colliding ray, the 
+    // parameter of the ray at the point of collision and the normal at that point
     // NOTE: the parameter `outward_normal` is assumed to have unit length.
     let p: Point3 = ray.at(t);
     let front_face: bool = outward_normal.dot(ray.direction) < 0.0;
@@ -38,6 +39,7 @@ pub enum HitResult {
     HitRecord(HitRecord)
 }
 
+// Instead of inheritance, create a trait that subsecuent objects will implement
 pub trait Hittable {
     fn hit(&self, ray: &Ray, ray_t: Range<f64>) -> HitResult;
 }
