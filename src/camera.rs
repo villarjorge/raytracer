@@ -80,15 +80,15 @@ impl Camera {
 impl Camera {
     fn ray_color(&self, given_ray: &Ray, depth: u32, world: &HittableList) -> Point3 {
         if depth <= 0 {
-            return Point3{x: 0.0, y: 0.0, z: 0.0};
+            return Point3{x: 1.0, y: 0.0, z: 0.0};
         }
 
         match world.hit(given_ray, 0.001..f64::INFINITY) {
             HitResult::DidNotHit => {},
             HitResult::HitRecord(hit_record) => {
                 match hit_record.material.scatter(given_ray, &hit_record) {
-                    ScatterResult::DidNotScatter => return Point3{x: 0.0, y: 0.0, z: 0.0},
-                    ScatterResult::DidScatter(sca_att) => return sca_att.attenuation * self.ray_color(given_ray, depth-1, world)
+                    ScatterResult::DidNotScatter => return Point3{x: 0.0, y: 1.0, z: 0.0},
+                    ScatterResult::DidScatter(sca_att) => return sca_att.attenuation * self.ray_color(&sca_att.ray, depth-1, world)
                 }
             }
         }
@@ -96,6 +96,7 @@ impl Camera {
         // Lerp between blue and white
         let unit_direction: Point3 = unit_vector(given_ray.direction);
         let a: f64 = 0.5*(unit_direction.y + 1.0);
+        
         return Point3{x: 1.0, y: 1.0, z: 1.0}*(1.0 - a) + Point3{x: 0.5, y: 0.7, z: 1.0}*a;
     }
 

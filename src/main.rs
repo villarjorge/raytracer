@@ -29,6 +29,6 @@ fn main() {
     world.add(Sphere{center: Point3{x: -1.0, y: 0.0, z: -1.0}, radius: 0.5, material: Box::new(material_left)});
     world.add(Sphere{center: Point3{x: 1.0, y: 0.0, z: -1.0}, radius: 0.5, material: Box::new(material_right)});
 
-    let cam: Camera = create_camera(16.0f64/9.0f64, 400u32, 100u32, 50u32);
+    let cam: Camera = create_camera(16.0f64/9.0f64, 400u32, 1u32, 10u32);
     cam.render(world);
 }

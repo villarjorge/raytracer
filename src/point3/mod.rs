@@ -170,7 +170,7 @@ pub fn random_on_hemisphere(normal: &Point3) -> Point3 {
     if dot(&on_unit_sphere, normal) > 0.0 {
         return on_unit_sphere;
     }
-    -on_unit_sphere
+    return -on_unit_sphere;
 }
 
 pub fn random_in_unit_disk() -> Point3 {

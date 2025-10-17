@@ -38,9 +38,9 @@ impl Material for Lambertian {
             let temp: Point3 = record.normal + random_unit_vector();
             // Catch degenerate scatter direction
             if temp.is_near_zero() {
-                temp
-            } else {
                 record.normal
+            } else {
+                temp
             }
         };
 
