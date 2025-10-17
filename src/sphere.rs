@@ -8,7 +8,7 @@ use crate::material::Material;
 pub struct Sphere<'a> {
     pub center: Point3,
     pub radius: f64,
-    pub material: &'a Box<dyn Material>
+    pub material: &'a dyn Material
 }
 
 impl <'a>Hittable for Sphere<'_> {

@@ -8,7 +8,7 @@ use crate::material::Material;
 pub struct HitRecord<'a> {
     pub p: Point3,
     pub normal: Point3,
-    pub material: &'a Box<dyn Material>, 
+    pub material: &'a dyn Material, 
     pub t: f64,
     pub front_face: bool,
 }
@@ -24,7 +24,7 @@ impl HitRecord<'_>{
     }
 }
 
-pub fn create_hit_record<'a>(ray: &Ray, t: f64, outward_normal: Point3, material: &'a Box<dyn Material>) -> HitRecord<'a> {
+pub fn create_hit_record<'a>(ray: &Ray, t: f64, outward_normal: Point3, material: &'a dyn Material) -> HitRecord<'a> {
     // Creates a HitRecord with all it's parameters from the colliding ray, the 
     // parameter of the ray at the point of collision, the normal at that point, and the material of the surface
     // NOTE: the parameter `outward_normal` is assumed to have unit length.
