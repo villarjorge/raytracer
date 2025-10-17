@@ -80,14 +80,14 @@ impl Camera {
 impl Camera {
     fn ray_color(&self, given_ray: &Ray, depth: u32, world: &HittableList) -> Point3 {
         if depth <= 0 {
-            return Point3{x: 1.0, y: 0.0, z: 0.0};
+            return Point3{x: 0.0, y: 0.0, z: 0.0};
         }
 
         match world.hit(given_ray, 0.001..f64::INFINITY) {
             HitResult::DidNotHit => {},
             HitResult::HitRecord(hit_record) => {
                 match hit_record.material.scatter(given_ray, &hit_record) {
-                    ScatterResult::DidNotScatter => return Point3{x: 0.0, y: 1.0, z: 0.0},
+                    ScatterResult::DidNotScatter => return Point3{x: 0.0, y: 0.0, z: 0.0},
                     ScatterResult::DidScatter(sca_att) => return sca_att.attenuation * self.ray_color(&sca_att.ray, depth-1, world)
                 }
             }

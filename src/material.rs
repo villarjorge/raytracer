@@ -1,6 +1,7 @@
 use crate::point3::{random_unit_vector, reflect, Point3};
 use crate::ray::Ray;
 use crate::hittable::HitRecord;
+use crate::unit_vector;
 
 // If you are confused about the lifetimes, think about it this way: 
 // multiple objects could use the same material, which means that the material pointer needs to outlive everything else
@@ -52,13 +53,15 @@ impl Material for Lambertian {
 }
 
 pub struct Metal {
-    pub albedo: Point3
+    pub albedo: Point3,
+    pub fuzz: f64
 }
 
 impl Material for Metal {
     fn scatter(&self, ray_in: &Ray, record: &HitRecord) -> ScatterResult {
         let reflected: Point3 = reflect(ray_in.direction, record.normal);
-        let scattered: Ray = Ray{origin: record.p, direction: reflected};
+        let reflected_with_fuzz: Point3 = unit_vector(reflected) + (self.fuzz * random_unit_vector());
+        let scattered: Ray = Ray{origin: record.p, direction: reflected_with_fuzz};
 
         let sca_att: ScatteredRayAndAttenuation = ScatteredRayAndAttenuation{ray: scattered, attenuation: self.albedo};
 
