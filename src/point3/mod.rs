@@ -193,7 +193,7 @@ pub fn refract(uv: Point3, n: Point3, eta_inital_over_eta_final: f64) -> Point3 
     // Calculates the refraction of uv given a normal n (both unit vectors) given the ratio of the refractive indexes 
     let cos_theta: f64 = dot(&(-uv), &n).min(1.0);
     let perpendicular_component: Point3 = (uv + n*cos_theta)*eta_inital_over_eta_final;
-    let parallel_component: Point3 = (-n)*(1.0 - perpendicular_component.length_squared()).abs().sqrt();
+    let parallel_component: Point3 = (-n)*((1.0 - perpendicular_component.length_squared()).abs().sqrt());
 
     perpendicular_component + parallel_component
 }
