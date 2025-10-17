@@ -1,6 +1,7 @@
 use std::ops::Range;
 
 use crate::hittable::{HitRecord, HitResult, Hittable};
+use crate::material::{BlackBody, Material};
 use crate::ray::Ray;
 use crate::point3::Point3;
 pub struct HittableList {
@@ -11,14 +12,15 @@ impl HittableList {
     pub fn clear(mut self) -> () {
         self.objects.clear()
     }
-    pub fn add<T: Hittable+ 'static>(&mut self, to_add: T) -> () {
+    pub fn add<T: Hittable + 'static>(&mut self, to_add: T) -> () {
         self.objects.push(Box::new(to_add));
     }
 }
 
 impl Hittable for HittableList {
     fn hit(&self, ray: &Ray, ray_t: Range<f64>) -> HitResult {
-        let mut current_record: HitRecord = HitRecord{p: Point3{x:0.0, y:0.0, z:0.0}, normal:Point3{x:0.0, y:0.0, z:0.0}, t:0.0, front_face: false};
+        let m: Box<dyn Material> = Box::new(BlackBody{});
+        let mut current_record: HitRecord = HitRecord{p: Point3::default(), normal: Point3::default(), material: &m, t: 0.0, front_face: false};
         let mut hit_anything: bool = false;
         let mut closest_so_far: f64 = ray_t.end; // max
 

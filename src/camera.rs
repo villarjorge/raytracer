@@ -28,7 +28,7 @@ pub fn create_camera(aspect_ratio: f64, image_width: u32, samples_per_pixel: u32
     const FOCAL_LENGTH: f64 = 1.0;
     const VIEWPORT_HEIGHT: f64  = 2.0;
     let viewport_width: f64 = VIEWPORT_HEIGHT * (image_width as f64/image_height as f64);
-    const CAMERA_CENTER: Point3 =Point3{x: 0.0, y: 0.0, z: 0.0};
+    const CAMERA_CENTER: Point3 = Point3{x: 0.0, y: 0.0, z: 0.0};
     
     // Calculate the vectors across the horizontal and down the vertical viewport edges.
     let viewport_u: Point3 = Point3{x:viewport_width, y:0.0, z:0.0};
@@ -41,7 +41,7 @@ pub fn create_camera(aspect_ratio: f64, image_width: u32, samples_per_pixel: u32
     // Calculate the location of the upper left pixel.
     let viewport_upper_left: Point3 = CAMERA_CENTER - Point3{x:0.0, y:0.0, z:FOCAL_LENGTH} - viewport_u*0.5f64 - viewport_v*0.5f64;
     let pixel00_loc: Point3 = viewport_upper_left + (pixel_delta_u + pixel_delta_v)*0.5f64;
-    // I don't like to have this many parameters here
+    // To do: I don't like to have this many parameters here
     Camera { aspect_ratio: aspect_ratio, image_width: image_width, samples_per_pixel: samples_per_pixel, max_depth: max_depth, image_height: image_height, center: CAMERA_CENTER, pixel00_loc: pixel00_loc, pixel_delta_u: pixel_delta_u, pixel_delta_v: pixel_delta_v }
 }
 
@@ -60,7 +60,7 @@ impl Camera {
             print!("\r                         ");
             print!("\rScanlines remaining: {}", self.image_height - j);
             for i in 0..self.image_width {
-                let mut pixel_color: Point3 = Point3 { x: 0.0, y: 0.0, z: 0.0 }; // Accumulating step by step could lead to decreased accuracy
+                let mut pixel_color: Point3 = Point3::default(); // to do: Accumulating step by step could lead to decreased accuracy
                 for _ in 0..self.samples_per_pixel {
                     let r: Ray = self.get_ray(i, j);
                     pixel_color = pixel_color + self.ray_color(&r, self.max_depth, &world)
@@ -80,7 +80,7 @@ impl Camera {
 impl Camera {
     fn ray_color(&self, given_ray: &Ray, depth: u32, world: &HittableList) -> Point3 {
         if depth <= 0 {
-            return Point3::default();
+            return Point3{x: 0.0, y: 0.0, z: 0.0};
         }
 
         match world.hit(given_ray, 0.001..f64::INFINITY) {

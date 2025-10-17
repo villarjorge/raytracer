@@ -1,14 +1,6 @@
 
 use super::Point3;
-use std::{fs::File, io::{BufWriter, Write}, ops::Range};
-
-fn clamp(range: &Range<f64>, x: f64) -> f64 {
-    if range.contains(&x) {return x;}
-    else if x < range.start {
-        return range.start;
-    }
-    return range.end;
-}
+use std::{fs::File, io::{BufWriter, Write}};
 
 fn linear_to_gamma(linear_component: f64) -> f64 {
     if linear_component > 0.0 {
@@ -29,10 +21,11 @@ pub fn write_color(out_buffer: &mut BufWriter<File>, pixel_color: Point3) {
 
     // Translate the [0,1] component values to the byte range [0,255].
 
-    let range: Range<f64> = 0.000..0.999;
-    let rbyte: u8 = (256.00 * clamp(&range, r)) as u8;
-    let gbyte: u8 = (256.00 * clamp(&range, g)) as u8;
-    let bbyte: u8 = (256.00 * clamp(&range, b)  ) as u8;
+    let min: f64 = 0.000;
+    let max: f64 = 0.999;
+    let rbyte: u8 = (256.00 * r.clamp(min, max)) as u8;
+    let gbyte: u8 = (256.00 * g.clamp(min, max)) as u8;
+    let bbyte: u8 = (256.00 * b.clamp(min, max)) as u8;
 
     // Write out the pixel color components.
     out_buffer.write_all(&format!("{rbyte} {gbyte} {bbyte}\n").as_bytes()).unwrap();

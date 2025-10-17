@@ -4,6 +4,7 @@ pub mod hittable;
 pub mod sphere;
 pub mod hittable_list;
 pub mod camera;
+pub mod material;
 
 use crate::camera::{Camera, create_camera};
 pub use crate::point3::{Point3, unit_vector};

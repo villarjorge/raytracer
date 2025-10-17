@@ -14,6 +14,7 @@ pub struct Point3 {
 
 impl Default for Point3 {
     fn default() -> Self {
+        // Defautl is {0.0, 0.0, 0.0}
         Point3 { x: 0.0f64, y: 0.0f64, z: 0.0f64 }
     }
 }
@@ -129,7 +130,7 @@ pub fn cross(u: &Point3, v: &Point3) -> Point3 {
 }
 
 impl Point3 {
-    fn is_near_zero(&self) -> bool {
+    pub fn is_near_zero(&self) -> bool {
         /// Returns zero if the vector is close to zero in all dimensions
         const TOLERANCE: f64 = 1e-8;
         self.x.abs() < TOLERANCE && self.y.abs() < TOLERANCE && self.z.abs() < TOLERANCE
