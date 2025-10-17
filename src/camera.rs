@@ -2,7 +2,7 @@ use std::{cmp, fs::File, io::{BufWriter, Write}};
 
 use rand;
 
-use crate::point3::{random_unit_vector, unit_vector, Point3};
+use crate::{material::ScatterResult, point3::{unit_vector, Point3}};
 use crate::point3::color::write_color;
 use crate::ray::Ray;
 use crate::hittable::{Hittable, HitResult};
@@ -86,8 +86,10 @@ impl Camera {
         match world.hit(given_ray, 0.001..f64::INFINITY) {
             HitResult::DidNotHit => {},
             HitResult::HitRecord(hit_record) => {
-                let direction: Point3 = hit_record.normal + random_unit_vector();
-                return 0.5*self.ray_color(&Ray { origin: hit_record.p, direction: direction }, depth-1, world);
+                match hit_record.material.scatter(given_ray, &hit_record) {
+                    ScatterResult::DidNotScatter => return Point3{x: 0.0, y: 0.0, z: 0.0},
+                    ScatterResult::DidScatter(sca_att) => return sca_att.attenuation * self.ray_color(given_ray, depth-1, world)
+                }
             }
         }
 

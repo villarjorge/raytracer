@@ -5,13 +5,13 @@ use crate::hittable::{create_hit_record, HitRecord, HitResult, Hittable};
 use crate::ray::Ray;
 use crate::material::Material;
 
-pub struct Sphere<'a> {
+pub struct Sphere {
     pub center: Point3,
     pub radius: f64,
-    pub material: &'a dyn Material
+    pub material: Box<dyn Material>
 }
 
-impl <'a>Hittable for Sphere<'_> {
+impl Hittable for Sphere {
     fn hit(&self, ray: &Ray, ray_t: Range<f64>) -> HitResult {
         let oc: Point3 = self.center - ray.origin;
         let a: f64 = ray.direction.length_squared();
@@ -35,7 +35,7 @@ impl <'a>Hittable for Sphere<'_> {
         }
 
         let outward_normal: Point3 = (ray.at(root) - self.center)/self.radius;
-        let record: HitRecord = create_hit_record(ray, root, outward_normal, self.material);
+        let record: HitRecord = create_hit_record(ray, root, outward_normal, &self.material);
 
         return HitResult::HitRecord(record);
     }

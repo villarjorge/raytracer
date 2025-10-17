@@ -1,17 +1,17 @@
-use crate::point3::{random_unit_vector, Point3};
+use crate::point3::{random_unit_vector, reflect, Point3};
 use crate::ray::Ray;
 use crate::hittable::HitRecord;
 
 // If you are confused about the lifetimes, think about it this way: 
 // multiple objects could use the same material, which means that the material pointer needs to outlive everything else
 pub struct ScatteredRayAndAttenuation { // think of a better name?
-    ray: Ray,
-    color: Point3
+    pub ray: Ray,
+    pub attenuation: Point3
 }
 
 pub enum ScatterResult {
     DidNotScatter,
-    ScatteredRayAndAttenuation(ScatteredRayAndAttenuation)
+    DidScatter(ScatteredRayAndAttenuation)
 }
 
 pub trait Material {
@@ -28,7 +28,7 @@ impl Material for BlackBody {
 }
 
 pub struct Lambertian {
-    albedo: Point3
+    pub albedo: Point3
 }
 
 impl Material for Lambertian {
@@ -45,8 +45,23 @@ impl Material for Lambertian {
         };
 
         let scattered: Ray = Ray{origin: record.p, direction: scatter_direction};
-        let sca_att: ScatteredRayAndAttenuation = ScatteredRayAndAttenuation{ray: scattered, color: self.albedo};
+        let sca_att: ScatteredRayAndAttenuation = ScatteredRayAndAttenuation{ray: scattered, attenuation: self.albedo};
 
-        return ScatterResult::ScatteredRayAndAttenuation(sca_att);
+        return ScatterResult::DidScatter(sca_att);
+    }
+}
+
+pub struct Metal {
+    pub albedo: Point3
+}
+
+impl Material for Metal {
+    fn scatter(&self, ray_in: &Ray, record: &HitRecord) -> ScatterResult {
+        let reflected: Point3 = reflect(ray_in.direction, record.normal);
+        let scattered: Ray = Ray{origin: record.p, direction: reflected};
+
+        let sca_att: ScatteredRayAndAttenuation = ScatteredRayAndAttenuation{ray: scattered, attenuation: self.albedo};
+
+        return ScatterResult::DidScatter(sca_att);
     }
 }

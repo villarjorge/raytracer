@@ -6,7 +6,7 @@ use crate::ray::Ray;
 // use crate::point3::Point3;
 pub struct HittableList {
     // HittableList is a list of objects with the hittable trait. 
-    // The objects can be of diferent sizes, so it is necesary to use a reference or a pointer. 
+    // The objects can be of diferent sizes, so it is necesary to use a reference or a pointer. Using a pointer to deal with less lifetimes
     pub objects: Vec<Box<dyn Hittable>>,
 }
 
@@ -29,8 +29,6 @@ impl Hittable for HittableList {
                 HitResult::DidNotHit => {},
                 HitResult::HitRecord(hit_record) => {
                     closest_so_far = hit_record.t;
-                    // hit_anything = true;
-                    // current_record = hit_record;
                     current_result = HitResult::HitRecord(hit_record);
                 }
             }
