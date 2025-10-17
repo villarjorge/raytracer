@@ -3,7 +3,6 @@ use std::ops::Range;
 use crate::point3::Point3;
 use crate::ray::Ray;
 use crate::material::Material;
-use crate::unit_vector;
 
 // To do: think about if the pointer to a material is necesary, or if its posible to change to something like the add funtion of hittable_list
 pub struct HitRecord<'a> {
@@ -19,10 +18,10 @@ pub fn create_hit_record<'a>(ray: &Ray, t: f64, outward_normal: Point3, material
     // parameter of the ray at the point of collision, the normal at that point, and the material of the surface
     let p: Point3 = ray.at(t);
 
-    let unit_outward_normal: Point3 = unit_vector(outward_normal);
+    // let unit_outward_normal: Point3 = unit_vector(outward_normal);
 
-    let front_face: bool = unit_outward_normal.dot(ray.direction) < 0.0;
-    let normal: Point3 = if front_face {unit_outward_normal} else {-unit_outward_normal};
+    let front_face: bool = outward_normal.dot(ray.direction) < 0.0;
+    let normal: Point3 = if front_face {outward_normal} else {-outward_normal};
 
     HitRecord { p: p, normal: normal, material: material, t: t, front_face: front_face }
 }

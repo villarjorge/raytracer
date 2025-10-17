@@ -87,7 +87,7 @@ impl Neg for Point3 {
         Self{
             x: -self.x,
             y: -self.y,
-            z: -self.y
+            z: -self.z // This was -self.y !!
         }
     }
 }

@@ -75,8 +75,6 @@ pub struct Dielectric {
 
 impl Material for Dielectric {
     fn scatter(&self, ray_in: &Ray, record: &HitRecord) -> ScatterResult {
-        let attenuation: Point3 = Point3 { x: 1.0, y: 1.0, z: 1.0 };
-
         let ratio_indexes: f64 = if record.front_face {1.0/self.refraction_index} else {self.refraction_index};
 
         let unit_direction: Point3 = unit_vector(ray_in.direction);
@@ -84,34 +82,29 @@ impl Material for Dielectric {
         let sin_theta: f64 = (1.0 - cos_theta*cos_theta).sqrt();
 
         let cannot_refract: bool = ratio_indexes*sin_theta > 1.0;
-        // let reflectance_bigger_than_random: bool = reflectance(cos_theta, ratio_indexes) > rand::random_range(0.0..1.0);
+        let reflectance_bigger_than_random: bool = reflectance(cos_theta, ratio_indexes) > rand::random_range(0.0..1.0);
 
-        // let direction: Point3 = {
-        //     if cannot_refract | reflectance_bigger_than_random {
-        //         reflect(unit_direction, record.normal)
-        //     }
-        //     else {
-        //         refract(unit_direction, record.normal, ratio_indexes)
-        //     }
-        // };
         let direction: Point3 = {
-            if cannot_refract {
+            if cannot_refract | reflectance_bigger_than_random {
                 reflect(unit_direction, record.normal)
             }
             else {
                 refract(unit_direction, record.normal, ratio_indexes)
             }
         };
-
+        
+        let attenuation: Point3 = Point3 { x: 1.0, y: 1.0, z: 1.0 };
         let scattered: Ray = Ray { origin: record.p, direction: direction };
 
-        return ScatterResult::DidScatter(ScatteredRayAndAttenuation { ray: scattered, attenuation: attenuation });
+        let sca_att: ScatteredRayAndAttenuation = ScatteredRayAndAttenuation{ray: scattered, attenuation: attenuation};
+
+        return ScatterResult::DidScatter(sca_att);
     }
 }
 
-// fn reflectance(cosine: f64, refraction_index: f64) -> f64 {
-//         let r0: f64 = (1.0 - refraction_index)/(1.0 + refraction_index);
-//         let r0_squared: f64 = r0*r0;
+fn reflectance(cosine: f64, refraction_index: f64) -> f64 {
+        let r0: f64 = (1.0 - refraction_index)/(1.0 + refraction_index);
+        let r0_squared: f64 = r0*r0;
 
-//         return r0_squared + (1.0 - r0_squared)*((1.0 - cosine).powf(5.0));
-// }
+        return r0_squared + (1.0 - r0_squared)*((1.0 - cosine).powf(5.0));
+}
