@@ -2,7 +2,7 @@ use std::{cmp, fs::File, io::{BufWriter, Write}};
 
 use rand;
 
-use crate::{material::ScatterResult, point3::{unit_vector, Point3}};
+use crate::{material::ScatterResult, point3::{cross, random_in_unit_disk, unit_vector, Point3}};
 use crate::point3::color::write_color;
 use crate::ray::Ray;
 use crate::hittable::{Hittable, HitResult};
@@ -10,39 +10,56 @@ use crate::hittable_list::HittableList;
 
 pub struct Camera {
     // Consider changing the u32 to u16 or even smaller
-    pub aspect_ratio: f64,
-    pub image_width: u32, 
-    pub samples_per_pixel: u32, 
-    pub max_depth: u32,
-    image_height: u32, 
-    center: Point3,
+    image_width: u32,
+    image_height: u32,
+    samples_per_pixel: u32, 
+    max_depth: u32,
     pixel00_loc: Point3,
     pixel_delta_u: Point3,
-    pixel_delta_v: Point3
+    pixel_delta_v: Point3,
+    camera_center: Point3,
+    defocus_angle: f64,
+    defocus_disk_u: Point3,
+    defocus_disk_v: Point3
 }
 
-pub fn create_camera(aspect_ratio: f64, image_width: u32, samples_per_pixel: u32, max_depth: u32) -> Camera {
+// To do: improve the parameters in this function
+pub fn create_camera(aspect_ratio: f64, image_width: u32, samples_per_pixel: u32, max_depth: u32, vfov: f64, defocus_angle: f64, focus_distance: f64, look_from: Point3, look_at: Point3, view_up: Point3) -> Camera {
     // Calculate the image height, and ensure that it's at least 1.
     let image_height: u32 = cmp::max(1, (image_width as f64 / aspect_ratio) as u32);
 
-    const FOCAL_LENGTH: f64 = 1.0;
-    const VIEWPORT_HEIGHT: f64  = 2.0;
-    let viewport_width: f64 = VIEWPORT_HEIGHT * (image_width as f64/image_height as f64);
-    const CAMERA_CENTER: Point3 = Point3{x: 0.0, y: 0.0, z: 0.0};
+    let camera_center: Point3 = look_from;
+
+    // Determine viewport dimensions
+    let theta: f64 = vfov.to_radians();
+    let h: f64 = (theta*0.5).tan();
+    let viewport_height: f64  = 2.0*h*focus_distance;
+    let viewport_width: f64 = viewport_height * (image_width as f64/image_height as f64);
     
-    // Calculate the vectors across the horizontal and down the vertical viewport edges.
-    let viewport_u: Point3 = Point3{x:viewport_width, y:0.0, z:0.0};
-    let viewport_v: Point3 = Point3{x:0.0, y:-VIEWPORT_HEIGHT, z:0.0};
+    // Calculate the basis vectors for the camera coordinate frame
+    let w: Point3 = unit_vector(look_from - look_at);
+    let u: Point3 = unit_vector(cross(&view_up, &w));
+    let v: Point3 = unit_vector(cross(&w, &u));
+
+    // Calcualte the vectors across the horizontal and down the vertical viewport edges
+    let viewport_u: Point3 = u*viewport_width;
+    let viewport_v: Point3 = v*(-viewport_height);
 
     // Calculate the horizontal and vertical delta vectors from pixel to pixel.
     let pixel_delta_u: Point3 = viewport_u / image_width as f64;
     let pixel_delta_v: Point3 = viewport_v / image_height as f64;
 
-    // Calculate the location of the upper left pixel.
-    let viewport_upper_left: Point3 = CAMERA_CENTER - Point3{x:0.0, y:0.0, z:FOCAL_LENGTH} - viewport_u*0.5f64 - viewport_v*0.5f64;
+    // Calculate the location of the upper left pixel (the 0, 0 pixel).
+    let viewport_upper_left: Point3 = camera_center - w*focus_distance - viewport_u*0.5f64 - viewport_v*0.5f64;
     let pixel00_loc: Point3 = viewport_upper_left + (pixel_delta_u + pixel_delta_v)*0.5f64;
-    // To do: I don't like to have this many parameters here
-    Camera { aspect_ratio: aspect_ratio, image_width: image_width, samples_per_pixel: samples_per_pixel, max_depth: max_depth, image_height: image_height, center: CAMERA_CENTER, pixel00_loc: pixel00_loc, pixel_delta_u: pixel_delta_u, pixel_delta_v: pixel_delta_v }
+
+    // Calculate the camera defocus disk basis vectors
+    let defocus_radius: f64 = focus_distance*( (defocus_angle*0.5).to_radians().tan() );
+    let defocus_disk_u: Point3 = u * defocus_radius;
+    let defocus_disk_v: Point3 = v * defocus_radius;
+
+    // To do: I don't like to have this many parameters here. Maybe use ray to encapsulate two points? 
+    Camera { image_width: image_width, image_height: image_height, samples_per_pixel: samples_per_pixel, max_depth: max_depth, pixel00_loc: pixel00_loc, pixel_delta_u: pixel_delta_u, pixel_delta_v: pixel_delta_v, camera_center: camera_center, defocus_angle: defocus_angle, defocus_disk_u: defocus_disk_u, defocus_disk_v: defocus_disk_v }   
 }
 
 // Public
@@ -101,12 +118,16 @@ impl Camera {
     }
 
     fn get_ray(&self, i: u32, j: u32) -> Ray {
-        let offset = sample_square();
+        let offset: Point3 = sample_square();
         let pixel_sample: Point3 = self.pixel00_loc + (self.pixel_delta_u * (i as f64 + offset.x)) + (self.pixel_delta_v * (j as f64 + offset.y));
-        let ray_origin: Point3 = self.center;
+        let ray_origin: Point3 = if self.defocus_angle <= 0.0 { self.camera_center } else { self.defocus_disk_sample() };
         let ray_direction: Point3 = pixel_sample - ray_origin;
 
         return Ray{origin:ray_origin, direction:ray_direction};
+    }
+    fn defocus_disk_sample(&self) -> Point3 {
+        let p: Point3 = random_in_unit_disk();
+        self.camera_center + p.x*self.defocus_disk_u + p.y*self.defocus_disk_v
     }
 }
 
@@ -114,3 +135,4 @@ fn sample_square() -> Point3 {
     // Returns a vector to a random point in the x, y € [-0.5, 0.5] square
     Point3 { x: rand::random_range(-0.5..0.5), y: rand::random_range(-0.5..0.5), z: 0.0f64 }
 }
+

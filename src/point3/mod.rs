@@ -144,6 +144,7 @@ pub fn unit_vector(u: Point3) -> Point3 {
 }
 
 // Functions for random vectors
+// To do: initialize a local rng handle for better performance
 
 pub fn random_vector(a: f64, b: f64) -> Point3 {
     Point3 { x: rand::random_range(a..b), y: rand::random_range(a..b), z: rand::random_range(a..b) }
