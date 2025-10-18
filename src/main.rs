@@ -64,7 +64,7 @@ fn main() {
 
     let aspect_ratio: f64 = 16.0/9.0;
     let image_width: u32 = 1200;
-    let samples_per_pixel: u32 = 500;
+    let samples_per_pixel: u32 = 10;
     let max_depth: u32 = 50;
 
     let vfov: f64 = 20.0;
