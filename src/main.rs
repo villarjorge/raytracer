@@ -8,11 +8,9 @@ pub mod material;
 
 use crate::camera::{create_camera, Camera, CameraPosition, ThinLens};
 use crate::point3::random_vector;
-pub use crate::point3::{Point3, unit_vector};
-pub use crate::ray::Ray;
+use crate::point3::{Point3, unit_vector};
 use crate::material::{Dielectric, Lambertian, Metal};
-pub use crate::sphere::Sphere;
-pub use crate::hittable::{HitRecord, Hittable};
+use crate::sphere::Sphere;
 use crate::hittable_list::HittableList;
 
 fn main() {
@@ -59,6 +57,9 @@ fn main() {
 
     let material3: Metal = Metal { albedo: Point3 { x: 0.7, y: 0.6, z: 0.5 }, fuzz: 0.0 };
     world.add(Sphere{center: Point3 { x: 4.0, y: 1.0, z: 0.0 }, radius: 1.0, material: Box::new(material3)});
+
+    // let material3: BlackBody = BlackBody {  };
+    // world.add(Sphere{center: Point3 { x: 4.0, y: 1.0, z: 0.0 }, radius: 1.0, material: Box::new(material3)});
 
     let aspect_ratio: f64 = 16.0/9.0;
     let image_width: u32 = 1200;

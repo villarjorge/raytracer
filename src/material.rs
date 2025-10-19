@@ -20,6 +20,10 @@ pub trait Material {
 }
 
 // Perfect black body at 0K: absorbs all incoming rays and does not emit anything
+// To do: have a temperature parameter, which then gets transformed into color
+// Resources: 
+// - http://www.vendian.org/mncharity/dir3/blackbody/
+// - https://web.archive.org/web/20010821031240/http://astronomy.swin.edu.au:80/pbourke/colour/conversion.html
 pub struct BlackBody {} 
 
 impl Material for BlackBody {
