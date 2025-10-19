@@ -70,7 +70,7 @@ impl Camera {
         let image: File = File::create("images/image.ppm").unwrap();
         let mut image_buffer: BufWriter<File> = BufWriter::new(image);
 
-        image_buffer.write_all(&format!("P3\n{} {}\n255\n", self.image_width, self.image_height).as_bytes()).unwrap();
+        image_buffer.write_all(format!("P3\n{} {}\n255\n", self.image_width, self.image_height).as_bytes()).unwrap();
 
         for j in 0..self.image_height {
             // https://stackoverflow.com/questions/59890270/how-do-i-overwrite-console-output

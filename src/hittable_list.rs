@@ -25,7 +25,7 @@ impl Hittable for HittableList {
         let mut closest_so_far: f64 = ray_t.end; // max
 
         for object in &self.objects {
-            match (*object).hit(&ray, ray_t.start..closest_so_far) {
+            match (*object).hit(ray, ray_t.start..closest_so_far) {
                 HitResult::DidNotHit => {},
                 HitResult::HitRecord(hit_record) => {
                     closest_so_far = hit_record.t;
