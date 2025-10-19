@@ -81,7 +81,7 @@ impl Camera {
                 let mut pixel_color: Point3 = Point3::default(); // to do: Accumulating step by step could lead to decreased accuracy
                 for _ in 0..self.samples_per_pixel {
                     let r: Ray = self.get_ray(i, j);
-                    pixel_color = pixel_color + self.ray_color(&r, self.max_depth, &world)
+                    pixel_color = pixel_color + ray_color(&r, self.max_depth, &world)
                 }
                 write_color(&mut image_buffer, pixel_color/(self.samples_per_pixel as f64));
             }
@@ -95,29 +95,29 @@ impl Camera {
 
 // Private
 
-impl Camera {
-    fn ray_color(&self, given_ray: &Ray, depth: u32, world: &HittableList) -> Point3 {
-        if depth <= 0 {
-            return Point3{x: 0.0, y: 0.0, z: 0.0};
-        }
-
-        match world.hit(given_ray, 0.001..f64::INFINITY) {
-            HitResult::DidNotHit => {},
-            HitResult::HitRecord(hit_record) => {
-                match hit_record.material.scatter(given_ray, &hit_record) {
-                    ScatterResult::DidNotScatter => return Point3{x: 0.0, y: 0.0, z: 0.0},
-                    ScatterResult::DidScatter(sca_att) => return sca_att.attenuation * self.ray_color(&sca_att.scattered_ray, depth-1, world)
-                }
-            }
-        }
-
-        // Lerp between blue and white
-        let unit_direction: Point3 = unit_vector(given_ray.direction);
-        let a: f64 = 0.5*(unit_direction.y + 1.0);
-        
-        Point3{x: 1.0, y: 1.0, z: 1.0}*(1.0 - a) + Point3{x: 0.5, y: 0.7, z: 1.0}*a
+fn ray_color(given_ray: &Ray, depth: u32, world: &HittableList) -> Point3 {
+    if depth == 0 {
+        return Point3{x: 0.0, y: 0.0, z: 0.0};
     }
 
+    match world.hit(given_ray, 0.001..f64::INFINITY) {
+        HitResult::DidNotHit => {},
+        HitResult::HitRecord(hit_record) => {
+            match hit_record.material.scatter(given_ray, &hit_record) {
+                ScatterResult::DidNotScatter => return Point3{x: 0.0, y: 0.0, z: 0.0},
+                ScatterResult::DidScatter(sca_att) => return sca_att.attenuation * ray_color(&sca_att.scattered_ray, depth-1, world)
+            }
+        }
+    }
+
+    // Lerp between blue and white
+    let unit_direction: Point3 = unit_vector(given_ray.direction);
+    let a: f64 = 0.5*(unit_direction.y + 1.0);
+    
+    Point3{x: 1.0, y: 1.0, z: 1.0}*(1.0 - a) + Point3{x: 0.5, y: 0.7, z: 1.0}*a
+}
+
+impl Camera {
     fn get_ray(&self, i: u32, j: u32) -> Ray {
         let offset: Point3 = sample_square();
         let pixel_sample: Point3 = self.pixel00_loc + (self.pixel_delta_u * (i as f64 + offset.x)) + (self.pixel_delta_v * (j as f64 + offset.y));

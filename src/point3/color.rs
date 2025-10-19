@@ -28,5 +28,5 @@ pub fn write_color(out_buffer: &mut BufWriter<File>, pixel_color: Point3) {
     let bbyte: u8 = (256.00 * b.clamp(min, max)) as u8;
 
     // Write out the pixel color components.
-    out_buffer.write_all(&format!("{rbyte} {gbyte} {bbyte}\n").as_bytes()).unwrap();
+    out_buffer.write_all(format!("{rbyte} {gbyte} {bbyte}\n").as_bytes()).unwrap();
 }
