@@ -34,5 +34,5 @@ pub enum HitResult<'a> {
 
 // Instead of inheritance, create a trait that subsecuent objects will implement
 pub trait Hittable {
-    fn hit(&self, ray: &Ray, ray_t: Range<f64>) -> HitResult;
+    fn hit(&'_ self, ray: &Ray, ray_t: Range<f64>) -> HitResult<'_>;
 }

@@ -1,9 +1,8 @@
 use std::ops::Range;
 
 use crate::hittable::{HitResult, Hittable};
-// use crate::material::{BlackBody, Material};
 use crate::ray::Ray;
-// use crate::point3::Point3;
+
 pub struct HittableList {
     // HittableList is a list of objects with the hittable trait. 
     // The objects can be of diferent sizes, so it is necesary to use a reference or a pointer. Using a pointer to deal with less lifetimes
@@ -20,7 +19,7 @@ impl HittableList {
 }
 
 impl Hittable for HittableList {
-    fn hit(&self, ray: &Ray, ray_t: Range<f64>) -> HitResult {
+    fn hit(&'_ self, ray: &Ray, ray_t: Range<f64>) -> HitResult<'_> {
         let mut current_result: HitResult = HitResult::DidNotHit;
         let mut closest_so_far: f64 = ray_t.end; // max
 
