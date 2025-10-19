@@ -23,7 +23,7 @@ pub fn create_hit_record<'a>(ray: &Ray, t: f64, outward_normal: Point3, material
     let front_face: bool = outward_normal.dot(ray.direction) < 0.0;
     let normal: Point3 = if front_face {outward_normal} else {-outward_normal};
 
-    HitRecord { p: p, normal: normal, material: material, t: t, front_face: front_face }
+    HitRecord {p, normal, material, t, front_face }
 }
 
 // For now, checking for a hit requires calculating it, so in the function that checks for hits return ether 

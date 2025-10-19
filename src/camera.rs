@@ -59,7 +59,7 @@ pub fn create_camera(aspect_ratio: f64, image_width: u32, samples_per_pixel: u32
     let defocus_disk_v: Point3 = v * defocus_radius;
 
     // To do: I don't like to have this many parameters here. Maybe use ray to encapsulate two points? 
-    Camera { image_width: image_width, image_height: image_height, samples_per_pixel: samples_per_pixel, max_depth: max_depth, pixel00_loc: pixel00_loc, pixel_delta_u: pixel_delta_u, pixel_delta_v: pixel_delta_v, camera_center: camera_center, defocus_angle: defocus_angle, defocus_disk_u: defocus_disk_u, defocus_disk_v: defocus_disk_v }   
+    Camera { image_width, image_height, samples_per_pixel, max_depth, pixel00_loc, pixel_delta_u, pixel_delta_v, camera_center, defocus_angle, defocus_disk_u, defocus_disk_v }
 }
 
 // Public
@@ -106,7 +106,7 @@ impl Camera {
             HitResult::HitRecord(hit_record) => {
                 match hit_record.material.scatter(given_ray, &hit_record) {
                     ScatterResult::DidNotScatter => return Point3{x: 0.0, y: 0.0, z: 0.0},
-                    ScatterResult::DidScatter(sca_att) => return sca_att.attenuation * self.ray_color(&sca_att.ray, depth-1, world)
+                    ScatterResult::DidScatter(sca_att) => return sca_att.attenuation * self.ray_color(&sca_att.scattered_ray, depth-1, world)
                 }
             }
         }

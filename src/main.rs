@@ -1,5 +1,3 @@
-use rand;
-
 pub mod point3;
 pub mod ray;
 pub mod hittable;
@@ -36,18 +34,18 @@ fn main() {
                 if choose_mat < 0.8 {
                     // Diffuse
                     let albedo: Point3 = random_vector(0.0, 1.0)*random_vector(0.0, 1.0);
-                    let sphere_material: Lambertian = Lambertian{albedo: albedo};
-                    world.add(Sphere{center: center, radius: 0.2, material: Box::new(sphere_material)});
+                    let sphere_material: Lambertian = Lambertian{albedo};
+                    world.add(Sphere{center, radius: 0.2, material: Box::new(sphere_material)});
                 } else if choose_mat < 0.95 {
                     // Metal
                     let albedo: Point3 = random_vector(0.0, 1.0)*random_vector(0.0, 1.0);
                     let fuzz: f64 = rand::random_range(0.0..0.5);
-                    let sphere_material: Metal = Metal{albedo: albedo, fuzz: fuzz};
-                    world.add(Sphere{center: center, radius: 0.2, material: Box::new(sphere_material)});
+                    let sphere_material: Metal = Metal{albedo, fuzz};
+                    world.add(Sphere{center, radius: 0.2, material: Box::new(sphere_material)});
                 } else {
                     // Glass
                     let sphere_material: Dielectric = Dielectric { refraction_index: 1.5 };
-                    world.add(Sphere{center: center, radius: 0.2, material: Box::new(sphere_material)});
+                    world.add(Sphere{center, radius: 0.2, material: Box::new(sphere_material)});
                 }
             }
         }

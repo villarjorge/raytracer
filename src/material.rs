@@ -6,7 +6,7 @@ use crate::unit_vector;
 // If you are confused about the lifetimes, think about it this way: 
 // multiple objects could use the same material, which means that the material pointer needs to outlive everything else
 pub struct ScatteredRayAndAttenuation { // think of a better name?
-    pub ray: Ray,
+    pub scattered_ray: Ray,
     pub attenuation: Point3
 }
 
@@ -45,8 +45,8 @@ impl Material for Lambertian {
             }
         };
 
-        let scattered: Ray = Ray{origin: record.p, direction: scatter_direction};
-        let sca_att: ScatteredRayAndAttenuation = ScatteredRayAndAttenuation{ray: scattered, attenuation: self.albedo};
+        let scattered_ray: Ray = Ray{origin: record.p, direction: scatter_direction};
+        let sca_att: ScatteredRayAndAttenuation = ScatteredRayAndAttenuation{scattered_ray, attenuation: self.albedo};
 
         ScatterResult::DidScatter(sca_att)
     }
@@ -61,9 +61,9 @@ impl Material for Metal {
     fn scatter(&self, ray_in: &Ray, record: &HitRecord) -> ScatterResult {
         let reflected: Point3 = reflect(ray_in.direction, record.normal);
         let reflected_with_fuzz: Point3 = unit_vector(reflected) + (self.fuzz * random_unit_vector());
-        let scattered: Ray = Ray{origin: record.p, direction: reflected_with_fuzz};
+        let scattered_ray: Ray = Ray{origin: record.p, direction: reflected_with_fuzz};
 
-        let sca_att: ScatteredRayAndAttenuation = ScatteredRayAndAttenuation{ray: scattered, attenuation: self.albedo};
+        let sca_att: ScatteredRayAndAttenuation = ScatteredRayAndAttenuation{scattered_ray, attenuation: self.albedo};
 
         ScatterResult::DidScatter(sca_att)
     }
@@ -94,9 +94,9 @@ impl Material for Dielectric {
         };
         
         let attenuation: Point3 = Point3 { x: 1.0, y: 1.0, z: 1.0 };
-        let scattered: Ray = Ray { origin: record.p, direction: direction };
+        let scattered_ray: Ray = Ray { origin: record.p, direction };
 
-        let sca_att: ScatteredRayAndAttenuation = ScatteredRayAndAttenuation{ray: scattered, attenuation: attenuation};
+        let sca_att: ScatteredRayAndAttenuation = ScatteredRayAndAttenuation{scattered_ray, attenuation};
 
         ScatterResult::DidScatter(sca_att)
     }
