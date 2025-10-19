@@ -34,6 +34,6 @@ impl Hittable for HittableList {
             }
         }
         
-        return current_result;
+        current_result
     }
 }

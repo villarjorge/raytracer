@@ -24,7 +24,7 @@ pub struct BlackBody {}
 
 impl Material for BlackBody {
     fn scatter(&self, _ray_in: &Ray, _record: &HitRecord) -> ScatterResult {
-        return ScatterResult::DidNotScatter;
+        ScatterResult::DidNotScatter
     }
 }
 
@@ -48,7 +48,7 @@ impl Material for Lambertian {
         let scattered: Ray = Ray{origin: record.p, direction: scatter_direction};
         let sca_att: ScatteredRayAndAttenuation = ScatteredRayAndAttenuation{ray: scattered, attenuation: self.albedo};
 
-        return ScatterResult::DidScatter(sca_att);
+        ScatterResult::DidScatter(sca_att)
     }
 }
 
@@ -65,7 +65,7 @@ impl Material for Metal {
 
         let sca_att: ScatteredRayAndAttenuation = ScatteredRayAndAttenuation{ray: scattered, attenuation: self.albedo};
 
-        return ScatterResult::DidScatter(sca_att);
+        ScatterResult::DidScatter(sca_att)
     }
 }
 
@@ -98,7 +98,7 @@ impl Material for Dielectric {
 
         let sca_att: ScatteredRayAndAttenuation = ScatteredRayAndAttenuation{ray: scattered, attenuation: attenuation};
 
-        return ScatterResult::DidScatter(sca_att);
+        ScatterResult::DidScatter(sca_att)
     }
 }
 
@@ -106,5 +106,5 @@ fn reflectance(cosine: f64, refraction_index: f64) -> f64 {
         let r0: f64 = (1.0 - refraction_index)/(1.0 + refraction_index);
         let r0_squared: f64 = r0*r0;
 
-        return r0_squared + (1.0 - r0_squared)*((1.0 - cosine).powf(5.0));
+        r0_squared + (1.0 - r0_squared)*((1.0 - cosine).powf(5.0))
 }

@@ -37,6 +37,6 @@ impl Hittable for Sphere {
         let outward_normal: Point3 = (ray.at(root) - self.center)/self.radius;
         let record: HitRecord = create_hit_record(ray, root, outward_normal, &self.material);
 
-        return HitResult::HitRecord(record);
+        HitResult::HitRecord(record)
     }
 }

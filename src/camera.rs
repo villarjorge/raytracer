@@ -74,6 +74,7 @@ impl Camera {
 
         for j in 0..self.image_height {
             // https://stackoverflow.com/questions/59890270/how-do-i-overwrite-console-output
+            // To do: better progress bar
             print!("\r                         ");
             print!("\rScanlines remaining: {}", self.image_height - j);
             for i in 0..self.image_width {
@@ -114,7 +115,7 @@ impl Camera {
         let unit_direction: Point3 = unit_vector(given_ray.direction);
         let a: f64 = 0.5*(unit_direction.y + 1.0);
         
-        return Point3{x: 1.0, y: 1.0, z: 1.0}*(1.0 - a) + Point3{x: 0.5, y: 0.7, z: 1.0}*a;
+        Point3{x: 1.0, y: 1.0, z: 1.0}*(1.0 - a) + Point3{x: 0.5, y: 0.7, z: 1.0}*a
     }
 
     fn get_ray(&self, i: u32, j: u32) -> Ray {
@@ -123,7 +124,7 @@ impl Camera {
         let ray_origin: Point3 = if self.defocus_angle <= 0.0 { self.camera_center } else { self.defocus_disk_sample() };
         let ray_direction: Point3 = pixel_sample - ray_origin;
 
-        return Ray{origin:ray_origin, direction:ray_direction};
+        Ray{origin:ray_origin, direction:ray_direction}
     }
     fn defocus_disk_sample(&self) -> Point3 {
         let p: Point3 = random_in_unit_disk();
