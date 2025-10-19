@@ -8,6 +8,8 @@ use crate::material::Material;
 pub struct Sphere {
     pub center: Point3,
     pub radius: f64,
+    // I couldn't change this pointer to a reference, because if I did, then the materials in main do not live long enough
+    // Perhaps clone materials into hittables?
     pub material: Box<dyn Material>
 }
 
@@ -35,7 +37,9 @@ impl Hittable for Sphere {
         }
 
         let outward_normal: Point3 = (ray.at(root) - self.center)/self.radius;
-        let record: HitRecord = create_hit_record(ray, root, outward_normal, &self.material);
+        // To deal with the material, dereference the pointer, then create a reference
+        // To do: improve that
+        let record: HitRecord = create_hit_record(ray, root, outward_normal, &*self.material);
 
         HitResult::HitRecord(record)
     }
