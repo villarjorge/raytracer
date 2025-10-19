@@ -27,9 +27,9 @@ impl Hittable for Sphere {
 
         // Find the nearest root that lies in the acceptable range
         let mut root: f64 = (h - sqrt_discriminant)/a;
-        if ray_t.contains(&root) == false {
+        if !ray_t.contains(&root) {
             root = (h+sqrt_discriminant)/a;
-            if ray_t.contains(&root) == false {
+            if !ray_t.contains(&root) {
                 return HitResult::DidNotHit;
             }
         }

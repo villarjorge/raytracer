@@ -11,10 +11,10 @@ pub struct HittableList {
 }
 
 impl HittableList {
-    pub fn clear(mut self) -> () {
+    pub fn clear(mut self) {
         self.objects.clear()
     }
-    pub fn add<T: Hittable + 'static>(&mut self, to_add: T) -> () {
+    pub fn add<T: Hittable + 'static>(&mut self, to_add: T)  {
         self.objects.push(Box::new(to_add));
     }
 }
