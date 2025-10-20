@@ -62,8 +62,8 @@ fn main() {
     // world.add(Sphere{center: Point3 { x: 4.0, y: 1.0, z: 0.0 }, radius: 1.0, material: Box::new(material3)});
 
     let aspect_ratio: f64 = 16.0/9.0;
-    let image_width: u32 = 1200;
-    let samples_per_pixel: u32 = 10;
+    let image_width: u32 = 1200; // 1200
+    let samples_per_pixel: u32 = 500; // 500
     let max_depth: u32 = 50;
 
     let vfov: f64 = 20.0;

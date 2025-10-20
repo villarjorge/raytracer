@@ -15,6 +15,7 @@ pub struct Sphere {
 
 impl Hittable for Sphere {
     fn hit(&'_ self, ray: &Ray, ray_t: Range<f64>) -> HitResult<'_> {
+        // This is the hottest part of the code, taking 86% of cpu time
         let oc: Point3 = self.center - ray.origin;
         let a: f64 = ray.direction.length_squared();
         let h: f64 = oc.dot(ray.direction);
