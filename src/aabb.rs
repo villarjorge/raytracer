@@ -71,6 +71,7 @@ pub fn join_aabbs(bounding_box0: &AABB, bounding_box1: &AABB) -> AABB {
 impl AABB {
     pub fn hit(&self, ray: &Ray, ray_t: &mut Range<f64>) -> bool {
         // A bounding box is simpler than an object, we only care if the bounding box is hit or not
+        // This 2nd hottest part of the code, taking 31.6% of CPU time
         let ray_origin: Point3 = ray.origin;
         let ray_direction: Point3 = ray.direction;
 
