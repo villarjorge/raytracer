@@ -102,8 +102,9 @@ pub fn create_bvh_node(mut objects: Vec<Box<dyn Hittable>>) -> BVHNode {
         let bounding_box: AABB = object.bounding_box().clone();
         return BVHNode::Leaf { object, bounding_box };
     } else if objects.len() == 2 {
+        // If you remove the first value, then the second becomes the first. Access both with index zero
         left = objects.remove(0);
-        right = objects.remove(1);
+        right = objects.remove(0);
     } else {
         objects.sort_by(|arg0: &Box<dyn Hittable + 'static>, arg1: &Box<dyn Hittable + 'static>| current_box_compare(arg0, arg1));
 
