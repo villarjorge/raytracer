@@ -85,7 +85,8 @@ impl Camera {
         for j in 0..self.image_height {
             // https://stackoverflow.com/questions/59890270/how-do-i-overwrite-console-output
             // To do: better progress bar
-            eprint!("\rScanlines remaining: {}", self.image_height - j); // eprint since this is the progress of the program
+            eprint!("\rScanlines remaining: {}/{}", self.image_height - j, self.image_height); // eprint since this is the progress of the program
+            eprint!("\r                                  ");
             for i in 0..self.image_width {
                 let mut pixel_color: Point3 = Point3::default(); // to do: Accumulating step by step could lead to decreased accuracy
                 for _ in 0..self.samples_per_pixel {

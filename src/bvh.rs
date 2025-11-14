@@ -105,7 +105,7 @@ pub fn create_bvh_node(mut objects: Vec<Box<dyn Hittable>>) -> BVHNode {
     if objects.len() <= THRESHOLD {
         let mut hittable_list: HittableList = HittableList::default();
 
-        for element in objects.drain(0..THRESHOLD) {
+        for element in objects.drain(0..THRESHOLD.min(objects.len())) {
             hittable_list.add_pointer(element);
         }
 
