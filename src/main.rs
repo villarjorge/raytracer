@@ -83,6 +83,7 @@ fn main() {
 
     let cam: Camera = create_camera(aspect_ratio, image_width, samples_per_pixel, max_depth, vfov, thin_lens, camera_position);
 
+    // To do: Make this a parameter that can be passed in the console
     // If you want to compare without the bvh
     // cam.render(&world);
 

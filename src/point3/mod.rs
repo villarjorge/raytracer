@@ -1,4 +1,4 @@
-use std::ops::{Add, Div, Mul, Neg, Sub};
+use std::ops::{Add, Div, Index, Mul, Neg, Sub};
 use rand;
 
 // Lots of boiler plate here
@@ -16,6 +16,19 @@ impl Default for Point3 {
     fn default() -> Self {
         // Defautl is {0.0, 0.0, 0.0}
         Point3 { x: 0.0f64, y: 0.0f64, z: 0.0f64 }
+    }
+}
+
+impl Index<u8> for Point3 {
+    type Output = f64;
+
+    fn index(&self, index: u8) -> &Self::Output {
+        match index {
+            0 => { &self.x },
+            1 => { &self.y },
+            2 => { &self.z },
+            _ => {panic!()}
+        }
     }
 }
 

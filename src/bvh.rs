@@ -64,7 +64,7 @@ pub fn create_bvh_node_from_hittable_list(list: HittableList) -> BVHNode {
 
 // To do: deal with a reference to a pointer
 // To do: Is there a way to derive comparisons for bounding boxes?
-fn box_compare(a: &Box<dyn Hittable>, b: &Box<dyn Hittable>, axis_index: u64) -> Ordering {
+fn box_compare(a: &Box<dyn Hittable>, b: &Box<dyn Hittable>, axis_index: u8) -> Ordering {
     let a_axis_interval: &Range<f64> = a.bounding_box().axis_interval(axis_index);
     let b_axis_interval: &Range<f64> = b.bounding_box().axis_interval(axis_index);
 
