@@ -1,5 +1,6 @@
 use std::ops::Range;
 
+use crate::aabb::AABB;
 use crate::point3::Point3;
 use crate::ray::Ray;
 use crate::material::Material;
@@ -35,4 +36,5 @@ pub enum HitResult<'a> {
 // Instead of inheritance, create a trait that subsecuent objects will implement
 pub trait Hittable {
     fn hit(&'_ self, ray: &Ray, ray_t: Range<f64>) -> HitResult<'_>;
+    fn bounding_box(&self) -> &AABB; // Needed since hittables will be behind pointers that will be dereferenced
 }

@@ -2,11 +2,10 @@ use std::{cmp, fs::File, io::{BufWriter, Write}};
 
 use rand;
 
-use crate::{material::ScatterResult, point3::{cross, random_in_unit_disk, unit_vector, Point3}};
+use crate::{material::ScatterResult, point3::{Point3, cross, random_in_unit_disk, unit_vector}};
 use crate::point3::color::write_color;
 use crate::ray::Ray;
 use crate::hittable::{Hittable, HitResult};
-use crate::hittable_list::HittableList;
 
 pub struct Camera {
     // Consider changing the u32 to u16 or even smaller
@@ -76,7 +75,7 @@ pub fn create_camera(aspect_ratio: f64, image_width: u32, samples_per_pixel: u32
 // Public
 
 impl Camera {
-    pub fn render(&self, world: HittableList) {
+    pub fn render(&self, world: &dyn Hittable) {
         // Render
         let image: File = File::create("images/image.ppm").unwrap();
         let mut image_buffer: BufWriter<File> = BufWriter::new(image);
@@ -91,7 +90,7 @@ impl Camera {
                 let mut pixel_color: Point3 = Point3::default(); // to do: Accumulating step by step could lead to decreased accuracy
                 for _ in 0..self.samples_per_pixel {
                     let r: Ray = self.get_ray(i, j);
-                    pixel_color = pixel_color + ray_color(&r, self.max_depth, &world)
+                    pixel_color = pixel_color + ray_color(&r, self.max_depth, world)
                 }
                 write_color(&mut image_buffer, pixel_color/(self.samples_per_pixel as f64));
             }
@@ -105,7 +104,7 @@ impl Camera {
 
 // Private
 
-fn ray_color(given_ray: &Ray, depth: u32, world: &HittableList) -> Point3 {
+fn ray_color(given_ray: &Ray, depth: u32, world: &dyn Hittable) -> Point3 {
     if depth == 0 {
         return Point3{x: 0.0, y: 0.0, z: 0.0};
     }
@@ -129,6 +128,8 @@ fn ray_color(given_ray: &Ray, depth: u32, world: &HittableList) -> Point3 {
 
 impl Camera {
     fn get_ray(&self, i: u32, j: u32) -> Ray {
+        // Construct a camera ray originating from the defocus disk and directed at a randomly
+        // sampled point around the pixel location i, j.
         let offset: Point3 = sample_square();
         let pixel_sample: Point3 = self.pixel00_loc + (self.pixel_delta_u * (i as f64 + offset.x)) + (self.pixel_delta_v * (j as f64 + offset.y));
         let ray_origin: Point3 = if self.defocus_angle <= 0.0 { self.camera_center } else { self.defocus_disk_sample() };

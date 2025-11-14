@@ -4,13 +4,21 @@ use crate::point3::Point3;
 use crate::hittable::{create_hit_record, HitRecord, HitResult, Hittable};
 use crate::ray::Ray;
 use crate::material::Material;
+use crate::aabb::{AABB, create_aabb_from_points};
 
 pub struct Sphere {
-    pub center: Point3,
-    pub radius: f64,
+    center: Point3,
+    radius: f64,
     // I couldn't change this pointer to a reference, because if I did, then the materials in main do not live long enough
     // Perhaps clone materials into hittables?
-    pub material: Box<dyn Material>
+    material: Box<dyn Material>,
+    bounding_box: AABB
+}
+
+pub fn create_sphere(center: Point3, radius: f64, material: Box<dyn Material>) -> Sphere {
+    let radius_vector: Point3 = Point3 { x: radius, y: radius, z: radius };
+    let bounding_box: AABB = create_aabb_from_points(center - radius_vector, center + radius_vector);
+    Sphere { center, radius: radius.max(0.0), material, bounding_box}
 }
 
 impl Hittable for Sphere {
@@ -43,5 +51,8 @@ impl Hittable for Sphere {
         let record: HitRecord = create_hit_record(ray, root, outward_normal, &*self.material);
 
         HitResult::HitRecord(record)
+    }
+    fn bounding_box(&self) -> &AABB {
+        &self.bounding_box
     }
 }

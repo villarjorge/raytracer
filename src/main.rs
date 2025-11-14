@@ -5,21 +5,24 @@ pub mod sphere;
 pub mod hittable_list;
 pub mod camera;
 pub mod material;
+pub mod aabb;
+pub mod bvh;
 
+use crate::bvh::create_bvh_node_from_hittable_list;
 use crate::camera::{create_camera, Camera, CameraPosition, ThinLens};
 use crate::point3::random_vector;
 use crate::point3::{Point3, unit_vector};
 use crate::material::{Dielectric, Lambertian, Metal};
-use crate::sphere::Sphere;
+use crate::sphere::{create_sphere};
 use crate::hittable_list::HittableList;
 
 fn main() {
     // World
 
-    let mut world: HittableList = HittableList{objects: Vec::new()};
+    let mut world: HittableList = HittableList::default();
 
     let material_ground: Lambertian = Lambertian{albedo: Point3{x: 0.5, y: 0.5, z: 0.5}};
-    world.add(Sphere{center: Point3{x: 0.0, y: -1000.0, z: -1.0}, radius: 1000.0, material: Box::new(material_ground)});
+    world.add(create_sphere(Point3{x: 0.0, y: -1000.0, z: -1.0}, 1000.0, Box::new(material_ground)));
 
     const N: i32 = 11;
 
@@ -33,30 +36,32 @@ fn main() {
                     // Diffuse
                     let albedo: Point3 = random_vector(0.0, 1.0)*random_vector(0.0, 1.0);
                     let sphere_material: Lambertian = Lambertian{albedo};
-                    world.add(Sphere{center, radius: 0.2, material: Box::new(sphere_material)});
+                    world.add(create_sphere(center, 0.2, Box::new(sphere_material)));
                 } else if choose_mat < 0.95 {
                     // Metal
                     let albedo: Point3 = random_vector(0.0, 1.0)*random_vector(0.0, 1.0);
                     let fuzz: f64 = rand::random_range(0.0..0.5);
                     let sphere_material: Metal = Metal{albedo, fuzz};
-                    world.add(Sphere{center, radius: 0.2, material: Box::new(sphere_material)});
+                    world.add(create_sphere(center, 0.2, Box::new(sphere_material)));
                 } else {
                     // Glass
                     let sphere_material: Dielectric = Dielectric { refraction_index: 1.5 };
-                    world.add(Sphere{center, radius: 0.2, material: Box::new(sphere_material)});
+                    world.add(create_sphere(center, 0.2, Box::new(sphere_material)));
                 }
             }
         }
     }
 
     let material1: Dielectric = Dielectric { refraction_index: 1.5 };
-    world.add(Sphere{center: Point3 { x: 0.0, y: 1.0, z: 0.0 }, radius: 1.0, material: Box::new(material1)});
+    world.add(create_sphere(Point3 { x: 0.0, y: 1.0, z: 0.0 }, 1.0, Box::new(material1)));
 
     let material2: Lambertian = Lambertian { albedo: Point3 { x: 0.4, y: 0.2, z: 0.1 } };
-    world.add(Sphere{center: Point3 { x: -4.0, y: 1.0, z: 0.0 }, radius: 1.0, material: Box::new(material2)});
+    world.add(create_sphere(Point3 { x: -4.0, y: 1.0, z: 0.0 }, 1.0, Box::new(material2)));
 
     let material3: Metal = Metal { albedo: Point3 { x: 0.7, y: 0.6, z: 0.5 }, fuzz: 0.0 };
-    world.add(Sphere{center: Point3 { x: 4.0, y: 1.0, z: 0.0 }, radius: 1.0, material: Box::new(material3)});
+    world.add(create_sphere(Point3 { x: 4.0, y: 1.0, z: 0.0 },  1.0,  Box::new(material3)));
+
+    let bvh_world = create_bvh_node_from_hittable_list(world);
 
     // let material3: BlackBody = BlackBody {  };
     // world.add(Sphere{center: Point3 { x: 4.0, y: 1.0, z: 0.0 }, radius: 1.0, material: Box::new(material3)});
@@ -79,5 +84,5 @@ fn main() {
     let camera_position: CameraPosition = CameraPosition{look_from, look_at, view_up};
 
     let cam: Camera = create_camera(aspect_ratio, image_width, samples_per_pixel, max_depth, vfov, thin_lens, camera_position);
-    cam.render(world);
+    cam.render(&bvh_world);
 }
