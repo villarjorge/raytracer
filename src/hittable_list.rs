@@ -4,6 +4,7 @@ use crate::aabb::{AABB, join_aabbs};
 use crate::hittable::{HitResult, Hittable};
 use crate::ray::Ray;
 
+#[derive(Default)]
 pub struct HittableList {
     // HittableList is a list of objects with the hittable trait. 
     // The objects can be of diferent sizes, so it is necesary to use a reference or a pointer. Using a pointer to deal with less lifetimes
@@ -26,11 +27,6 @@ impl HittableList {
     }
 }
 
-impl Default for HittableList {
-    fn default() -> Self {
-        Self { objects: Vec::new(), bounding_box: AABB::default() }
-    }
-}
 
 impl Hittable for HittableList {
     fn hit(&'_ self, ray: &Ray, ray_t: Range<f64>) -> HitResult<'_> {

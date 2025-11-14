@@ -113,9 +113,9 @@ impl AABB {
         let y_size: f64 = self.y.end - self.y.start;
         let z_size: f64 = self.z.end - self.z.start;
 
-        if x_size > y_size && x_size > z_size { return 0; }
-        else if y_size > x_size && y_size > z_size { return 1; }
-        else { return 2; }
+        if x_size > y_size && x_size > z_size { 0}
+        else if y_size > x_size && y_size > z_size { 1}
+        else { 2}
     }
 }
 

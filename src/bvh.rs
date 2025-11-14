@@ -117,7 +117,7 @@ pub fn create_bvh_node(mut objects: Vec<Box<dyn Hittable>>) -> BVHNode {
 
         bounding_box = hittable_list.bounding_box().clone();
 
-        return BVHNode::Leaf { objects: hittable_list, bounding_box};
+        BVHNode::Leaf { objects: hittable_list, bounding_box}
     } else {
         objects.sort_by(|arg0: &Box<dyn Hittable + 'static>, arg1: &Box<dyn Hittable + 'static>| current_box_compare(arg0, arg1));
 
@@ -126,6 +126,6 @@ pub fn create_bvh_node(mut objects: Vec<Box<dyn Hittable>>) -> BVHNode {
         let left: Box<dyn Hittable> = Box::new(create_bvh_node(objects.split_off(mid)));
         let right: Box<dyn Hittable> = Box::new(create_bvh_node(objects));
 
-        return BVHNode::Internal { left, right, bounding_box };
+        BVHNode::Internal { left, right, bounding_box }
     }    
 }
