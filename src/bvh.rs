@@ -23,24 +23,27 @@ pub enum BVHNode {
 
 impl Hittable for BVHNode {
     fn hit(&'_  self, ray: &Ray, ray_t: Range<f64>) -> HitResult<'_> {
-        if !self.bounding_box().hit(ray, &ray_t) {
+
+        let mut reduced_ray_t: Range<f64> = ray_t.clone();
+
+        if !self.bounding_box().hit(ray, &mut reduced_ray_t) {
             return HitResult::DidNotHit;
         }
         
         // The right interval needs to be narrowed to prevent problems with occlusion
         // To do: refactor to remove nested match structure (add aditional function?)
         match self {
-            BVHNode::Leaf { objects, bounding_box: _ } => { objects.hit(ray, ray_t.clone()) },
+            BVHNode::Leaf { objects, bounding_box: _ } => { objects.hit(ray, reduced_ray_t.clone()) },
             BVHNode::Internal { left, right, bounding_box: _ } => {
-                match left.hit(ray, ray_t.clone()) {
+                match left.hit(ray, reduced_ray_t.clone()) {
                     HitResult::DidNotHit => { 
-                        match right.hit(ray, ray_t) {
+                        match right.hit(ray, reduced_ray_t) {
                             HitResult::DidNotHit => {HitResult::DidNotHit},
                             HitResult::HitRecord(hit_record) => {HitResult::HitRecord(hit_record)}
                         }
                      },
                     HitResult::HitRecord(hit_record) => {
-                        match right.hit(ray, ray_t.start..hit_record.t) {
+                        match right.hit(ray, reduced_ray_t.start..hit_record.t) {
                             HitResult::DidNotHit => {HitResult::HitRecord(hit_record)},
                             HitResult::HitRecord(hit_record) => {HitResult::HitRecord(hit_record)}
                         }
@@ -97,8 +100,9 @@ pub fn create_bvh_node(mut objects: Vec<Box<dyn Hittable>>) -> BVHNode {
         else if axis == 1 { box_y_compare }
         else if axis == 2 { box_z_compare }
         else {panic!()}
-    }; 
+    };
 
+    // To do: optimize this threshold for performance
     const THRESHOLD: usize = 4;
     
     // To do: consider using a double end queue instead of a vector

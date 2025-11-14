@@ -69,7 +69,7 @@ pub fn join_aabbs(bounding_box0: &AABB, bounding_box1: &AABB) -> AABB {
 // }
 
 impl AABB {
-    pub fn hit(&self, ray: &Ray, ray_t: &Range<f64>) -> bool {
+    pub fn hit(&self, ray: &Ray, ray_t: &mut Range<f64>) -> bool {
         // A bounding box is simpler than an object, we only care if the bounding box is hit or not
         let ray_origin: Point3 = ray.origin;
         let ray_direction: Point3 = ray.direction;
@@ -82,17 +82,14 @@ impl AABB {
             let t0: f64 = (axis.start - ray_origin[axis_index])*inverse_coord;
             let t1: f64 = (axis.end - ray_origin[axis_index])*inverse_coord;
 
-            let mut start: f64 = ray_t.start;
-            let mut end: f64 = ray_t.end;
-
             if t0 < t1 {
-                if t0 > ray_t.start { start = t0; }
-                if t1 < ray_t.end { end = t1; }
+                if t0 > ray_t.start { ray_t.start = t0; }
+                if t1 < ray_t.end { ray_t.end = t1; }
             } else {
-                if t1 > ray_t.start { start = t1; }
-                if t0 < ray_t.end { end = t0; }
+                if t1 > ray_t.start { ray_t.start = t1; }
+                if t0 < ray_t.end { ray_t.end = t0; }
             }
-            if end <= start { return false; }
+            if ray_t.end <= ray_t.start { return false; }
         }
 
         true

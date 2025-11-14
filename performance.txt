@@ -1,3 +1,14 @@
 14/11/2025 1:15
-    With 100 samples per pixel and with no BVH node: 12m22.759s
-    With 100 samples per pixel and with BVH node: 17m42.55s
+    With 100 samples per pixel and with no BVH nodes: 12m22.759s
+    With 100 samples per pixel and with BVH nodes: 17m42.55s
+
+14/11/2025 14:21
+    With 10 samples per pixel and with no BVH nodes: 1m5.198s
+    With 10 samples per pixel and with BVH nodes: 1m6.515s
+
+    15:58
+    With 50 samples per pixel and with no BVH nodes: 5m39.14s
+    With 50 samples per pixel and with BVH nodes: 4m27.367s
+
+    16:17
+    With 100 samples per pixel and with BVH nodes: 4m27.367s
