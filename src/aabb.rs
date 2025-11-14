@@ -77,10 +77,10 @@ impl AABB {
         for axis_index in 0_u8..3 {
             let axis: &Range<f64> = &self[axis_index];
             let inverse_coord: f64 = 1.0/ray_direction[axis_index];
-            let origin_coord: f64 = ray_origin[axis_index];
+            // let origin_coord: f64 = ray_origin[axis_index];
 
-            let t0: f64 = (axis.start - origin_coord)*inverse_coord;
-            let t1: f64 = (axis.end - origin_coord)*inverse_coord;
+            let t0: f64 = (axis.start - ray_origin[axis_index])*inverse_coord;
+            let t1: f64 = (axis.end - ray_origin[axis_index])*inverse_coord;
 
             let mut start: f64 = ray_t.start;
             let mut end: f64 = ray_t.end;

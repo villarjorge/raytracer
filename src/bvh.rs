@@ -2,16 +2,16 @@ use std::cmp::Ordering;
 use std::ops::Range;
 
 use crate::aabb::join_aabbs;
-use crate::hittable_list::HittableList;
+use crate::hittable_list::{HittableList};
 use crate::{aabb::AABB, hittable::Hittable};
 use crate::ray::Ray;
-use crate::hittable::HitResult;
+use crate::hittable::{HitResult};
 
 pub enum BVHNode {
     Leaf {
         // To do: change this into a list of objects. This will make the tree less deep and improve performance
         // Would it be possible to reuse HittableList for this?
-        object: Box<dyn Hittable>,
+        objects: HittableList,
         bounding_box: AABB
     },
     Internal {
@@ -30,7 +30,7 @@ impl Hittable for BVHNode {
         // The right interval needs to be narrowed to prevent problems with occlusion
         // To do: refactor to remove nested match structure (add aditional function?)
         match self {
-            BVHNode::Leaf { object, bounding_box: _ } => { object.hit(ray, ray_t.clone()) },
+            BVHNode::Leaf { objects, bounding_box: _ } => { objects.hit(ray, ray_t.clone()) },
             BVHNode::Internal { left, right, bounding_box: _ } => {
                 match left.hit(ray, ray_t.clone()) {
                     HitResult::DidNotHit => { 
@@ -52,7 +52,7 @@ impl Hittable for BVHNode {
 
     fn bounding_box(&self) -> &AABB {
         match self {
-            BVHNode::Leaf { object: _, bounding_box } => bounding_box,
+            BVHNode::Leaf { objects: _, bounding_box } => bounding_box,
             BVHNode::Internal { left: _, right: _, bounding_box } => bounding_box,
         }
     }
@@ -99,25 +99,27 @@ pub fn create_bvh_node(mut objects: Vec<Box<dyn Hittable>>) -> BVHNode {
         else {panic!()}
     }; 
 
-    let left: Box<dyn Hittable>;
-    let right: Box<dyn Hittable>;
+    const THRESHOLD: usize = 4;
+    
+    // To do: consider using a double end queue instead of a vector
+    if objects.len() <= THRESHOLD {
+        let mut hittable_list: HittableList = HittableList::default();
 
-    if objects.len() == 1 {
-        // To do: consider using a double end queue instead of a vector
-        let object: Box<dyn Hittable> = objects.remove(0);
-        let bounding_box: AABB = object.bounding_box().clone();
-        return BVHNode::Leaf { object, bounding_box };
-    } else if objects.len() == 2 {
-        // If you remove the first value, then the second becomes the first. Access both with index zero
-        left = objects.remove(0);
-        right = objects.remove(0);
+        for element in objects.drain(0..THRESHOLD) {
+            hittable_list.add_pointer(element);
+        }
+
+        bounding_box = hittable_list.bounding_box().clone();
+
+        return BVHNode::Leaf { objects: hittable_list, bounding_box};
     } else {
         objects.sort_by(|arg0: &Box<dyn Hittable + 'static>, arg1: &Box<dyn Hittable + 'static>| current_box_compare(arg0, arg1));
 
         let mid: usize = objects.len()/2;
-        left = Box::new(create_bvh_node(objects.split_off(mid)));
-        right = Box::new(create_bvh_node(objects));    
-    }
 
-    BVHNode::Internal { left, right, bounding_box }
+        let left: Box<dyn Hittable> = Box::new(create_bvh_node(objects.split_off(mid)));
+        let right: Box<dyn Hittable> = Box::new(create_bvh_node(objects));
+
+        return BVHNode::Internal { left, right, bounding_box };
+    }    
 }
