@@ -1,8 +1,7 @@
 use std::ops::Range;
 
-use crate::aabb::{AABB, create_aabb_from_points, join_aabbs};
+use crate::aabb::{AABB, join_aabbs};
 use crate::hittable::{HitResult, Hittable};
-use crate::point3::Point3;
 use crate::ray::Ray;
 
 pub struct HittableList {
@@ -25,7 +24,7 @@ impl HittableList {
 
 impl Default for HittableList {
     fn default() -> Self {
-        Self { objects: Vec::new(), bounding_box: create_aabb_from_points(Point3::default(), Point3::default()) }
+        Self { objects: Vec::new(), bounding_box: AABB::default() }
     }
 }
 

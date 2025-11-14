@@ -84,8 +84,14 @@ fn box_z_compare(a: &Box<dyn Hittable>, b: &Box<dyn Hittable>) -> Ordering {
 }
 
 pub fn create_bvh_node(mut objects: Vec<Box<dyn Hittable>>) -> BVHNode {
-    let axis: u64 = rand::random_range(0..=2);
-    
+    let mut bounding_box: AABB = AABB::default();
+
+    for object in &objects {
+        bounding_box = join_aabbs(&bounding_box, object.bounding_box())
+    }
+
+    let axis = bounding_box.longest_axis();
+
     let current_box_compare: fn(&Box<dyn Hittable>, &Box<dyn Hittable>) -> Ordering = {
         if axis == 0 { box_x_compare }
         else if axis == 1 { box_y_compare }
@@ -112,8 +118,6 @@ pub fn create_bvh_node(mut objects: Vec<Box<dyn Hittable>>) -> BVHNode {
         left = Box::new(create_bvh_node(objects.split_off(mid)));
         right = Box::new(create_bvh_node(objects));    
     }
-
-    let bounding_box: AABB = join_aabbs(left.bounding_box(), right.bounding_box());
 
     BVHNode::Internal { left, right, bounding_box }
 }

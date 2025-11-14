@@ -66,7 +66,7 @@ fn main() {
 
     let aspect_ratio: f64 = 16.0/9.0;
     let image_width: u32 = 1200; // 1200
-    let samples_per_pixel: u32 = 500; // 500
+    let samples_per_pixel: u32 = 100; // 500
     let max_depth: u32 = 50;
 
     let vfov: f64 = 20.0;
@@ -84,7 +84,7 @@ fn main() {
     let cam: Camera = create_camera(aspect_ratio, image_width, samples_per_pixel, max_depth, vfov, thin_lens, camera_position);
 
     // If you want to compare without the bvh
-    //cam.render(&world);
+    // cam.render(&world);
 
     let bvh_world: BVHNode = create_bvh_node_from_hittable_list(world);
     cam.render(&bvh_world);

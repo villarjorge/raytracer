@@ -10,6 +10,12 @@ pub struct AABB {
     z: Range<f64>, 
 }
 
+impl Default for AABB {
+    fn default() -> Self {
+        create_aabb_from_points(Point3::default(), Point3::default())
+    }
+}
+
 pub fn create_aabb_from_points(a: Point3, b: Point3) -> AABB {
     let x: Range<f64> = if a.x <= b.x {a.x..b.x} else {b.x..a.x};
     let y: Range<f64> = if a.y <= b.y {a.y..b.y} else {b.y..a.y};
@@ -86,6 +92,17 @@ impl AABB {
         } else {
             &self.z
         }
+    }
+
+    pub fn longest_axis(&self) -> u8 {
+        // Returns the idex of the longest axis of the bounding box
+        let x_size: f64 = self.x.end - self.x.start;
+        let y_size: f64 = self.y.end - self.y.start;
+        let z_size: f64 = self.z.end - self.z.start;
+
+        if x_size > y_size && x_size > z_size { return 0; }
+        else if y_size > x_size && y_size > z_size { return 1; }
+        else { return 2; }
     }
 }
 
