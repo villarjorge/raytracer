@@ -8,7 +8,7 @@ pub mod material;
 pub mod aabb;
 pub mod bvh;
 
-use crate::bvh::create_bvh_node_from_hittable_list;
+use crate::bvh::{BVHNode, create_bvh_node_from_hittable_list};
 use crate::camera::{create_camera, Camera, CameraPosition, ThinLens};
 use crate::point3::random_vector;
 use crate::point3::{Point3, unit_vector};
@@ -61,8 +61,6 @@ fn main() {
     let material3: Metal = Metal { albedo: Point3 { x: 0.7, y: 0.6, z: 0.5 }, fuzz: 0.0 };
     world.add(create_sphere(Point3 { x: 4.0, y: 1.0, z: 0.0 },  1.0,  Box::new(material3)));
 
-    let bvh_world = create_bvh_node_from_hittable_list(world);
-
     // let material3: BlackBody = BlackBody {  };
     // world.add(Sphere{center: Point3 { x: 4.0, y: 1.0, z: 0.0 }, radius: 1.0, material: Box::new(material3)});
 
@@ -84,5 +82,10 @@ fn main() {
     let camera_position: CameraPosition = CameraPosition{look_from, look_at, view_up};
 
     let cam: Camera = create_camera(aspect_ratio, image_width, samples_per_pixel, max_depth, vfov, thin_lens, camera_position);
+
+    // If you want to compare without the bvh
+    //cam.render(&world);
+
+    let bvh_world: BVHNode = create_bvh_node_from_hittable_list(world);
     cam.render(&bvh_world);
 }

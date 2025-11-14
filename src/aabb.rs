@@ -80,11 +80,11 @@ impl AABB {
     // To do: change this axis interval to a impl of the Index trait https://doc.rust-lang.org/std/ops/trait.Index.html
     pub fn axis_interval(&self, n: u64) -> &Range<f64> {
         if n == 0 {
-            return &self.x;
+            &self.x
         } else if n == 1 {
-            return &self.y;
+            &self.y
         } else {
-            return &self.z;
+            &self.z
         }
     }
 }

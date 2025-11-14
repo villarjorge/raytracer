@@ -18,7 +18,7 @@ impl HittableList {
         self.objects.clear()
     }
     pub fn add<T: Hittable + 'static>(&mut self, to_add: T)  {
-        self.bounding_box = join_aabbs(&self.bounding_box, &to_add.bounding_box());
+        self.bounding_box = join_aabbs(&self.bounding_box, to_add.bounding_box());
         self.objects.push(Box::new(to_add));
     }
 }

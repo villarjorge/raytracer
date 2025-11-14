@@ -30,19 +30,19 @@ impl Hittable for BVHNode {
         // The right interval needs to be narrowed to prevent problems with occlusion
         // To do: refactor to remove nested match structure (add aditional function?)
         match self {
-            BVHNode::Leaf { object, bounding_box: _ } => { return object.hit(ray, ray_t.clone()); },
+            BVHNode::Leaf { object, bounding_box: _ } => { object.hit(ray, ray_t.clone()) },
             BVHNode::Internal { left, right, bounding_box: _ } => {
                 match left.hit(ray, ray_t.clone()) {
                     HitResult::DidNotHit => { 
                         match right.hit(ray, ray_t) {
-                            HitResult::DidNotHit => {return HitResult::DidNotHit;},
-                            HitResult::HitRecord(hit_record) => {return HitResult::HitRecord(hit_record);}
+                            HitResult::DidNotHit => {HitResult::DidNotHit},
+                            HitResult::HitRecord(hit_record) => {HitResult::HitRecord(hit_record)}
                         }
                      },
                     HitResult::HitRecord(hit_record) => {
                         match right.hit(ray, ray_t.start..hit_record.t) {
-                            HitResult::DidNotHit => {return HitResult::HitRecord(hit_record);},
-                            HitResult::HitRecord(hit_record) => {return HitResult::HitRecord(hit_record);}
+                            HitResult::DidNotHit => {HitResult::HitRecord(hit_record)},
+                            HitResult::HitRecord(hit_record) => {HitResult::HitRecord(hit_record)}
                         }
                     }
                 }
@@ -68,19 +68,19 @@ fn box_compare(a: &Box<dyn Hittable>, b: &Box<dyn Hittable>, axis_index: u64) ->
     let a_axis_interval: &Range<f64> = a.bounding_box().axis_interval(axis_index);
     let b_axis_interval: &Range<f64> = b.bounding_box().axis_interval(axis_index);
 
-    return a_axis_interval.start.total_cmp(&b_axis_interval.start);
+    a_axis_interval.start.total_cmp(&b_axis_interval.start)
 }
 
 fn box_x_compare(a: &Box<dyn Hittable>, b: &Box<dyn Hittable>) -> Ordering {
-    return box_compare(a, b, 0);
+    box_compare(a, b, 0)
 }
 
 fn box_y_compare(a: &Box<dyn Hittable>, b: &Box<dyn Hittable>) -> Ordering {
-    return box_compare(a, b, 1);
+    box_compare(a, b, 1)
 }
 
 fn box_z_compare(a: &Box<dyn Hittable>, b: &Box<dyn Hittable>) -> Ordering {
-    return box_compare(a, b, 2);
+    box_compare(a, b, 2)
 }
 
 pub fn create_bvh_node(mut objects: Vec<Box<dyn Hittable>>) -> BVHNode {
@@ -113,8 +113,7 @@ pub fn create_bvh_node(mut objects: Vec<Box<dyn Hittable>>) -> BVHNode {
         right = Box::new(create_bvh_node(objects));    
     }
 
-    // To do: deal with taking a reference of a dereferenced pointer
-    let bounding_box: AABB = join_aabbs(&*left.bounding_box(), &*right.bounding_box());
+    let bounding_box: AABB = join_aabbs(left.bounding_box(), right.bounding_box());
 
     BVHNode::Internal { left, right, bounding_box }
 }
