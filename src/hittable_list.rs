@@ -7,7 +7,12 @@ use crate::ray::Ray;
 #[derive(Default)]
 pub struct HittableList {
     // HittableList is a list of objects with the hittable trait. 
-    // The objects can be of diferent sizes, so it is necesary to use a reference or a pointer. Using a pointer to deal with less lifetimes
+    // The objects can be of diferent sizes, so it is necesary to use a reference or a pointer. 
+    // Using a pointer leads to dealing with less lifetimes, but to sort a type Vec<Box<dyn Hittable>> you need to 
+    // take references of Box<dyn Hittable>, which is discouraged. The ownership is more clear, since Vec owns Box which owns the Hittable
+    // Using references leads to more lifetimes. It also leads to worse ownership, since the vec does not own anything. 
+    // Idealy all objects would be stored contiguously on the heap to make performance better. One way to do this would be to 
+    // have vectors for each primitive
     // this does not need to be a vector, it is just like this to make initialization easier
     pub objects: Vec<Box<dyn Hittable>>,
     pub bounding_box: AABB
@@ -26,7 +31,6 @@ impl HittableList {
         self.objects.push(to_add);
     }
 }
-
 
 impl Hittable for HittableList {
     fn hit(&'_ self, ray: &Ray, ray_t: Range<f64>) -> HitResult<'_> {
