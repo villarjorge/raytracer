@@ -12,6 +12,7 @@ pub struct Sphere {
     // I couldn't change this pointer to a reference, because if I did, then the materials in main do not live long enough
     // Perhaps clone materials into hittables?
     material: Box<dyn Material>,
+    //material: &'a dyn Material,
     bounding_box: AABB
 }
 
