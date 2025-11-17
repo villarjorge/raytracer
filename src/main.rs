@@ -111,7 +111,7 @@ fn checkered_spheres() {
 
     let vfov: f64 = 20.0;
     let defocus_angle:f64 = 0.0;
-    let focus_distance: f64 = 0.0;
+    let focus_distance: f64 = 10.0;
 
     let lens: ThinLens = ThinLens { defocus_angle, focus_distance };
 
