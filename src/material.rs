@@ -1,6 +1,7 @@
 use crate::point3::{dot, random_unit_vector, reflect, refract, Point3};
 use crate::ray::Ray;
 use crate::hittable::HitRecord;
+use crate::texture::Texture;
 use crate::unit_vector;
 
 // If you are confused about the lifetimes, think about it this way: 
@@ -32,8 +33,9 @@ impl Material for BlackBody {
     }
 }
 
+// To do: If textures get really big, it will be more efficient to share them. Change this to a reference
 pub struct Lambertian {
-    pub albedo: Point3
+    pub texture: Box<dyn Texture>
 }
 
 impl Material for Lambertian {
@@ -50,7 +52,7 @@ impl Material for Lambertian {
         };
 
         let scattered_ray: Ray = Ray{origin: record.p, direction: scatter_direction};
-        let sca_att: ScatteredRayAndAttenuation = ScatteredRayAndAttenuation{scattered_ray, attenuation: self.albedo};
+        let sca_att: ScatteredRayAndAttenuation = ScatteredRayAndAttenuation{scattered_ray, attenuation: self.texture.value(record.u, record.v, &record.p)};
 
         ScatterResult::DidScatter(sca_att)
     }
