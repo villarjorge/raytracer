@@ -75,7 +75,7 @@ pub fn create_bvh_node_from_hittable_list(list: HittableList) -> BVHNode {
     create_bvh_node(list.objects)
 }
 
-// To do: deal with a reference to a pointer
+// To do: Change &Box<dyn Hittable> to &dyn Hittable (Makes clippy happy)
 // To do: Is there a way to derive comparisons for bounding boxes?
 fn box_compare(a: &Box<dyn Hittable>, b: &Box<dyn Hittable>, axis_index: u8) -> Ordering {
     let a_axis_interval: &Range<f64> = a.bounding_box().axis_interval(axis_index);

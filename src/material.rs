@@ -33,7 +33,7 @@ impl Material for BlackBody {
     }
 }
 
-// To do: If textures get really big, it will be more efficient to share them. Change this to a reference
+// To do: If textures get really big, it will be more efficient to share them. Change this Box to a reference
 pub struct Lambertian {
     pub texture: Box<dyn Texture>
 }

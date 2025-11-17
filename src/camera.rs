@@ -33,7 +33,6 @@ pub struct ThinLens {
     pub focus_distance: f64
 }
 
-// To do: improve the parameters in this function
 pub fn create_camera(aspect_ratio: f64, image_width: u32, samples_per_pixel: u32, max_depth: u32, vfov: f64, thin_lens: ThinLens, camera_position: CameraPosition) -> Camera {
     // Calculate the image height, and ensure that it's at least 1.
     let image_height: u32 = cmp::max(1, (image_width as f64 / aspect_ratio) as u32);

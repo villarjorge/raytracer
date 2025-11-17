@@ -5,7 +5,6 @@ use crate::point3::Point3;
 use crate::ray::Ray;
 use crate::material::Material;
 
-// To do: think about if the pointer to a material is necesary, or if its posible to change to something like the add funtion of hittable_list
 pub struct HitRecord<'a> {
     pub p: Point3,
     pub normal: Point3,
