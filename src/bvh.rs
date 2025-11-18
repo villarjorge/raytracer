@@ -9,8 +9,6 @@ use crate::hittable::{HitResult};
 
 pub enum BVHNode {
     Leaf {
-        // To do: change this into a list of objects. This will make the tree less deep and improve performance
-        // Would it be possible to reuse HittableList for this?
         objects: HittableList,
         bounding_box: AABB
     },
@@ -112,7 +110,7 @@ pub fn create_bvh_node(mut objects: Vec<Box<dyn Hittable>>) -> BVHNode {
         else {panic!()}
     };
 
-    // To do: optimize this threshold for performance
+    // To do: This threshold controls how many objects there are in the leaf nodes. Optimize for performance
     const THRESHOLD: usize = 4;
     
     // To do: consider using a double end queue instead of a vector

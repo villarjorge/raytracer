@@ -5,7 +5,8 @@ use rand;
 // Should I implement all the traits again for references?
 
 // Name is point3 to avoid warning with similarly named vec
-#[derive(Clone, Copy)] // once I get the project going, remove this to sort out references etc
+// To do: Remove this derive to sort out references and borrows
+#[derive(Clone, Copy)] 
 pub struct Point3 {
     pub x: f64,
     pub y: f64,
@@ -68,6 +69,7 @@ impl Mul<f64> for Point3 {
         }
     }
 }
+
 impl Mul<Point3> for f64 {
     type Output = Point3;
     fn mul(self, other: Point3) -> Self::Output {
@@ -130,10 +132,12 @@ impl Point3 {
         self.x*other.x + self.y*other.y + self.z*other.z
     }
 }
+
 pub fn dot(u: &Point3, v: &Point3) -> f64 {
     // Dot product
     u.x*v.x + u.y*v.y + u.z*v.z
 }
+
 pub fn cross(u: &Point3, v: &Point3) -> Point3 {
     // Cross product
     Point3{x: u.y * v.z - u.z * v.y,

@@ -17,6 +17,7 @@ impl Default for AABB {
 }
 
 // https://doc.rust-lang.org/std/ops/trait.Index.html
+// To do: this does not actually produce a reference, since in hit you still need to borrow
 impl Index<u8> for AABB {
     type Output = Range<f64>;
 
@@ -25,7 +26,7 @@ impl Index<u8> for AABB {
             0 => { &self.x },
             1 => { &self.y },
             2 => { &self.z },
-            _ => {panic!()}
+            _ => { panic!() }
         }
     }
 }
@@ -96,7 +97,7 @@ impl AABB {
         true
     }
 
-    // To do: change this axis interval to a impl of the Index trait https://doc.rust-lang.org/std/ops/trait.Index.html
+    // Axis interval and taking an index of an AABB are very similar, but one produces a reference while the other does not
     pub fn axis_interval(&self, n: u8) -> &Range<f64> {
         if n == 0 {
             &self.x
@@ -113,9 +114,9 @@ impl AABB {
         let y_size: f64 = self.y.end - self.y.start;
         let z_size: f64 = self.z.end - self.z.start;
 
-        if x_size > y_size && x_size > z_size { 0}
-        else if y_size > x_size && y_size > z_size { 1}
-        else { 2}
+        if x_size > y_size && x_size > z_size { 0 }
+        else if y_size > x_size && y_size > z_size { 1 }
+        else { 2 }
     }
 }
 

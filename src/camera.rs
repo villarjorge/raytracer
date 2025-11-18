@@ -8,7 +8,7 @@ use crate::ray::Ray;
 use crate::hittable::{Hittable, HitResult};
 
 pub struct Camera {
-    // Consider changing the u32 to u16 or even smaller
+    // To do: Consider changing the u32 to u16 or even smaller
     image_width: u32,
     image_height: u32,
     samples_per_pixel: u32, 

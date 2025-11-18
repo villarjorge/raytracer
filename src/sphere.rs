@@ -48,8 +48,7 @@ impl Hittable for Sphere {
         }
 
         let outward_normal: Point3 = (ray.at(root) - self.center)/self.radius;
-        // To deal with the material, dereference the pointer, then create a reference
-        // To do: improve that
+        // To do: To deal with the material, dereference the pointer, then create a reference. Change this so you don't
         let record: HitRecord = create_hit_record(ray, root, outward_normal, &*self.material);
 
         HitResult::HitRecord(record)
