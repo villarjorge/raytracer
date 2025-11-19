@@ -53,7 +53,7 @@ impl Material for Lambertian {
         };
 
         let scattered_ray: Ray = Ray{origin: record.p, direction: scatter_direction};
-        let sca_att: ScatteredRayAndAttenuation = ScatteredRayAndAttenuation{scattered_ray, attenuation: self.texture.value(record.u, record.v, &record.p)};
+        let sca_att: ScatteredRayAndAttenuation = ScatteredRayAndAttenuation{scattered_ray, attenuation: self.texture.value(record.surface_coords, &record.p)};
 
         ScatterResult::DidScatter(sca_att)
     }

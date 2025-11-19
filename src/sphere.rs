@@ -1,8 +1,9 @@
+use std::f64::consts::PI;
 use std::ops::Range;
 use std::rc::Rc;
 
 use crate::point3::Point3;
-use crate::hittable::{create_hit_record, HitRecord, HitResult, Hittable};
+use crate::hittable::{HitRecord, HitResult, Hittable, SurfaceCoordinate, create_hit_record};
 use crate::ray::Ray;
 use crate::material::Material;
 use crate::aabb::{AABB, create_aabb_from_points};
@@ -49,8 +50,9 @@ impl Hittable for Sphere {
         }
 
         let outward_normal: Point3 = (ray.at(root) - self.center)/self.radius;
+        let surface_coords: SurfaceCoordinate = get_sphere_uv(&outward_normal);
         // To do: To deal with the material, dereference the pointer, then create a reference. Change this so you don't
-        let record: HitRecord = create_hit_record(ray, root, outward_normal, &*self.material);
+        let record: HitRecord = create_hit_record(ray, root, outward_normal, &*self.material, surface_coords);
 
         HitResult::HitRecord(record)
     }
@@ -58,3 +60,18 @@ impl Hittable for Sphere {
         &self.bounding_box
     }
 }
+
+pub fn get_sphere_uv(p: &Point3) -> SurfaceCoordinate {
+    // p: a given point on the sphere of radius one, centered at the origin.
+    // u: returned value [0,1] of angle around the Y axis from X=-1.
+    // v: returned value [0,1] of angle from Y=-1 to Y=+1.
+    //     <1 0 0> yields <0.50 0.50>       <-1  0  0> yields <0.00 0.50>
+    //     <0 1 0> yields <0.50 1.00>       < 0 -1  0> yields <0.50 0.00>
+    //     <0 0 1> yields <0.25 0.50>       < 0  0 -1> yields <0.75 0.50>
+
+    let theta: f64 = (-p.y).acos();
+    let phi: f64 = (-p.z).atan2(p.x) + PI;
+
+    SurfaceCoordinate{u: phi/(2.0*PI), v: theta/PI}
+}
+

@@ -1,9 +1,9 @@
 use std::rc::Rc;
 
-use crate::point3::{Point3};
+use crate::{hittable::SurfaceCoordinate, point3::Point3};
 
 pub trait Texture {
-    fn value(&self, u: f64, v: f64, p: &Point3) -> Point3;
+    fn value(&self, surface_coords: SurfaceCoordinate, p: &Point3) -> Point3;
 }
 
 pub struct SolidColor {
@@ -15,7 +15,7 @@ pub fn create_solid_color(color: Point3) -> Rc<SolidColor> {
 }
 
 impl Texture for SolidColor {
-    fn value(&self, _u: f64, _v: f64, _p: &Point3) -> Point3 {
+    fn value(&self, _surface_coords: SurfaceCoordinate, _p: &Point3) -> Point3 {
         self.albedo
     }
 }
@@ -35,7 +35,7 @@ pub fn create_checker_texture_from_colors(scale: f64, even: Point3, odd: Point3)
 }
 
 impl Texture for CheckerTexture {
-    fn value(&self, u: f64, v: f64, p: &Point3) -> Point3 {
+    fn value(&self, surface_coords: SurfaceCoordinate, p: &Point3) -> Point3 {
         let x_integer: i64 = (self.inverse_scale * p.x).floor() as i64;
         let y_integer: i64 = (self.inverse_scale * p.y).floor() as i64;
         let z_integer: i64 = (self.inverse_scale * p.z).floor() as i64;
@@ -43,9 +43,9 @@ impl Texture for CheckerTexture {
         let is_even: bool = (x_integer + y_integer + z_integer) % 2 == 0;
 
         if is_even {
-            self.even.value(u, v, p)
+            self.even.value(surface_coords, p)
         } else {
-            self.odd.value(u, v, p)
+            self.odd.value(surface_coords, p)
         }
     }
 }

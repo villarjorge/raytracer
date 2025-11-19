@@ -13,6 +13,7 @@ pub enum BVHNode {
         bounding_box: AABB
     },
     Internal {
+        // When multithreading is implemented, these Boxes will have to become Arc
         left: Box<dyn Hittable>,
         right: Box<dyn Hittable>,
         bounding_box: AABB
@@ -73,7 +74,6 @@ pub fn create_bvh_node_from_hittable_list(list: HittableList) -> BVHNode {
     create_bvh_node(list.objects)
 }
 
-// To do: Change &Box<dyn Hittable> to &dyn Hittable (Makes clippy happy)
 // To do: Is there a way to derive comparisons for bounding boxes?
 // fn box_compare(a: &Box<dyn Hittable>, b: &Box<dyn Hittable>, axis_index: u8) -> Ordering {
 //     let a_axis_interval: &Range<f64> = a.bounding_box().axis_interval(axis_index);
@@ -127,6 +127,7 @@ pub fn create_bvh_node(mut objects: Vec<Box<dyn Hittable>>) -> BVHNode {
     } else {
         //objects.sort_by(|arg0: &Box<dyn Hittable + 'static>, arg1: &Box<dyn Hittable + 'static>| current_box_compare(arg0, arg1));
         // Use a clousure here: more idiomatic and much shorter
+        // To do: Change &Box<dyn Hittable> to &dyn Hittable (Makes clippy happy)
         objects.sort_by(|a: &Box<dyn Hittable + 'static>, b: &Box<dyn Hittable + 'static>| {
             let a_axis_interval: &Range<f64> = a.bounding_box().axis_interval(axis);
             let b_axis_interval: &Range<f64> = b.bounding_box().axis_interval(axis);
