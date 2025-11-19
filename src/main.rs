@@ -129,7 +129,7 @@ fn checkered_spheres() {
 
 fn main() {
 
-    let scene_number: u32 = 1;
+    let scene_number: u32 = 0;
 
     match scene_number {
         0 => many_spheres(),
