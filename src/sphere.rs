@@ -74,4 +74,3 @@ pub fn get_sphere_uv(p: &Point3) -> SurfaceCoordinate {
 
     SurfaceCoordinate{u: phi/(2.0*PI), v: theta/PI}
 }
-

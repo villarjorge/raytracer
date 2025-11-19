@@ -36,11 +36,17 @@ pub fn create_checker_texture_from_colors(scale: f64, even: Point3, odd: Point3)
 
 impl Texture for CheckerTexture {
     fn value(&self, surface_coords: SurfaceCoordinate, p: &Point3) -> Point3 {
-        let x_integer: i64 = (self.inverse_scale * p.x).floor() as i64;
-        let y_integer: i64 = (self.inverse_scale * p.y).floor() as i64;
-        let z_integer: i64 = (self.inverse_scale * p.z).floor() as i64;
+        // let x_integer: i64 = (self.inverse_scale * p.x).floor() as i64;
+        // let y_integer: i64 = (self.inverse_scale * p.y).floor() as i64;
+        // let z_integer: i64 = (self.inverse_scale * p.z).floor() as i64;
 
-        let is_even: bool = (x_integer + y_integer + z_integer) % 2 == 0;
+        // let is_even: bool = (x_integer + y_integer + z_integer).rem_euclid(2) == 0;
+
+        // To properly map into spheres
+        let u_integer: i64 = (self.inverse_scale * surface_coords.u).floor() as i64;
+        let v_integer: i64 = (self.inverse_scale * surface_coords.v).floor() as i64;
+
+        let is_even: bool = (u_integer + v_integer).rem_euclid(2) == 0;
 
         if is_even {
             self.even.value(surface_coords, p)

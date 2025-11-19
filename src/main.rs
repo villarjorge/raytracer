@@ -25,8 +25,9 @@ fn many_spheres() {
 
     let mut world: HittableList = HittableList::default();
 
-    //let checker: CheckerTexture = create_checker_texture_from_colors(3.1, Point3 {x: 0.2, y: 0.3, z: 0.1}, Point3 {x: 0.9, y: 0.9, z: 0.9});
-    let ground_material = Lambertian{texture: create_solid_color(Point3 { x: 0.5, y: 0.5, z: 0.5 })};
+    let checker: Rc<CheckerTexture> = create_checker_texture_from_colors(3.1, Point3 {x: 0.2, y: 0.3, z: 0.1}, Point3 {x: 0.9, y: 0.9, z: 0.9});
+    // let ground_material = Lambertian{texture: create_solid_color(Point3 { x: 0.5, y: 0.5, z: 0.5 })};
+    let ground_material: Lambertian = Lambertian{texture: checker};
     world.add(create_sphere(Point3{x: 0.0, y: -1000.0, z: -1.0}, 1000.0, Rc::new(ground_material)));
 
     const N: i32 = 11;
@@ -99,7 +100,7 @@ fn many_spheres() {
 fn checkered_spheres() {
     let mut world: HittableList = HittableList::default();
 
-    let checker: Rc<CheckerTexture> = create_checker_texture_from_colors(0.32, Point3 {x: 0.2, y: 0.3, z: 0.1}, Point3 {x: 0.9, y: 0.9, z: 0.9});
+    let checker: Rc<CheckerTexture> = create_checker_texture_from_colors(0.10, Point3 {x: 0.2, y: 0.3, z: 0.1}, Point3 {x: 0.9, y: 0.9, z: 0.9});
     let material: Rc<Lambertian> = Rc::new(Lambertian{texture: checker});
 
     world.add(create_sphere(Point3{x: 0.0, y: -10.0, z: 0.0}, 10.0, material.clone()));
@@ -112,7 +113,7 @@ fn checkered_spheres() {
 
     let vfov: f64 = 20.0;
     let defocus_angle:f64 = 0.0;
-    let focus_distance: f64 = 10.0;
+    let focus_distance: f64 = 50.0;
 
     let lens: ThinLens = ThinLens { defocus_angle, focus_distance };
 

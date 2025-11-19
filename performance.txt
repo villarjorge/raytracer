@@ -16,3 +16,7 @@
 
     16:36
         With 100 samples per pixel and with BVH nodes: 2m14.198s
+
+19/11/2025
+    13:32 
+        With 100 samples per pixel and with BVH nodes: 
