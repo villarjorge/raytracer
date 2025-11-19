@@ -27,7 +27,7 @@ fn many_spheres() {
 
     //let checker: CheckerTexture = create_checker_texture_from_colors(3.1, Point3 {x: 0.2, y: 0.3, z: 0.1}, Point3 {x: 0.9, y: 0.9, z: 0.9});
     let ground_material = Lambertian{texture: create_solid_color(Point3 { x: 0.5, y: 0.5, z: 0.5 })};
-    world.add(create_sphere(Point3{x: 0.0, y: -1000.0, z: -1.0}, 1000.0, Box::new(ground_material)));
+    world.add(create_sphere(Point3{x: 0.0, y: -1000.0, z: -1.0}, 1000.0, Rc::new(ground_material)));
 
     const N: i32 = 11;
 
@@ -41,33 +41,33 @@ fn many_spheres() {
                     // Diffuse
                     let albedo: Point3 = random_vector(0.0, 1.0)*random_vector(0.0, 1.0);
                     let sphere_material: Lambertian = Lambertian{texture: create_solid_color(albedo)};
-                    world.add(create_sphere(center, 0.2, Box::new(sphere_material)));
+                    world.add(create_sphere(center, 0.2, Rc::new(sphere_material)));
                 } else if choose_mat < 0.95 {
                     // Metal
                     let albedo: Point3 = random_vector(0.0, 1.0)*random_vector(0.0, 1.0);
                     let fuzz: f64 = rand::random_range(0.0..0.5);
                     let sphere_material: Metal = Metal{albedo, fuzz};
-                    world.add(create_sphere(center, 0.2, Box::new(sphere_material)));
+                    world.add(create_sphere(center, 0.2, Rc::new(sphere_material)));
                 } else {
                     // Glass
                     let sphere_material: Dielectric = Dielectric { refraction_index: 1.5 };
-                    world.add(create_sphere(center, 0.2, Box::new(sphere_material)));
+                    world.add(create_sphere(center, 0.2, Rc::new(sphere_material)));
                 }
             }
         }
     }
 
     let material1: Dielectric = Dielectric { refraction_index: 1.5 };
-    world.add(create_sphere(Point3 { x: 0.0, y: 1.0, z: 0.0 }, 1.0, Box::new(material1)));
+    world.add(create_sphere(Point3 { x: 0.0, y: 1.0, z: 0.0 }, 1.0, Rc::new(material1)));
 
     let material2: Lambertian = Lambertian { texture: create_solid_color(Point3 { x: 0.4, y: 0.2, z: 0.1 }) };
-    world.add(create_sphere(Point3 { x: -4.0, y: 1.0, z: 0.0 }, 1.0, Box::new(material2)));
+    world.add(create_sphere(Point3 { x: -4.0, y: 1.0, z: 0.0 }, 1.0, Rc::new(material2)));
 
     let material3: Metal = Metal { albedo: Point3 { x: 0.7, y: 0.6, z: 0.5 }, fuzz: 0.0 };
-    world.add(create_sphere(Point3 { x: 4.0, y: 1.0, z: 0.0 },  1.0,  Box::new(material3)));
+    world.add(create_sphere(Point3 { x: 4.0, y: 1.0, z: 0.0 },  1.0,  Rc::new(material3)));
 
     // let material3: BlackBody = BlackBody {  };
-    // world.add(Sphere{center: Point3 { x: 4.0, y: 1.0, z: 0.0 }, radius: 1.0, material: Box::new(material3)});
+    // world.add(Sphere{center: Point3 { x: 4.0, y: 1.0, z: 0.0 }, radius: 1.0, material: Rc::new(material3)});
 
     let aspect_ratio: f64 = 16.0/9.0;
     let image_width: u32 = 1200; // 1200
@@ -100,9 +100,10 @@ fn checkered_spheres() {
     let mut world: HittableList = HittableList::default();
 
     let checker: Rc<CheckerTexture> = create_checker_texture_from_colors(0.32, Point3 {x: 0.2, y: 0.3, z: 0.1}, Point3 {x: 0.9, y: 0.9, z: 0.9});
+    let material: Rc<Lambertian> = Rc::new(Lambertian{texture: checker});
 
-    world.add(create_sphere(Point3{x: 0.0, y: -10.0, z: 0.0}, 10.0, Box::new(Lambertian{texture: checker.clone()})));
-    world.add(create_sphere(Point3{x: 0.0, y: 10.0, z: 0.0}, 10.0, Box::new(Lambertian{texture: checker})));
+    world.add(create_sphere(Point3{x: 0.0, y: -10.0, z: 0.0}, 10.0, material.clone()));
+    world.add(create_sphere(Point3{x: 0.0, y: 10.0, z: 0.0}, 10.0, material));
 
     let aspect_ratio: f64 = 16.0/9.0;
     let image_width: u32 = 400;

@@ -1,4 +1,5 @@
 use std::ops::Range;
+use std::rc::Rc;
 
 use crate::point3::Point3;
 use crate::hittable::{create_hit_record, HitRecord, HitResult, Hittable};
@@ -11,12 +12,12 @@ pub struct Sphere {
     radius: f64,
     // I couldn't change this pointer to a reference, because if I did, then the materials in main do not live long enough
     // Perhaps clone materials into hittables?
-    material: Box<dyn Material>,
+    material: Rc<dyn Material>,
     //material: &'a dyn Material,
     bounding_box: AABB
 }
 
-pub fn create_sphere(center: Point3, radius: f64, material: Box<dyn Material>) -> Sphere {
+pub fn create_sphere(center: Point3, radius: f64, material: Rc<dyn Material>) -> Sphere {
     let radius_vector: Point3 = Point3 { x: radius, y: radius, z: radius };
     let bounding_box: AABB = create_aabb_from_points(center - radius_vector, center + radius_vector);
     Sphere { center, radius: radius.max(0.0), material, bounding_box}
