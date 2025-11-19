@@ -1,4 +1,4 @@
-use std::cmp::Ordering;
+// use std::cmp::Ordering;
 use std::ops::Range;
 
 use crate::aabb::join_aabbs;
@@ -75,24 +75,24 @@ pub fn create_bvh_node_from_hittable_list(list: HittableList) -> BVHNode {
 
 // To do: Change &Box<dyn Hittable> to &dyn Hittable (Makes clippy happy)
 // To do: Is there a way to derive comparisons for bounding boxes?
-fn box_compare(a: &Box<dyn Hittable>, b: &Box<dyn Hittable>, axis_index: u8) -> Ordering {
-    let a_axis_interval: &Range<f64> = a.bounding_box().axis_interval(axis_index);
-    let b_axis_interval: &Range<f64> = b.bounding_box().axis_interval(axis_index);
+// fn box_compare(a: &Box<dyn Hittable>, b: &Box<dyn Hittable>, axis_index: u8) -> Ordering {
+//     let a_axis_interval: &Range<f64> = a.bounding_box().axis_interval(axis_index);
+//     let b_axis_interval: &Range<f64> = b.bounding_box().axis_interval(axis_index);
 
-    a_axis_interval.start.total_cmp(&b_axis_interval.start)
-}
+//     a_axis_interval.start.total_cmp(&b_axis_interval.start)
+// }
 
-fn box_x_compare(a: &Box<dyn Hittable>, b: &Box<dyn Hittable>) -> Ordering {
-    box_compare(a, b, 0)
-}
+// fn box_x_compare(a: &Box<dyn Hittable>, b: &Box<dyn Hittable>) -> Ordering {
+//     box_compare(a, b, 0)
+// }
 
-fn box_y_compare(a: &Box<dyn Hittable>, b: &Box<dyn Hittable>) -> Ordering {
-    box_compare(a, b, 1)
-}
+// fn box_y_compare(a: &Box<dyn Hittable>, b: &Box<dyn Hittable>) -> Ordering {
+//     box_compare(a, b, 1)
+// }
 
-fn box_z_compare(a: &Box<dyn Hittable>, b: &Box<dyn Hittable>) -> Ordering {
-    box_compare(a, b, 2)
-}
+// fn box_z_compare(a: &Box<dyn Hittable>, b: &Box<dyn Hittable>) -> Ordering {
+//     box_compare(a, b, 2)
+// }
 
 pub fn create_bvh_node(mut objects: Vec<Box<dyn Hittable>>) -> BVHNode {
     let mut bounding_box: AABB = AABB::default();
@@ -103,12 +103,12 @@ pub fn create_bvh_node(mut objects: Vec<Box<dyn Hittable>>) -> BVHNode {
 
     let axis = bounding_box.longest_axis();
 
-    let current_box_compare: fn(&Box<dyn Hittable>, &Box<dyn Hittable>) -> Ordering = {
-        if axis == 0 { box_x_compare }
-        else if axis == 1 { box_y_compare }
-        else if axis == 2 { box_z_compare }
-        else {panic!()}
-    };
+    // let current_box_compare: fn(&Box<dyn Hittable>, &Box<dyn Hittable>) -> Ordering = {
+    //     if axis == 0 { box_x_compare }
+    //     else if axis == 1 { box_y_compare }
+    //     else if axis == 2 { box_z_compare }
+    //     else {panic!()}
+    // };
 
     // To do: This threshold controls how many objects there are in the leaf nodes. Optimize for performance
     const THRESHOLD: usize = 4;
@@ -125,7 +125,14 @@ pub fn create_bvh_node(mut objects: Vec<Box<dyn Hittable>>) -> BVHNode {
 
         BVHNode::Leaf { objects: hittable_list, bounding_box}
     } else {
-        objects.sort_by(|arg0: &Box<dyn Hittable + 'static>, arg1: &Box<dyn Hittable + 'static>| current_box_compare(arg0, arg1));
+        //objects.sort_by(|arg0: &Box<dyn Hittable + 'static>, arg1: &Box<dyn Hittable + 'static>| current_box_compare(arg0, arg1));
+        // Use a clousure here: more idiomatic and much shorter
+        objects.sort_by(|a: &Box<dyn Hittable + 'static>, b: &Box<dyn Hittable + 'static>| {
+            let a_axis_interval: &Range<f64> = a.bounding_box().axis_interval(axis);
+            let b_axis_interval: &Range<f64> = b.bounding_box().axis_interval(axis);
+
+            a_axis_interval.start.total_cmp(&b_axis_interval.start)
+        });
 
         let mid: usize = objects.len()/2;
 

@@ -11,7 +11,7 @@ pub struct SolidColor {
 }
 
 pub fn create_solid_color(color: Point3) -> Rc<SolidColor> {
-    return Rc::new(SolidColor { albedo: color });
+    Rc::new(SolidColor { albedo: color })
 }
 
 impl Texture for SolidColor {
@@ -43,9 +43,9 @@ impl Texture for CheckerTexture {
         let is_even: bool = (x_integer + y_integer + z_integer) % 2 == 0;
 
         if is_even {
-            return self.even.value(u, v, p);
+            self.even.value(u, v, p)
         } else {
-            return self.odd.value(u, v, p);
+            self.odd.value(u, v, p)
         }
     }
 }
