@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use crate::point3::{Point3};
 
 pub trait Texture {
@@ -8,8 +10,8 @@ pub struct SolidColor {
     albedo: Point3
 }
 
-pub fn create_solid_color(color: Point3) -> Box<SolidColor> {
-    return Box::new(SolidColor { albedo: color });
+pub fn create_solid_color(color: Point3) -> Rc<SolidColor> {
+    return Rc::new(SolidColor { albedo: color });
 }
 
 impl Texture for SolidColor {
@@ -20,16 +22,16 @@ impl Texture for SolidColor {
 
 pub struct CheckerTexture {
     pub inverse_scale: f64,
-    pub even: Box<dyn Texture>,
-    pub odd: Box<dyn Texture>
+    pub even: Rc<dyn Texture>,
+    pub odd: Rc<dyn Texture>
 }
 
-pub fn create_checker_texture_from_pointers(scale: f64, even: Box<dyn Texture>, odd: Box<dyn Texture>) -> CheckerTexture {
-    CheckerTexture { inverse_scale: 1.0/scale, even, odd }
+pub fn create_checker_texture_from_pointers(scale: f64, even: Rc<dyn Texture>, odd: Rc<dyn Texture>) -> Rc<CheckerTexture> {
+    Rc::new(CheckerTexture { inverse_scale: 1.0/scale, even, odd })
 }
 
-pub fn create_checker_texture_from_colors(scale: f64, even: Point3, odd: Point3) -> CheckerTexture {
-    CheckerTexture { inverse_scale: 1.0/scale, even: create_solid_color(even), odd: create_solid_color(odd) }
+pub fn create_checker_texture_from_colors(scale: f64, even: Point3, odd: Point3) -> Rc<CheckerTexture> {
+    Rc::new(CheckerTexture { inverse_scale: 1.0/scale, even: create_solid_color(even), odd: create_solid_color(odd) })
 }
 
 impl Texture for CheckerTexture {

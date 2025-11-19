@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use crate::point3::{dot, random_unit_vector, reflect, refract, Point3};
 use crate::ray::Ray;
 use crate::hittable::HitRecord;
@@ -33,9 +35,8 @@ impl Material for BlackBody {
     }
 }
 
-// To do: If textures get really big, it will be more efficient to share them. Change this Box to a reference
 pub struct Lambertian {
-    pub texture: Box<dyn Texture>
+    pub texture: Rc<dyn Texture>
 }
 
 impl Material for Lambertian {

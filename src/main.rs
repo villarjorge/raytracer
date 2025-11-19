@@ -9,6 +9,8 @@ pub mod aabb;
 pub mod bvh;
 pub mod texture;
 
+use std::rc::Rc;
+
 use crate::bvh::{BVHNode, create_bvh_node_from_hittable_list};
 use crate::camera::{create_camera, Camera, CameraPosition, ThinLens};
 use crate::point3::random_vector;
@@ -97,12 +99,10 @@ fn many_spheres() {
 fn checkered_spheres() {
     let mut world: HittableList = HittableList::default();
 
-    // To do: make it so this texture can be reused
-    let checker1: CheckerTexture = create_checker_texture_from_colors(0.32, Point3 {x: 0.2, y: 0.3, z: 0.1}, Point3 {x: 0.9, y: 0.9, z: 0.9});
-    let checker2: CheckerTexture = create_checker_texture_from_colors(0.32, Point3 {x: 0.2, y: 0.3, z: 0.1}, Point3 {x: 0.9, y: 0.9, z: 0.9});
+    let checker: Rc<CheckerTexture> = create_checker_texture_from_colors(0.32, Point3 {x: 0.2, y: 0.3, z: 0.1}, Point3 {x: 0.9, y: 0.9, z: 0.9});
 
-    world.add(create_sphere(Point3{x: 0.0, y: -10.0, z: 0.0}, 10.0, Box::new(Lambertian{texture: Box::new(checker1)})));
-    world.add(create_sphere(Point3{x: 0.0, y: 10.0, z: 0.0}, 10.0, Box::new(Lambertian{texture: Box::new(checker2)})));
+    world.add(create_sphere(Point3{x: 0.0, y: -10.0, z: 0.0}, 10.0, Box::new(Lambertian{texture: checker.clone()})));
+    world.add(create_sphere(Point3{x: 0.0, y: 10.0, z: 0.0}, 10.0, Box::new(Lambertian{texture: checker})));
 
     let aspect_ratio: f64 = 16.0/9.0;
     let image_width: u32 = 400;
