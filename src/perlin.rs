@@ -39,34 +39,58 @@ fn perlin_generate_perm() -> [u32; POINT_COUNT as usize] {
 }
 
 impl PerlinNoise {
+    // pub fn noise(&self, p: &Point3) -> f64 {
+    //     let i: i64 = ((4.0*p.x) as i64) & 255;
+    //     let j: i64 = ((4.0*p.y) as i64) & 255;
+    //     let k: i64 = ((4.0*p.z) as i64) & 255;
+
+    //     let float_index = self.x_perm[i as usize] ^ self.y_perm[j as usize] ^ self.z_perm[k as usize];
+    //     self.random_floats[float_index as usize]
+    // }
+
     pub fn noise(&self, p: &Point3) -> f64 {
-        let i: i64 = ((4.0*p.x) as i64) & 255;
-        let j: i64 = ((4.0*p.y) as i64) & 255;
-        let k: i64 = ((4.0*p.z) as i64) & 255;
+        // Leave this here as a reminder
+        // let u: f64 = p.x.fract();
+        // let v: f64 = p.y.fract();
+        // let w: f64 = p.z.fract();
 
-        let float_index = self.x_perm[i as usize] ^ self.y_perm[j as usize] ^ self.z_perm[k as usize];
-        self.random_floats[float_index as usize]
-    }
+        // Not the fractional part, since for 3.6 -> 0.6 but for -3.6 -> -3.6 - (-4) = 0.4
+        // Use a hermitian cubic to smooth
+        let u: f64 = {
+            let u: f64 = p.x - p.x.floor();
+            u*u*(3.0 - 2.0*u)
+        };
+        let v: f64 = {
+            let v: f64 = p.y - p.y.floor();
+            v*v*(3.0 - 2.0*v)
+        };
+        let w: f64 = {
+            let w: f64 = p.z - p.z.floor();
+            w*w*(3.0 - 2.0*w)
+        };
 
-    pub fn noise2(&self, p: &Point3) -> f64 {
-        let u: f64 = p.x.fract();
-        let v: f64 = p.y.fract();
-        let w: f64 = p.z.fract();
-
-        let i: usize = p.x.floor() as usize;
-        let j: usize = p.y.floor() as usize;
-        let k: usize = p.z.floor() as usize;
+        let i: i64 = p.x.floor() as i64;
+        let j: i64 = p.y.floor() as i64;
+        let k: i64 = p.z.floor() as i64;
 
         let mut c: [[[f64; 2]; 2]; 2] = [[[0.0; 2]; 2]; 2];
 
-        for di in 0_usize..2 {
-            for dj in 0_usize..2 {
-                for dk in 0_usize..2 {
+        for di in 0_i64..2 {
+            for dj in 0_i64..2 {
+                for dk in 0_i64..2 {
+
+                    let temp: [usize; 3] = [
+                        ((i + di) & 255) as usize,
+                        ((j + dj) & 255) as usize,
+                        ((k + dk) & 255) as usize,
+                    ];
+
                     let float_index: u32 = 
-                        self.x_perm[(i + di) & 255] ^ 
-                        self.y_perm[(j + dj) & 255] ^ 
-                        self.z_perm[(k + dk) & 255];
-                    c[di][dj][dk] = self.random_floats[float_index as usize]
+                        self.x_perm[temp[0]] ^ 
+                        self.y_perm[temp[1]] ^ 
+                        self.z_perm[temp[2]];
+
+                    c[di as usize][dj as usize][dk as usize] = self.random_floats[float_index as usize]
                 }
             }
         }

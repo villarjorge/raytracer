@@ -89,13 +89,15 @@ impl Texture for ImageTexture {
     }
 }
 
-// To do: think about if this struct is really necesary, or just implement Texture for PerlinNoise 
 pub struct PerlinNoiseTexture {
-    pub perlin_noise: PerlinNoise
+    pub perlin_noise: PerlinNoise,
+    pub scale: f64
 }
 
 impl Texture for PerlinNoiseTexture {
     fn value(&self, _surface_coords: SurfaceCoordinate, p: &Point3) -> Point3 {
-        Point3 { x: 1.0, y: 1.0, z: 1.0 } * self.perlin_noise.noise(p)
+        // To do: this point is dereferenced so it can be multiplied. Improve?
+        let p: Point3 = *p*self.scale;
+        Point3 { x: 1.0, y: 1.0, z: 1.0 } * self.perlin_noise.noise(&p)
     }
 }
