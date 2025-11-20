@@ -19,4 +19,4 @@
 
 19/11/2025
     13:32 
-        With 100 samples per pixel and with BVH nodes: 
+        With 100 samples per pixel, with BVH nodes and textures: 31.359s

@@ -18,7 +18,7 @@ use crate::point3::{Point3, unit_vector};
 use crate::material::{Dielectric, Lambertian, Metal};
 use crate::sphere::{create_sphere};
 use crate::hittable_list::HittableList;
-use crate::texture::{CheckerTexture, create_checker_texture_from_colors, create_solid_color};
+use crate::texture::{CheckerTexture, create_checker_texture_from_colors, create_image_texture, create_solid_color};
 
 fn many_spheres() {
     // World
@@ -113,7 +113,7 @@ fn checkered_spheres() {
 
     let vfov: f64 = 20.0;
     let defocus_angle:f64 = 0.0;
-    let focus_distance: f64 = 50.0;
+    let focus_distance: f64 = 10.0;
 
     let lens: ThinLens = ThinLens { defocus_angle, focus_distance };
 
@@ -128,13 +128,43 @@ fn checkered_spheres() {
     cam.render(&world);
 }
 
-fn main() {
+fn earth() {
+    let mut world: HittableList = HittableList::default();
 
-    let scene_number: u32 = 1;
+    let earth_texture: Rc<texture::ImageTexture> = create_image_texture("textures/earthmap.jpg");
+    let earth_material: Rc<Lambertian> = Rc::new(Lambertian{texture: earth_texture});
+
+    world.add(create_sphere(Point3{x: 0.0, y: 0.0, z: 0.0}, 2.0, earth_material));
+
+    let aspect_ratio: f64 = 16.0/9.0;
+    let image_width: u32 = 400;
+    let samples_per_pixel: u32 = 100;
+    let max_depth: u32 = 50;
+
+    let vfov: f64 = 20.0;
+    let defocus_angle:f64 = 0.0;
+    let focus_distance: f64 = 10.0;
+
+    let lens: ThinLens = ThinLens { defocus_angle, focus_distance };
+
+    let look_from: Point3 = Point3{x: 0.0, y: 0.0, z: 12.0};
+    let look_at: Point3 = Point3{x: 0.0, y: 0.0, z: 0.0};
+    let view_up: Point3 = Point3{x: 0.0, y: 1.0, z: 0.0};
+
+    let camera_position: CameraPosition = CameraPosition { look_from, look_at, view_up };
+
+    let cam: Camera = create_camera(aspect_ratio, image_width, samples_per_pixel, max_depth, vfov, lens, camera_position);
+
+    cam.render(&world);
+}
+
+fn main() {
+    let scene_number: u32 = 2;
 
     match scene_number {
         0 => many_spheres(),
         1 => checkered_spheres(),
+        2 => earth(),
         _ => panic!()
     }
 }
