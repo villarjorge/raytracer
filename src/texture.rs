@@ -80,6 +80,7 @@ impl Texture for ImageTexture {
 
         let u_integer: u32 = (self.image.width() as f64 * clamped_surface_coords.u) as u32;
         let v_integer: u32 = (self.image.height() as f64 * clamped_surface_coords.v) as u32;
+        // https://docs.rs/image/0.25.9/image/struct.ImageBuffer.html#method.get_pixel
         let texture_pixel: &Rgb<u8> = self.image.get_pixel(u_integer, v_integer);
 
         let color_scale: f64 = 1.0/255.0;

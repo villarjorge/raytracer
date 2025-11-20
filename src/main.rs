@@ -131,7 +131,7 @@ fn checkered_spheres() {
 fn earth() {
     let mut world: HittableList = HittableList::default();
 
-    let earth_texture: Rc<texture::ImageTexture> = create_image_texture("textures/earthmap.jpg");
+    let earth_texture: Rc<texture::ImageTexture> = create_image_texture("textures/earth.jpg");
     let earth_material: Rc<Lambertian> = Rc::new(Lambertian{texture: earth_texture});
 
     world.add(create_sphere(Point3{x: 0.0, y: 0.0, z: 0.0}, 2.0, earth_material));
