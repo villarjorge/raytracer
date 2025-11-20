@@ -1,34 +1,32 @@
 use std::array::{from_fn};
 
 use rand::random_range;
-//use rand::seq::SliceRandom;
 
-use crate::point3::Point3;
+use crate::point3::{Point3, random_vector};
 
 const POINT_COUNT: u32 = 256;
 
 // To do: deal with the large amount of conversion done by these functions
 
 pub struct PerlinNoise {
-    pub random_floats: [f64; POINT_COUNT as usize],
+    pub random_vectors: [Point3; POINT_COUNT as usize],
     pub x_perm: [u32; POINT_COUNT as usize],
     pub y_perm: [u32; POINT_COUNT as usize],
     pub z_perm: [u32; POINT_COUNT as usize],
 }
 
 pub fn create_perlin_noise() -> PerlinNoise {
-    let random_floats: [f64; POINT_COUNT as usize] = from_fn(|_i| random_range(0.0_f64..1.0));
+    let random_vectors: [Point3; POINT_COUNT as usize] = from_fn(|_i| random_vector(-1.0, 1.0));
 
     let x_perm: [u32; POINT_COUNT as usize] = perlin_generate_perm();
     let y_perm: [u32; POINT_COUNT as usize] = perlin_generate_perm();
     let z_perm: [u32; POINT_COUNT as usize] = perlin_generate_perm();
 
-    PerlinNoise { random_floats, x_perm, y_perm, z_perm }
+    PerlinNoise { random_vectors, x_perm, y_perm, z_perm }
 }
 
 fn perlin_generate_perm() -> [u32; POINT_COUNT as usize] {
     let mut perm: [u32; POINT_COUNT as usize] = from_fn(|i| i as u32);
-    //perm.shuffle(&mut rand::rng());
     // You have to reverse it, something like n..1 will be silently initialized as empty
     for i in (1..POINT_COUNT as usize).rev() {
         let j: usize  = random_range(0..=i) as usize;
@@ -55,25 +53,15 @@ impl PerlinNoise {
         // let w: f64 = p.z.fract();
 
         // Not the fractional part, since for 3.6 -> 0.6 but for -3.6 -> -3.6 - (-4) = 0.4
-        // Use a hermitian cubic to smooth
-        let u: f64 = {
-            let u: f64 = p.x - p.x.floor();
-            u*u*(3.0 - 2.0*u)
-        };
-        let v: f64 = {
-            let v: f64 = p.y - p.y.floor();
-            v*v*(3.0 - 2.0*v)
-        };
-        let w: f64 = {
-            let w: f64 = p.z - p.z.floor();
-            w*w*(3.0 - 2.0*w)
-        };
+        let u: f64 = p.x - p.x.floor();
+        let v: f64 = p.y - p.y.floor();
+        let w: f64 = p.z - p.z.floor();
 
         let i: i64 = p.x.floor() as i64;
         let j: i64 = p.y.floor() as i64;
         let k: i64 = p.z.floor() as i64;
 
-        let mut c: [[[f64; 2]; 2]; 2] = [[[0.0; 2]; 2]; 2];
+        let mut c: [[[Point3; 2]; 2]; 2] = [[[Point3::default(); 2]; 2]; 2];
 
         for di in 0_i64..2 {
             for dj in 0_i64..2 {
@@ -90,12 +78,12 @@ impl PerlinNoise {
                         self.y_perm[temp[1]] ^ 
                         self.z_perm[temp[2]];
 
-                    c[di as usize][dj as usize][dk as usize] = self.random_floats[float_index as usize]
+                    c[di as usize][dj as usize][dk as usize] = self.random_vectors[float_index as usize]
                 }
             }
         }
 
-        return trilinear_interp(c, u, v, w);
+        return perlin_interpolation(c, u, v, w);
     }
 }
 
@@ -113,6 +101,32 @@ pub fn trilinear_interp(c: [[[f64; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
                         * (j_float*v + (1.0 - j_float)*(1.0 - v))
                         * (k_float*w + (1.0 - k_float)*(1.0 - w))
                         * c[i][j][k];
+            }
+        }
+    }
+    accum
+}
+
+pub fn perlin_interpolation(c: [[[Point3; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
+    let uu: f64 = u*u*(3.0 - 2.0*u);
+    let vv: f64 = v*v*(3.0 - 2.0*v);
+    let ww: f64 = w*w*(3.0 - 2.0*w);
+
+    let mut accum: f64 = 0.0;
+
+    for i in 0_usize..2 {
+        for j in 0_usize..2 {
+            for k in 0_usize..2 {
+                let i_float: f64 = i as f64;
+                let j_float: f64 = j as f64;
+                let k_float: f64 = k as f64;
+
+                let weight_v: Point3 = Point3 { x: u - i_float, y: v - j_float, z: w - k_float };
+
+                accum +=  (i_float*uu + (1.0 - i_float)*(1.0 - uu))
+                        * (j_float*vv + (1.0 - j_float)*(1.0 - vv))
+                        * (k_float*ww + (1.0 - k_float)*(1.0 - ww))
+                        * c[i][j][k].dot(weight_v);
             }
         }
     }
