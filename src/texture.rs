@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use image::{ImageBuffer, Rgb, open};
 
-use crate::{hittable::SurfaceCoordinate, point3::Point3};
+use crate::{hittable::SurfaceCoordinate, perlin::PerlinNoise, point3::Point3};
 
 pub trait Texture {
     fn value(&self, surface_coords: SurfaceCoordinate, p: &Point3) -> Point3;
@@ -44,6 +44,7 @@ impl Texture for CheckerTexture {
 
         let is_even: bool = (x_integer + y_integer + z_integer) % 2 == 0;
 
+        // To do: A texture needs to know around what surface it is warped in order to map properly
         // To properly map into spheres
         // let u_integer: i64 = (self.inverse_scale * surface_coords.u).floor() as i64;
         // let v_integer: i64 = (self.inverse_scale * surface_coords.v).floor() as i64;
@@ -58,8 +59,8 @@ impl Texture for CheckerTexture {
     }
 }
 
+// To do: Make this the error texture
 // https://www.color-hex.com/color-palette/1024383
-
 pub struct ImageTexture {
     image: ImageBuffer<Rgb<u8>, Vec<u8>>
 }
@@ -85,5 +86,16 @@ impl Texture for ImageTexture {
 
         let color_scale: f64 = 1.0/255.0;
         Point3 { x: (texture_pixel.0[0] as f64)*color_scale, y: (texture_pixel.0[1] as f64)*color_scale, z: (texture_pixel.0[2] as f64)*color_scale }
+    }
+}
+
+// To do: think about if this struct is really necesary, or just implement Texture for PerlinNoise 
+pub struct PerlinNoiseTexture {
+    pub perlin_noise: PerlinNoise
+}
+
+impl Texture for PerlinNoiseTexture {
+    fn value(&self, _surface_coords: SurfaceCoordinate, p: &Point3) -> Point3 {
+        Point3 { x: 1.0, y: 1.0, z: 1.0 } * self.perlin_noise.noise(p)
     }
 }

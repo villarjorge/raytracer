@@ -8,17 +8,19 @@ pub mod material;
 pub mod aabb;
 pub mod bvh;
 pub mod texture;
+pub mod perlin;
 
 use std::rc::Rc;
 
 use crate::bvh::{BVHNode, create_bvh_node_from_hittable_list};
 use crate::camera::{create_camera, Camera, CameraPosition, ThinLens};
+use crate::perlin::create_perlin_noise;
 use crate::point3::random_vector;
 use crate::point3::{Point3, unit_vector};
 use crate::material::{Dielectric, Lambertian, Metal};
 use crate::sphere::{create_sphere};
 use crate::hittable_list::HittableList;
-use crate::texture::{CheckerTexture, create_checker_texture_from_colors, create_image_texture, create_solid_color};
+use crate::texture::{CheckerTexture, PerlinNoiseTexture, create_checker_texture_from_colors, create_image_texture, create_solid_color};
 
 fn many_spheres() {
     // World
@@ -131,7 +133,7 @@ fn checkered_spheres() {
 fn earth() {
     let mut world: HittableList = HittableList::default();
 
-    let earth_texture: Rc<texture::ImageTexture> = create_image_texture("textures/earth.jpg");
+    let earth_texture: Rc<texture::ImageTexture> = create_image_texture("textures/earthmap.jpg");
     let earth_material: Rc<Lambertian> = Rc::new(Lambertian{texture: earth_texture});
 
     world.add(create_sphere(Point3{x: 0.0, y: 0.0, z: 0.0}, 2.0, earth_material));
@@ -158,13 +160,45 @@ fn earth() {
     cam.render(&world);
 }
 
+fn perlin_spheres() {
+    let mut world: HittableList = HittableList::default();
+
+    let perlin_texture: Rc<PerlinNoiseTexture>  = Rc::new(PerlinNoiseTexture { perlin_noise: create_perlin_noise() });
+    let perlin_material: Rc<Lambertian> = Rc::new(Lambertian{ texture: perlin_texture });
+
+    world.add(create_sphere(Point3{x: 0.0, y: -1000.0, z: 0.0}, 1000.0, perlin_material.clone()));
+    world.add(create_sphere(Point3{x: 0.0, y: 2.0, z: 0.0}, 2.0, perlin_material));
+
+    let aspect_ratio: f64 = 16.0/9.0;
+    let image_width: u32 = 400;
+    let samples_per_pixel: u32 = 100;
+    let max_depth: u32 = 50;
+
+    let vfov: f64 = 20.0;
+    let defocus_angle:f64 = 0.0;
+    let focus_distance: f64 = 10.0;
+
+    let lens: ThinLens = ThinLens { defocus_angle, focus_distance };
+
+    let look_from: Point3 = Point3{x: 13.0, y: 2.0, z: 3.0};
+    let look_at: Point3 = Point3{x: 0.0, y: 0.0, z: 0.0};
+    let view_up: Point3 = Point3{x: 0.0, y: 1.0, z: 0.0};
+
+    let camera_position: CameraPosition = CameraPosition { look_from, look_at, view_up };
+
+    let cam: Camera = create_camera(aspect_ratio, image_width, samples_per_pixel, max_depth, vfov, lens, camera_position);
+
+    cam.render(&world);
+}
+
 fn main() {
-    let scene_number: u32 = 2;
+    let scene_number: u32 = 3;
 
     match scene_number {
         0 => many_spheres(),
         1 => checkered_spheres(),
         2 => earth(),
+        3 => perlin_spheres(),
         _ => panic!()
     }
 }
