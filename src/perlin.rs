@@ -37,7 +37,7 @@ fn perlin_generate_perm() -> [u32; POINT_COUNT as usize] {
 }
 
 impl PerlinNoise {
-    // pub fn noise(&self, p: &Point3) -> f64 {
+    // pub fn block_noise(&self, p: &Point3) -> f64 {
     //     let i: i64 = ((4.0*p.x) as i64) & 255;
     //     let j: i64 = ((4.0*p.y) as i64) & 255;
     //     let k: i64 = ((4.0*p.z) as i64) & 255;
@@ -84,6 +84,21 @@ impl PerlinNoise {
         }
 
         return perlin_interpolation(c, u, v, w);
+    }
+
+    pub fn turbulence(&self, p: &Point3, depth: i32) -> f64 {
+        let mut accum: f64 = 0.0;
+        let mut temp_p: Point3 = (*p).clone();
+        let mut weight: f64 = 1.0;
+
+        for _i in 0..depth {
+            accum += weight * self.noise(&temp_p);
+            weight *= 0.5;
+            // To do: implement mulassign for point3
+            temp_p = 2.0*temp_p;
+        }
+
+        accum.abs()
     }
 }
 

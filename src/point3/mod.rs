@@ -57,7 +57,7 @@ impl Sub for Point3 {
         }
     }
 }
-// Multiplication by scalar
+// Multiplication by scalar in both orders: point*f64 and f64*point
 impl Mul<f64> for Point3 {
     type Output = Self;
 

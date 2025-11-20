@@ -98,6 +98,7 @@ impl Texture for PerlinNoiseTexture {
     fn value(&self, _surface_coords: SurfaceCoordinate, p: &Point3) -> Point3 {
         // To do: this point is dereferenced so it can be multiplied. Improve?
         let p: Point3 = *p*self.scale;
-        Point3 { x: 1.0, y: 1.0, z: 1.0 } * 0.5 * (1.0 + self.perlin_noise.noise(&p))
+        // Point3 { x: 1.0, y: 1.0, z: 1.0 } * 0.5 * (1.0 + self.perlin_noise.noise(&p))
+        Point3 { x: 1.0, y: 1.0, z: 1.0 } * self.perlin_noise.turbulence(&p, 7)
     }
 }

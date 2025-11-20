@@ -163,7 +163,7 @@ fn earth() {
 fn perlin_spheres() {
     let mut world: HittableList = HittableList::default();
 
-    let perlin_texture: Rc<PerlinNoiseTexture>  = Rc::new(PerlinNoiseTexture { perlin_noise: create_perlin_noise(), scale: 4.0});
+    let perlin_texture: Rc<PerlinNoiseTexture>  = Rc::new(PerlinNoiseTexture { perlin_noise: create_perlin_noise(), scale: 1.0});
     let perlin_material: Rc<Lambertian> = Rc::new(Lambertian{ texture: perlin_texture });
 
     world.add(create_sphere(Point3{x: 0.0, y: -1000.0, z: 0.0}, 1000.0, perlin_material.clone()));
