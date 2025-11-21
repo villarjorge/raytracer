@@ -83,12 +83,12 @@ impl PerlinNoise {
             }
         }
 
-        return perlin_interpolation(c, u, v, w);
+        perlin_interpolation(c, u, v, w)
     }
 
     pub fn turbulence(&self, p: &Point3, depth: i32) -> f64 {
         let mut accum: f64 = 0.0;
-        let mut temp_p: Point3 = (*p).clone();
+        let mut temp_p: Point3 = *p;
         let mut weight: f64 = 1.0;
 
         for _i in 0..depth {
@@ -105,9 +105,9 @@ impl PerlinNoise {
 pub fn trilinear_interp(c: [[[f64; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
     let mut accum: f64 = 0.0;
 
-    for i in 0_usize..2 {
-        for j in 0_usize..2 {
-            for k in 0_usize..2 {
+    for (i, internal1) in c.iter().enumerate() {
+        for (j, internal2) in internal1.iter().enumerate() {
+            for (k, coef) in internal2.iter().enumerate() {
                 let i_float: f64 = i as f64;
                 let j_float: f64 = j as f64;
                 let k_float: f64 = k as f64;
@@ -115,7 +115,7 @@ pub fn trilinear_interp(c: [[[f64; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
                 accum +=  (i_float*u + (1.0 - i_float)*(1.0 - u))
                         * (j_float*v + (1.0 - j_float)*(1.0 - v))
                         * (k_float*w + (1.0 - k_float)*(1.0 - w))
-                        * c[i][j][k];
+                        * coef;
             }
         }
     }
@@ -129,9 +129,9 @@ pub fn perlin_interpolation(c: [[[Point3; 2]; 2]; 2], u: f64, v: f64, w: f64) ->
 
     let mut accum: f64 = 0.0;
 
-    for i in 0_usize..2 {
-        for j in 0_usize..2 {
-            for k in 0_usize..2 {
+    for (i, internal1) in c.iter().enumerate() {
+        for (j, internal2) in internal1.iter().enumerate() {
+            for (k, coef) in internal2.iter().enumerate() {
                 let i_float: f64 = i as f64;
                 let j_float: f64 = j as f64;
                 let k_float: f64 = k as f64;
@@ -141,7 +141,7 @@ pub fn perlin_interpolation(c: [[[Point3; 2]; 2]; 2], u: f64, v: f64, w: f64) ->
                 accum +=  (i_float*uu + (1.0 - i_float)*(1.0 - uu))
                         * (j_float*vv + (1.0 - j_float)*(1.0 - vv))
                         * (k_float*ww + (1.0 - k_float)*(1.0 - ww))
-                        * c[i][j][k].dot(weight_v);
+                        * coef.dot(weight_v);
             }
         }
     }
