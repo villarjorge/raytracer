@@ -9,11 +9,13 @@ pub mod aabb;
 pub mod bvh;
 pub mod texture;
 pub mod perlin;
+pub mod parallelogram;
 
 use std::rc::Rc;
 
 use crate::bvh::{BVHNode, create_bvh_node_from_hittable_list};
 use crate::camera::{create_camera, Camera, CameraPosition, ThinLens};
+use crate::parallelogram::create_parallelogram;
 use crate::perlin::create_perlin_noise;
 use crate::point3::random_vector;
 use crate::point3::{Point3, unit_vector};
@@ -191,14 +193,53 @@ fn perlin_spheres() {
     cam.render(&world);
 }
 
+fn para() {
+    let mut world: HittableList = HittableList::default();
+
+    // Materials
+    let left_red: Rc<Lambertian> = Rc::new(Lambertian{texture: create_solid_color(Point3 { x: 1.0, y: 0.2, z: 0.2 })});
+    let back_green: Rc<Lambertian> = Rc::new(Lambertian{texture: create_solid_color(Point3 { x: 0.2, y: 1.0, z: 0.2 })});
+    let right_blue: Rc<Lambertian> = Rc::new(Lambertian{texture: create_solid_color(Point3 { x: 0.2, y: 0.2, z: 1.0 })});
+    let upper_orange: Rc<Lambertian> = Rc::new(Lambertian{texture: create_solid_color(Point3 { x: 1.0, y: 0.5, z: 0.0 })});
+    let lower_teal: Rc<Lambertian> = Rc::new(Lambertian{texture: create_solid_color(Point3 { x: 0.2, y: 0.8, z: 0.8})});
+
+    world.add(create_parallelogram(Point3{x: -3.0, y: -2.0, z:5.0}, Point3{x: 0.0, y: 0.0, z:-4.0}, Point3{x: 0.0, y:4.0, z:0.0}, left_red));
+    world.add(create_parallelogram(Point3{x: -2.0, y: -2.0, z:0.0}, Point3{x: 4.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:4.0, z:0.0}, back_green));
+    world.add(create_parallelogram(Point3{x:  3.0, y: -2.0, z:1.0}, Point3{x: 0.0, y: 0.0, z: 4.0}, Point3{x: 0.0, y:4.0, z:0.0}, right_blue));
+    world.add(create_parallelogram(Point3{x: -2.0, y:  3.0, z:1.0}, Point3{x: 4.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:4.0}, upper_orange));
+    world.add(create_parallelogram(Point3{x: -2.0, y: -3.0, z:5.0}, Point3{x: 4.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:-4.0}, lower_teal));
+
+    let aspect_ratio: f64 = 1.0;
+    let image_width: u32 = 400;
+    let samples_per_pixel: u32 = 100;
+    let max_depth: u32 = 50;
+
+    let vfov: f64 = 80.0;
+    let defocus_angle:f64 = 0.0;
+    let focus_distance: f64 = 10.0;
+
+    let lens: ThinLens = ThinLens { defocus_angle, focus_distance };
+
+    let look_from: Point3 = Point3{x: 0.0, y: 0.0, z: 9.0};
+    let look_at: Point3 = Point3{x: 0.0, y: 0.0, z: 0.0};
+    let view_up: Point3 = Point3{x: 0.0, y: 1.0, z: 0.0};
+
+    let camera_position: CameraPosition = CameraPosition { look_from, look_at, view_up };
+
+    let cam: Camera = create_camera(aspect_ratio, image_width, samples_per_pixel, max_depth, vfov, lens, camera_position);
+
+    cam.render(&world);
+}
+
 fn main() {
-    let scene_number: u32 = 3;
+    let scene_number: u32 = 4;
 
     match scene_number {
         0 => many_spheres(),
         1 => checkered_spheres(),
         2 => earth(),
         3 => perlin_spheres(),
+        4 => para(),
         _ => panic!()
     }
 }

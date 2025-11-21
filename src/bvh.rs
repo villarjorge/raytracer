@@ -7,6 +7,7 @@ use crate::{aabb::AABB, hittable::Hittable};
 use crate::ray::Ray;
 use crate::hittable::{HitResult};
 
+// To do: consider if this can be replaced by rust's native implementation
 pub enum BVHNode {
     Leaf {
         objects: HittableList,

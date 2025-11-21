@@ -31,12 +31,33 @@ impl Index<u8> for AABB {
     }
 }
 
+fn pad_to_minimums(x: Range<f64>, y: Range<f64>, z: Range<f64>) -> (Range<f64>, Range<f64>, Range<f64>) {
+    const DELTA: f64 = 0.0001;
+
+    let x_expanded: Range<f64> = {
+        if x.end - x.start < DELTA { (x.start + DELTA)..(x.end + DELTA) }
+        else { x.start..x.end }
+    };
+    let y_expanded: Range<f64> = {
+        if y.end - y.start < DELTA { (y.start + DELTA)..(y.end + DELTA) }
+        else { y.start..y.end }
+    };
+    let z_expanded: Range<f64> = {
+        if z.end - z.start < DELTA { (z.start + DELTA)..(z.end + DELTA) }
+        else { z.start..z.end }
+    };
+
+    (x_expanded, y_expanded, z_expanded)
+}
+ 
 pub fn create_aabb_from_points(a: Point3, b: Point3) -> AABB {
     let x: Range<f64> = if a.x <= b.x {a.x..b.x} else {b.x..a.x};
     let y: Range<f64> = if a.y <= b.y {a.y..b.y} else {b.y..a.y};
     let z: Range<f64> = if a.z <= b.z {a.z..b.z} else {b.z..a.z};
 
-    AABB {x, y, z}
+    let (x_expanded, y_expanded, z_expanded): (Range<f64>, Range<f64>, Range<f64>) = pad_to_minimums(x, y, z);
+
+    AABB {x: x_expanded, y: y_expanded, z: z_expanded}
 }
 
 fn unite_ranges(r1: &Range<f64>, r2: &Range<f64>) -> Range<f64> {
@@ -48,8 +69,10 @@ pub fn join_aabbs(bounding_box0: &AABB, bounding_box1: &AABB) -> AABB {
     let x: Range<f64> = unite_ranges(&bounding_box0.x, &bounding_box1.x);
     let y: Range<f64> = unite_ranges(&bounding_box0.y, &bounding_box1.y);
     let z: Range<f64> = unite_ranges(&bounding_box0.z, &bounding_box1.z);
+    
+    let (x_expanded, y_expanded, z_expanded): (Range<f64>, Range<f64>, Range<f64>) = pad_to_minimums(x, y, z);
 
-    AABB {x, y, z}
+    AABB {x: x_expanded, y: y_expanded, z: z_expanded}
 }
 
 // fn check_axis(ray_t: &Range<f64>, axis: &Range<f64>, inverse_coord: f64, origin_coord: f64) -> bool {
