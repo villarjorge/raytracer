@@ -103,6 +103,6 @@ impl Texture for PerlinNoiseTexture {
         // Turbulent perlin noise
         // Point3 { x: 1.0, y: 1.0, z: 1.0 } * self.perlin_noise.turbulence(&p, 7)
         // Turbulent perlin noise modulated with a sine
-        Point3 { x: 0.5, y: 0.5, z: 0.5 } * (1.0 + (self.scale * p.z + 10.0 * self.perlin_noise.turbulence(&p, 7)).sin())
+        Point3 { x: 0.5, y: 0.5, z: 0.5 } * (1.0 + (self.scale * p.z + 10.0 * self.perlin_noise.turbulence(p, 7)).sin())
     }
 }

@@ -75,5 +75,5 @@ fn is_interior(alpha: f64, beta: f64) -> bool {
         return false;
     }
 
-    return true;
+    true
 }

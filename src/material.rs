@@ -2,8 +2,8 @@ use std::rc::Rc;
 
 use crate::point3::{dot, random_unit_vector, reflect, refract, Point3};
 use crate::ray::Ray;
-use crate::hittable::HitRecord;
-use crate::texture::Texture;
+use crate::hittable::{HitRecord, SurfaceCoordinate};
+use crate::texture::{Texture, create_solid_color};
 use crate::unit_vector;
 
 // If you are confused about the lifetimes, think about it this way: 
@@ -19,7 +19,13 @@ pub enum ScatterResult {
 }
 
 pub trait Material {
-    fn scatter(&self, ray_in: &Ray, record: &HitRecord) -> ScatterResult;
+    fn scatter(&self, _ray_in: &Ray, _record: &HitRecord) -> ScatterResult {
+        ScatterResult::DidNotScatter
+    }
+
+    fn emitted(&self, _surface_coords: SurfaceCoordinate, _p: &Point3) -> Point3{
+        Point3 { x: 0.0, y: 0.0, z: 0.0 }
+    }
 }
 
 // Perfect black body at 0K: absorbs all incoming rays and does not emit anything
@@ -115,4 +121,18 @@ fn reflectance(cosine: f64, refraction_index: f64) -> f64 {
         let r0_squared: f64 = r0*r0;
 
         r0_squared + (1.0 - r0_squared)*((1.0 - cosine).powf(5.0))
+}
+
+pub struct DiffuseLight {
+    texture: Rc<dyn Texture>
+}
+
+pub fn create_diffuse_light_from_color(color: Point3) -> Rc<DiffuseLight> {
+    Rc::new(DiffuseLight { texture: create_solid_color(color) })
+}
+
+impl Material for DiffuseLight {
+    fn emitted(&self, surface_coords: SurfaceCoordinate, p: &Point3) -> Point3 {
+        self.texture.value(surface_coords, p)
+    }
 }

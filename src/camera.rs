@@ -19,7 +19,8 @@ pub struct Camera {
     camera_center: Point3,
     defocus_angle: f64,
     defocus_disk_u: Point3,
-    defocus_disk_v: Point3
+    defocus_disk_v: Point3,
+    background_color: Point3,
 }
 
 pub struct CameraPosition {
@@ -33,7 +34,8 @@ pub struct ThinLens {
     pub focus_distance: f64
 }
 
-pub fn create_camera(aspect_ratio: f64, image_width: u32, samples_per_pixel: u32, max_depth: u32, vfov: f64, thin_lens: ThinLens, camera_position: CameraPosition) -> Camera {
+// To do: function has to many arguments
+pub fn create_camera(aspect_ratio: f64, image_width: u32, samples_per_pixel: u32, max_depth: u32, vfov: f64, thin_lens: ThinLens, camera_position: CameraPosition, background_color: Point3) -> Camera {
     // Calculate the image height, and ensure that it's at least 1.
     let image_height: u32 = cmp::max(1, (image_width as f64 / aspect_ratio) as u32);
 
@@ -68,7 +70,7 @@ pub fn create_camera(aspect_ratio: f64, image_width: u32, samples_per_pixel: u32
     let defocus_disk_v: Point3 = v * defocus_radius;
 
     // To do: I don't like to have this many parameters here. Maybe use ray to encapsulate two points? 
-    Camera { image_width, image_height, samples_per_pixel, max_depth, pixel00_loc, pixel_delta_u, pixel_delta_v, camera_center, defocus_angle: thin_lens.defocus_angle, defocus_disk_u, defocus_disk_v }
+    Camera { image_width, image_height, samples_per_pixel, max_depth, pixel00_loc, pixel_delta_u, pixel_delta_v, camera_center, defocus_angle: thin_lens.defocus_angle, defocus_disk_u, defocus_disk_v, background_color}
 }
 
 // Public
@@ -86,10 +88,12 @@ impl Camera {
             // To do: better progress bar
             eprint!("\r----Scanlines remaining: {}/{}----", self.image_height - j, self.image_height); // eprint since this is the progress of the program
             for i in 0..self.image_width {
-                let mut pixel_color: Point3 = Point3::default(); // to do: Accumulating step by step could lead to decreased accuracy
+                let mut pixel_color: Point3 = Point3::default(); // To do: Accumulating step by step could lead to decreased accuracy
                 for _ in 0..self.samples_per_pixel {
                     let r: Ray = self.get_ray(i, j);
-                    pixel_color = pixel_color + ray_color(&r, self.max_depth, world)
+                    // Instead of making ray color a method of Camera, do it like this. 
+                    // To do: make background color a texture
+                    pixel_color = pixel_color + ray_color(&r, self.max_depth, world, self.background_color);
                 }
                 write_color(&mut image_buffer, pixel_color/(self.samples_per_pixel as f64));
             }
@@ -103,26 +107,25 @@ impl Camera {
 
 // Private
 
-fn ray_color(given_ray: &Ray, depth: u32, world: &dyn Hittable) -> Point3 {
+fn ray_color(given_ray: &Ray, depth: u32, world: &dyn Hittable, background_color: Point3) -> Point3 {
     if depth == 0 {
         return Point3{x: 0.0, y: 0.0, z: 0.0};
     }
 
     match world.hit(given_ray, 0.001..f64::INFINITY) {
-        HitResult::DidNotHit => {},
+        // If the ray hits nothing return the background color
+        HitResult::DidNotHit => {background_color},
         HitResult::HitRecord(hit_record) => {
+            let color_from_emission: Point3 = hit_record.material.emitted(hit_record.surface_coords, &hit_record.p);
             match hit_record.material.scatter(given_ray, &hit_record) {
-                ScatterResult::DidNotScatter => return Point3{x: 0.0, y: 0.0, z: 0.0},
-                ScatterResult::DidScatter(sca_att) => return sca_att.attenuation * ray_color(&sca_att.scattered_ray, depth-1, world)
+                ScatterResult::DidNotScatter => color_from_emission,
+                ScatterResult::DidScatter(sca_att) => {
+                    let color_from_scatter: Point3 = sca_att.attenuation * ray_color(&sca_att.scattered_ray, depth-1, world, background_color);
+                    color_from_emission + color_from_scatter
+                }
             }
         }
     }
-
-    // Lerp between blue and white
-    let unit_direction: Point3 = unit_vector(given_ray.direction);
-    let a: f64 = 0.5*(unit_direction.y + 1.0);
-    
-    Point3{x: 1.0, y: 1.0, z: 1.0}*(1.0 - a) + Point3{x: 0.5, y: 0.7, z: 1.0}*a
 }
 
 impl Camera {
