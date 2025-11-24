@@ -1,4 +1,4 @@
-use std::ops::{Index, Range};
+use std::ops::{Add, Index, Range};
 
 use crate::point3::Point3;
 use crate::ray::Ray;
@@ -28,6 +28,18 @@ impl Index<u8> for AABB {
             2 => { &self.z },
             _ => { panic!() }
         }
+    }
+}
+
+impl Add<Point3> for AABB {
+    type Output = Self;
+
+    fn add(self, rhs: Point3) -> Self::Output {
+        let x_new: Range<f64> = (self.x.start + rhs.x)..(self.x.end + rhs.x);
+        let y_new: Range<f64> = (self.y.start + rhs.y)..(self.y.end + rhs.y);
+        let z_new: Range<f64> = (self.z.start + rhs.z)..(self.z.end + rhs.z);
+
+        AABB {x: x_new, y: y_new, z: z_new }
     }
 }
 

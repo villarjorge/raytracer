@@ -103,6 +103,7 @@ impl Material for Dielectric {
                 reflect(unit_direction, record.normal)
             }
             else {
+                // To do: Make the ratio of indexes dependant on the color of the incoming ray to model chromatic aberration
                 refract(unit_direction, record.normal, ratio_indexes)
             }
         };

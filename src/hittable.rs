@@ -1,4 +1,5 @@
 use std::ops::Range;
+use std::rc::Rc;
 
 use crate::aabb::AABB;
 use crate::point3::Point3;
@@ -47,4 +48,33 @@ pub enum HitResult<'a> {
 pub trait Hittable {
     fn hit(&'_ self, ray: &Ray, ray_t: Range<f64>) -> HitResult<'_>;
     fn bounding_box(&self) -> &AABB; // Needed since hittables will be behind pointers that will be dereferenced
+}
+
+pub struct Translate {
+    object: Rc<dyn Hittable>,
+    offset: Point3,
+    bounding_box: AABB
+}
+
+impl Hittable for Translate {
+    fn hit(&'_ self, ray: &Ray, ray_t: Range<f64>) -> HitResult<'_> {
+        // Move the ray backwards by the offset
+        let offset_ray: Ray = Ray { origin: ray.origin - self.offset, direction: ray.direction };
+        // Check for intersection with the new ray
+        match self.object.hit(&offset_ray, ray_t) {
+            HitResult::DidNotHit => HitResult::DidNotHit,
+            HitResult::HitRecord(hr) => {
+                // Move the intersection point forwards by the offset
+                HitResult::HitRecord(HitRecord { p: hr.p + self.offset, normal: hr.normal, material: hr.material, t: hr.t, surface_coords: hr.surface_coords, front_face: hr.front_face })
+            }
+        }
+    }
+    fn bounding_box(&self) -> &AABB {
+        &self.bounding_box
+    }
+}
+
+pub fn create_translation(object: Rc<dyn Hittable>, offset: Point3) -> Translate {
+    let bounding_box: AABB = (*object.bounding_box()).clone();
+    Translate { object, offset, bounding_box: bounding_box + offset }
 }
