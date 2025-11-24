@@ -1,6 +1,10 @@
 use std::{ops::Range, rc::Rc};
 
-use crate::{aabb::{AABB, create_aabb_from_points, join_aabbs}, hittable::{HitResult, Hittable, SurfaceCoordinate, create_hit_record}, material::Material, point3::{Point3, cross, dot, unit_vector}, ray::Ray};
+use crate::{aabb::{AABB, create_aabb_from_points, join_aabbs}};
+use crate::{hittable::{HitResult, Hittable, SurfaceCoordinate, create_hit_record}};
+use crate::{material::Material};
+use crate::{point3::{Point3, cross, dot, unit_vector}};
+use crate::{ray::Ray};
 
 pub struct Parallelogram {
     q: Point3,

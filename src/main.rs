@@ -268,8 +268,46 @@ fn simple_light() {
     cam.render(&world);
 }
 
+fn cornell_box() {
+    let mut world: HittableList = HittableList::default();
+
+    let red: Rc<Lambertian> = Rc::new(Lambertian{ texture: create_solid_color(Point3 { x: 0.65, y: 0.05, z: 0.05 }) });
+    let white: Rc<Lambertian> = Rc::new(Lambertian{ texture: create_solid_color(Point3 { x: 0.73, y: 0.73, z: 0.73 }) });
+    let green: Rc<Lambertian> = Rc::new(Lambertian{ texture: create_solid_color(Point3 { x: 0.12, y: 0.45, z: 0.15 }) });
+    let diffuse_light: Rc<DiffuseLight> = create_diffuse_light_from_color(Point3 { x: 15.0, y: 15.0, z: 15.0 });
+
+    world.add(create_parallelogram(Point3{x: 555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z:0.0}, Point3{x: 0.0, y:0.0, z:555.0}, green));
+    world.add(create_parallelogram(Point3{x: 0.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:555.0}, red));
+    world.add(create_parallelogram(Point3{x:  343.0, y: 554.0, z: 332.0}, Point3{x: -130.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:-105.0}, diffuse_light));
+    world.add(create_parallelogram(Point3{x: 555.0, y: 555.0, z: 555.0}, Point3{x: -555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:-555.0}, white.clone()));
+    world.add(create_parallelogram(Point3{x: 0.0, y: 0.0, z:555.0}, Point3{x: 555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:555.0, z:0.0}, white));
+
+    let aspect_ratio: f64 = 1.0;
+    let image_width: u32 = 600;
+    let samples_per_pixel: u32 = 200;
+    let max_depth: u32 = 50;
+
+    let background_color: Point3 = Point3 { x: 0.0, y: 0.0, z: 0.0 };
+
+    let vfov: f64 = 40.0;
+    let defocus_angle:f64 = 0.0;
+    let focus_distance: f64 = 10.0;
+
+    let lens: ThinLens = ThinLens { defocus_angle, focus_distance };
+
+    let look_from: Point3 = Point3{x: 278.0, y: 278.0, z: -800.0};
+    let look_at: Point3 = Point3{x: 278.0, y: 278.0, z: 0.0};
+    let view_up: Point3 = Point3{x: 0.0, y: 1.0, z: 0.0};
+
+    let camera_position: CameraPosition = CameraPosition { look_from, look_at, view_up };
+
+    let cam: Camera = create_camera(aspect_ratio, image_width, samples_per_pixel, max_depth, vfov, lens, camera_position, background_color);
+
+    cam.render(&world);
+}
+
 fn main() {
-    let scene_number: u32 = 5;
+    let scene_number: u32 = 6;
 
     match scene_number {
         0 => many_spheres(),
@@ -278,6 +316,7 @@ fn main() {
         3 => perlin_spheres(),
         4 => para(),
         5 => simple_light(),
+        6 => cornell_box(),
         _ => panic!()
     }
 }
