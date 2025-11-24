@@ -15,7 +15,7 @@ use std::rc::Rc;
 
 use crate::bvh::{BVHNode, create_bvh_node_from_hittable_list};
 use crate::camera::{create_camera, Camera, CameraPosition, ThinLens};
-use crate::parallelogram::create_parallelogram;
+use crate::parallelogram::{create_box, create_parallelogram};
 use crate::perlin::create_perlin_noise;
 use crate::point3::random_vector;
 use crate::point3::{Point3, unit_vector};
@@ -280,7 +280,10 @@ fn cornell_box() {
     world.add(create_parallelogram(Point3{x: 0.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:555.0}, red));
     world.add(create_parallelogram(Point3{x:  343.0, y: 554.0, z: 332.0}, Point3{x: -130.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:-105.0}, diffuse_light));
     world.add(create_parallelogram(Point3{x: 555.0, y: 555.0, z: 555.0}, Point3{x: -555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:-555.0}, white.clone()));
-    world.add(create_parallelogram(Point3{x: 0.0, y: 0.0, z:555.0}, Point3{x: 555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:555.0, z:0.0}, white));
+    world.add(create_parallelogram(Point3{x: 0.0, y: 0.0, z:555.0}, Point3{x: 555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:555.0, z:0.0}, white.clone()));
+
+    world.add(create_box(Point3 { x: 130.0, y: 0.0, z: 65.0 }, Point3 { x: 295.0, y: 165.0, z: 230.0 }, white.clone()));
+    world.add(create_box(Point3 { x: 265.0, y: 0.0, z: 295.0 }, Point3 { x: 430.0, y: 330.0, z: 460.0 }, white));
 
     let aspect_ratio: f64 = 1.0;
     let image_width: u32 = 600;
