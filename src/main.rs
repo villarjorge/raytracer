@@ -15,9 +15,10 @@ use std::rc::Rc;
 
 use crate::bvh::{BVHNode, create_bvh_node_from_hittable_list};
 use crate::camera::{create_camera, Camera, CameraPosition, ThinLens};
+use crate::hittable::{RotateY, Translate, create_rotate_y, create_translation};
 use crate::parallelogram::{create_box, create_parallelogram};
 use crate::perlin::create_perlin_noise;
-use crate::point3::random_vector;
+use crate::point3::{point_from_array, random_vector};
 use crate::point3::{Point3, unit_vector};
 use crate::material::{Dielectric, DiffuseLight, Lambertian, Metal, create_diffuse_light_from_color};
 use crate::sphere::{create_sphere};
@@ -282,8 +283,17 @@ fn cornell_box() {
     world.add(create_parallelogram(Point3{x: 555.0, y: 555.0, z: 555.0}, Point3{x: -555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:-555.0}, white.clone()));
     world.add(create_parallelogram(Point3{x: 0.0, y: 0.0, z:555.0}, Point3{x: 555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:555.0, z:0.0}, white.clone()));
 
-    world.add(create_box(Point3 { x: 130.0, y: 0.0, z: 65.0 }, Point3 { x: 295.0, y: 165.0, z: 230.0 }, white.clone()));
-    world.add(create_box(Point3 { x: 265.0, y: 0.0, z: 295.0 }, Point3 { x: 430.0, y: 330.0, z: 460.0 }, white));
+    let box1: Rc<HittableList> = Rc::new(create_box(point_from_array([0.0, 0.0, 0.0]), point_from_array([165.0, 330.0, 165.0]), white.clone()));
+    let box1_rotated: Rc<RotateY>  = Rc::new(create_rotate_y(box1, 15.0));
+    let box1_trans: Translate = create_translation(box1_rotated, point_from_array([265.0, 0.0, 295.0]));
+
+    world.add(box1_trans);
+
+    let box2: Rc<HittableList> = Rc::new(create_box(point_from_array([0.0, 0.0, 0.0]), point_from_array([165.0, 165.0, 165.0]), white));
+    let box2_rotated: Rc<RotateY>  = Rc::new(create_rotate_y(box2, -18.0));
+    let box2_trans: Translate = create_translation(box2_rotated, point_from_array([265.0, 0.0, 295.0]));
+
+    world.add(box2_trans);
 
     let aspect_ratio: f64 = 1.0;
     let image_width: u32 = 600;

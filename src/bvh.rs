@@ -1,5 +1,6 @@
 // use std::cmp::Ordering;
 use std::ops::Range;
+use std::rc::Rc;
 
 use crate::aabb::join_aabbs;
 use crate::hittable_list::{HittableList};
@@ -95,7 +96,7 @@ pub fn create_bvh_node_from_hittable_list(list: HittableList) -> BVHNode {
 //     box_compare(a, b, 2)
 // }
 
-pub fn create_bvh_node(mut objects: Vec<Box<dyn Hittable>>) -> BVHNode {
+pub fn create_bvh_node(mut objects: Vec<Rc<dyn Hittable>>) -> BVHNode {
     let mut bounding_box: AABB = AABB::default();
 
     for object in &objects {
@@ -129,7 +130,7 @@ pub fn create_bvh_node(mut objects: Vec<Box<dyn Hittable>>) -> BVHNode {
         //objects.sort_by(|arg0: &Box<dyn Hittable + 'static>, arg1: &Box<dyn Hittable + 'static>| current_box_compare(arg0, arg1));
         // Use a clousure here: more idiomatic and much shorter
         // To do: Change &Box<dyn Hittable> to &dyn Hittable (Makes clippy happy)
-        objects.sort_by(|a: &Box<dyn Hittable + 'static>, b: &Box<dyn Hittable + 'static>| {
+        objects.sort_by(|a: &Rc<dyn Hittable + 'static>, b: &Rc<dyn Hittable + 'static>| {
             let a_axis_interval: &Range<f64> = a.bounding_box().axis_interval(axis);
             let b_axis_interval: &Range<f64> = b.bounding_box().axis_interval(axis);
 

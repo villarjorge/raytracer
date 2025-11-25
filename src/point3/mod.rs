@@ -13,6 +13,10 @@ pub struct Point3 {
     pub z: f64,
 }
 
+pub fn point_from_array(array: [f64; 3]) -> Point3 {
+    Point3 { x: array[0], y: array[1], z: array[2] }
+}
+
 impl Default for Point3 {
     fn default() -> Self {
         // Defautl is {0.0, 0.0, 0.0}
@@ -133,17 +137,22 @@ impl Point3 {
     }
 }
 
+// Dot product
 pub fn dot(u: &Point3, v: &Point3) -> f64 {
-    // Dot product
     u.x*v.x + u.y*v.y + u.z*v.z
 }
 
+// Cross product
 pub fn cross(u: &Point3, v: &Point3) -> Point3 {
-    // Cross product
     Point3{x: u.y * v.z - u.z * v.y,
             y: u.z * v.x - u.x * v.z,
             z: u.x * v.y - u.y * v.x
     }
+}
+
+// Rotation
+pub fn rotate_y(p: &Point3, cos_theta: f64, sin_theta: f64) -> Point3 {
+    Point3 { x: cos_theta*p.x - sin_theta*p.z, y: p.y, z: sin_theta*p.x + cos_theta*p.z }
 }
 
 impl Point3 {

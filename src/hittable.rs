@@ -1,8 +1,9 @@
+use std::f64::INFINITY;
 use std::ops::Range;
 use std::rc::Rc;
 
-use crate::aabb::AABB;
-use crate::point3::Point3;
+use crate::aabb::{AABB, create_aabb_from_points};
+use crate::point3::{Point3, point_from_array, rotate_y};
 use crate::ray::Ray;
 use crate::material::Material;
 
@@ -77,4 +78,78 @@ impl Hittable for Translate {
 pub fn create_translation(object: Rc<dyn Hittable>, offset: Point3) -> Translate {
     let bounding_box: AABB = (*object.bounding_box()).clone();
     Translate { object, offset, bounding_box: bounding_box + offset }
+}
+
+pub struct RotateY {
+    object: Rc<dyn Hittable>,
+    sin_theta: f64,
+    cos_theta: f64,
+    bounding_box: AABB
+}
+
+impl Hittable for RotateY {
+    fn hit(&'_ self, ray: &Ray, ray_t: Range<f64>) -> HitResult<'_> {
+        // To do: compare for performance: using rotate_y or copy pasting the same block of code four times to rotate
+        let origin: Point3 = rotate_y(&ray.origin, self.cos_theta, self.sin_theta);
+        let direction: Point3 = rotate_y(&ray.direction, self.cos_theta, self.sin_theta);
+
+        let rotated_ray: Ray = Ray { origin, direction };
+
+        match self.object.hit(&rotated_ray, ray_t) {
+            HitResult::DidNotHit => HitResult::DidNotHit,
+            HitResult::HitRecord(object_space_hit_record) => {
+                let world_space_hit_record: HitRecord = HitRecord { 
+                    p: rotate_y(&object_space_hit_record.p, self.cos_theta, -self.sin_theta),
+                    normal: rotate_y(&object_space_hit_record.normal, self.cos_theta, -self.sin_theta), 
+                    material: object_space_hit_record.material, 
+                    t: object_space_hit_record.t, 
+                    surface_coords: object_space_hit_record.surface_coords, 
+                    front_face: object_space_hit_record.front_face
+                 };
+                 HitResult::HitRecord(world_space_hit_record)
+            }
+        }
+    }
+
+    fn bounding_box(&self) -> &AABB {
+        &self.bounding_box
+    }
+}
+
+pub fn create_rotate_y(object: Rc<dyn Hittable>, angle_in_degrees: f64) -> RotateY {
+    let radians: f64 = angle_in_degrees.to_radians();
+    let sin_theta: f64 = radians.sin();
+    let cos_theta: f64 = radians.cos();
+    let bounding_box: AABB = object.bounding_box().clone();
+
+    let mut minimum: [f64; 3] = [ INFINITY, INFINITY, INFINITY ];
+    let mut maximum: [f64; 3] = [ -INFINITY, -INFINITY, -INFINITY ];
+
+    for i_int in 0..2 {
+        for j_int in 0..2 {
+            for k_int in 0..2 {
+                let i: f64 = i_int as f64;
+                let j: f64 = j_int as f64;
+                let k: f64 = k_int as f64;
+
+                // To do: make the fields of bounding box public to not index them like this
+                // To do: possible opportunity to use arrays here for better performance (the compiler will paralelize?)
+                let x: f64 = i*bounding_box[0].end + (1.0 - i)*bounding_box[0].start;
+                let y: f64 = j*bounding_box[1].end + (1.0 - j)*bounding_box[1].start;
+                let z: f64 = k*bounding_box[2].end + (1.0 - k)*bounding_box[2].start;
+
+                let x_new =  cos_theta*x + sin_theta*z;
+                let z_new: f64 = -sin_theta*x + cos_theta*z;
+
+                let tester: Point3 = Point3 { x:x_new, y:y, z:z_new };
+
+                for c in 0..2 {
+                    minimum[c] = minimum[c].min(tester[c as u8]);
+                    maximum[c] = maximum[c].min(tester[c as u8]);
+                }
+            }
+        }
+    }
+
+    RotateY { object, sin_theta, cos_theta, bounding_box:create_aabb_from_points(point_from_array(minimum), point_from_array(maximum)) }
 }
