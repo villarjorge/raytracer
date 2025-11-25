@@ -123,7 +123,7 @@ impl Div<f64> for Point3 {
     }
 }
 
-// Geometrical functions: lenght, dot product and cross product
+// Geometrical functions: length, dot product and cross product
 
 impl Point3 {
     // Length squared
@@ -131,7 +131,7 @@ impl Point3 {
         self.x*self.x + self.y*self.y + self.z*self.z
     }
     // Length
-    fn length(&self) -> f64 {
+    pub fn length(&self) -> f64 {
         self.length_squared().sqrt()
     }
     // Dot product

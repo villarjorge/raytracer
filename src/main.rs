@@ -10,11 +10,13 @@ pub mod bvh;
 pub mod texture;
 pub mod perlin;
 pub mod parallelogram;
+pub mod constant_medium;
 
 use std::rc::Rc;
 
 use crate::bvh::{BVHNode, bvh_node_from_hittable_list};
 use crate::camera::{Camera, CameraPosition, ImageQuality, ThinLens, create_camera};
+use crate::constant_medium::{constant_medium_from_color};
 use crate::hittable::{RotateY, Translate, create_rotate_y, create_translation};
 use crate::parallelogram::{create_box, create_parallelogram};
 use crate::perlin::create_perlin_noise;
@@ -327,8 +329,59 @@ fn cornell_box() {
     cam.render(&world);
 }
 
+fn cornell_smoke() {
+    let mut world: HittableList = HittableList::default();
+
+    let red: Rc<Lambertian> = Rc::new(Lambertian{ texture: create_solid_color(Point3 { x: 0.65, y: 0.05, z: 0.05 }) });
+    let white: Rc<Lambertian> = Rc::new(Lambertian{ texture: create_solid_color(Point3 { x: 0.73, y: 0.73, z: 0.73 }) });
+    let green: Rc<Lambertian> = Rc::new(Lambertian{ texture: create_solid_color(Point3 { x: 0.12, y: 0.45, z: 0.15 }) });
+    let diffuse_light: Rc<DiffuseLight> = diffuse_light_from_color(Point3 { x: 15.0, y: 15.0, z: 15.0 });
+
+    world.add(create_parallelogram(Point3{x: 555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z:0.0}, Point3{x: 0.0, y:0.0, z:555.0}, green));
+    world.add(create_parallelogram(Point3{x: 0.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:555.0}, red));
+    world.add(create_parallelogram(Point3{x:  343.0, y: 554.0, z: 332.0}, Point3{x: -130.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:-105.0}, diffuse_light));
+    world.add(create_parallelogram(Point3{x: 555.0, y: 555.0, z: 555.0}, Point3{x: -555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:-555.0}, white.clone()));
+    world.add(create_parallelogram(Point3{x: 555.0, y: 555.0, z:555.0}, Point3{x: -555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:-555.0}, white.clone()));
+    world.add(create_parallelogram(point_from_array([0.0, 0.0, 555.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 555.0, 0.0]), white.clone()));
+
+    let box1: Rc<HittableList> = Rc::new(create_box(point_from_array([0.0, 0.0, 0.0]), point_from_array([165.0, 330.0, 165.0]), white.clone()));
+    let box1_rotated: Rc<RotateY>  = Rc::new(create_rotate_y(box1, 15.0));
+    let box1_trans: Translate = create_translation(box1_rotated, point_from_array([265.0, 0.0, 295.0]));
+
+    let box2: Rc<HittableList> = Rc::new(create_box(point_from_array([0.0, 0.0, 0.0]), point_from_array([165.0, 165.0, 165.0]), white));
+    let box2_rotated: Rc<RotateY>  = Rc::new(create_rotate_y(box2, -18.0));
+    let box2_trans: Translate = create_translation(box2_rotated, point_from_array([130.0, 0.0, 65.0]));
+
+    world.add(constant_medium_from_color(Rc::new(box1_trans), 0.01, point_from_array([0.0, 0.0, 0.0])));
+    world.add(constant_medium_from_color(Rc::new(box2_trans), 0.01, point_from_array([1.0, 1.0, 1.0])));
+
+    let aspect_ratio: f64 = 1.0;
+    let image_width: u32 = 600;
+    let samples_per_pixel: u32 = 200;
+    let max_depth: u32 = 50;
+    let image_quality: ImageQuality = ImageQuality {samples_per_pixel, max_depth};
+
+    let background_color: Point3 = Point3 { x: 0.0, y: 0.0, z: 0.0 };
+
+    let vfov: f64 = 40.0;
+    let defocus_angle:f64 = 0.0;
+    let focus_distance: f64 = 10.0;
+
+    let lens: ThinLens = ThinLens { defocus_angle, focus_distance };
+
+    let look_from: Point3 = Point3{x: 278.0, y: 278.0, z: -800.0};
+    let look_at: Point3 = Point3{x: 278.0, y: 278.0, z: 0.0};
+    let view_up: Point3 = Point3{x: 0.0, y: 1.0, z: 0.0};
+
+    let camera_position: CameraPosition = CameraPosition { look_from, look_at, view_up };
+
+    let cam: Camera = create_camera(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
+
+    cam.render(&world);
+}
+
 fn main() {
-    let scene_number: u32 = 6;
+    let scene_number: u32 = 7;
 
     match scene_number {
         0 => many_spheres(),
@@ -338,6 +391,7 @@ fn main() {
         4 => para(),
         5 => simple_light(),
         6 => cornell_box(),
+        7 => cornell_smoke(),
         _ => panic!()
     }
 }

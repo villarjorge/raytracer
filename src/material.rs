@@ -138,3 +138,17 @@ impl Material for DiffuseLight {
         self.texture.value(surface_coords, p)
     }
 }
+
+pub struct Isotropic {
+    pub texture: Rc<dyn Texture>
+}
+
+impl Material for Isotropic {
+    fn scatter(&self, _ray_in: &Ray, record: &HitRecord) -> ScatterResult {
+        // Scatter in a uniform random direction
+        let scattered_ray: Ray = Ray { origin: record.p, direction: random_unit_vector() };
+        let attenuation: Point3 = self.texture.value(record.surface_coords, &record.p);
+
+        return ScatterResult::DidScatter(ScatteredRayAndAttenuation { scattered_ray, attenuation });
+    }
+}
