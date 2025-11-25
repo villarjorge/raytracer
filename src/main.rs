@@ -381,6 +381,7 @@ fn cornell_smoke() {
 }
 
 fn final_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
+    // Randomized boxes for the ground
     let mut boxes1: HittableList = HittableList::default();
     let ground: Rc<Lambertian> = lambertian(point_from_array([0.48, 0.83, 0.53]));
 
@@ -406,40 +407,48 @@ fn final_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
     let light: Rc<DiffuseLight> = diffuse_light_from_color(point_from_array([7.0, 7.0, 7.0]));
     world.add(create_parallelogram(point_from_array([123.0,554.0,147.0]), point_from_array([300.0, 0.0, 0.0]), point_from_array([0.0,0.0,265.0]), light));
 
+    // Moving sphere that does not move
     let center: Point3 = point_from_array([400.0, 400.0, 200.0]);
     let sphere_material: Rc<Lambertian> = lambertian(point_from_array([0.7, 0.3, 0.1]));
     world.add(create_sphere(center, 50.0, sphere_material));
 
+    // Fuzzy metal and glass spheres
     world.add(create_sphere(point_from_array([260.0, 150.0, 45.0]), 50.0, dielectric(1.5)));
     world.add(create_sphere(
         point_from_array([0.0, 150.0, 145.0]), 50.0, metal(point_from_array([0.8, 0.8, 0.9]), 1.0)
     ));
 
-    let boundary: Rc<Sphere> = Rc::new(create_sphere(point_from_array([360.0,150.0,145.0]), 70.0, dielectric(1.5)));
+    // Blue sphere with subsurface scattering (volume inside a dielectric)
+    let boundary: Rc<Sphere> = Rc::new(create_sphere(point_from_array([360.0, 150.0, 145.0]), 70.0, dielectric(1.5)));
     world.add_pointer(boundary.clone());
     world.add(constant_medium_from_color(boundary.clone(), 0.2, point_from_array([0.2, 0.4, 0.9])));
 
+    // Big mist covering everything
     let boundary2: Rc<Sphere> = Rc::new(create_sphere(point_from_array([0.0, 0.0, 0.0]), 5000.0, dielectric(1.5)));
     world.add(constant_medium_from_color(boundary2, 0.0001, point_from_array([1.0, 1.0, 1.0])));
 
+    // Earth texture
     let emat: Rc<Lambertian> = Rc::new(Lambertian{texture: create_image_texture("textures/earthmap.jpg")});
     world.add(create_sphere(point_from_array([400.0, 200.0, 400.0]), 100.0, emat));
-    let perlin_texture: Rc<PerlinNoiseTexture>  = Rc::new(PerlinNoiseTexture { perlin_noise: create_perlin_noise(), scale: 2.0});
+
+    // Perlin sphere
+    let perlin_texture: Rc<PerlinNoiseTexture>  = Rc::new(PerlinNoiseTexture { perlin_noise: create_perlin_noise(), scale: 0.2});
     let perlin_material: Rc<Lambertian> = Rc::new(Lambertian{ texture: perlin_texture });
     world.add(create_sphere(point_from_array([220.0, 280.0, 300.0]), 80.0, perlin_material));
 
-    let mut boxes2: HittableList = HittableList::default();
+    // Group of spheres
+    let mut spheres: HittableList = HittableList::default();
     let white: Rc<Lambertian> = lambertian(point_from_array([0.73, 0.73, 0.73]));
 
     let ns: u32 = 1000;
     for _ in 0..ns {
-        boxes2.add(create_sphere(random_vector(0.0, 165.0), 10.0, white.clone()));
+        spheres.add(create_sphere(random_vector(0.0, 165.0), 10.0, white.clone()));
     }
-
+    // Translate and rotate them at the same time
     world.add_pointer(Rc::new(create_translation(
             Rc::new(
                 create_rotate_y(
-                    Rc::new(bvh_node_from_hittable_list(boxes2)),
+                    Rc::new(bvh_node_from_hittable_list(spheres)),
                     15.0)
             ),
             point_from_array([-100.0, 270.0, 395.0])

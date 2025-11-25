@@ -72,8 +72,8 @@ pub fn create_image_texture(path: &str) -> Rc<dyn Texture> {
     match open(path) {
         Ok(image) => Rc::new(ImageTexture { image: image.into_rgb8() }),
         Err(image_error) => {
-            eprint!("Could not load the image texture. Falling back to default. Error: \n");
-            eprint!("{}", image_error);
+            eprintln!("Could not load the image texture. Falling back to default. Error:");
+            eprintln!("{}", image_error);
 
             checker_texture_from_colors(2.0, Point3 { x: 1.0, y: 0.0, z: 0.862745098039 }, Point3 { x: 0.00392156862745, y: 0.0, z: 0.00392156862745 })
         },
