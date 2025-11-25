@@ -13,6 +13,9 @@ pub struct Point3 {
     pub z: f64,
 }
 
+// Define this alias
+pub type Vector3 = Point3;
+
 pub fn point_from_array(array: [f64; 3]) -> Point3 {
     Point3 { x: array[0], y: array[1], z: array[2] }
 }

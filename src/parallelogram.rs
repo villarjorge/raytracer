@@ -4,17 +4,17 @@ use crate::aabb::{AABB, aabb_from_points, join_aabbs};
 use crate::hittable_list::HittableList;
 use crate::hittable::{HitResult, Hittable, SurfaceCoordinate, create_hit_record};
 use crate::material::Material;
-use crate::point3::{Point3, cross, dot, unit_vector};
+use crate::point3::{Point3, Vector3, cross, dot, unit_vector};
 use crate::ray::Ray;
 
 pub struct Parallelogram {
     q: Point3,
-    u: Point3,
-    v: Point3,
-    w: Point3,
+    u: Vector3,
+    v: Vector3,
+    w: Vector3,
     material: Rc<dyn Material>,
     bounding_box: AABB,
-    normal: Point3,
+    normal: Vector3,
     d: f64,
 }
 
@@ -26,13 +26,13 @@ fn create_aabb_para(q: Point3, u: Point3, v: Point3) -> AABB {
     join_aabbs(&bounding_box0, &bounding_box1)
 }
 
-pub fn create_parallelogram(q: Point3, u: Point3, v: Point3, material: Rc<dyn Material>) -> Parallelogram {
+pub fn create_parallelogram(q: Point3, u: Vector3, v: Vector3, material: Rc<dyn Material>) -> Parallelogram {
     let bounding_box: AABB = create_aabb_para(q, u, v);
 
-    let n: Point3 = cross(&u, &v);
-    let normal: Point3 = unit_vector(n);
+    let n: Vector3 = cross(&u, &v);
+    let normal: Vector3 = unit_vector(n);
     let d: f64 = dot(&normal, &q);
-    let w: Point3 = n / dot(&n, &n);
+    let w: Vector3 = n / dot(&n, &n);
 
     Parallelogram { q, u, v, w, material, bounding_box, normal, d }
 }
@@ -54,7 +54,7 @@ impl Hittable for Parallelogram {
             return HitResult::DidNotHit;
         }
         // Determine if the hit point lies within the planar shape using its plane coordinates.
-        let planar_hitpoint_vector  = ray.at(t) - self.q;
+        let planar_hitpoint_vector: Vector3  = ray.at(t) - self.q;
         let alpha: f64 = dot(&self.w, &cross(&planar_hitpoint_vector, &self.v));
         let beta: f64 = dot(&self.w, &cross(&self.u, &planar_hitpoint_vector));
 

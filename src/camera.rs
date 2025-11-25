@@ -2,7 +2,8 @@ use std::{cmp, fs::File, io::{BufWriter, Write}};
 
 use rand;
 
-use crate::{material::ScatterResult, point3::{Point3, cross, random_in_unit_disk, unit_vector}};
+use crate::material::ScatterResult;
+use crate::point3::{Point3, Vector3, cross, random_in_unit_disk, unit_vector};
 use crate::point3::color::write_color;
 use crate::ray::Ray;
 use crate::hittable::{Hittable, HitResult};
@@ -14,19 +15,19 @@ pub struct Camera {
     samples_per_pixel: u32, 
     max_depth: u32,
     pixel00_loc: Point3,
-    pixel_delta_u: Point3,
-    pixel_delta_v: Point3,
+    pixel_delta_u: Vector3,
+    pixel_delta_v: Vector3,
     camera_center: Point3,
     defocus_angle: f64,
-    defocus_disk_u: Point3,
-    defocus_disk_v: Point3,
+    defocus_disk_u: Vector3,
+    defocus_disk_v: Vector3,
     background_color: Point3,
 }
 
 pub struct CameraPosition {
     pub look_from: Point3,
     pub look_at: Point3,
-    pub view_up: Point3,
+    pub view_up: Vector3,
 }
 
 pub struct ThinLens {
@@ -48,13 +49,13 @@ pub fn create_camera(aspect_ratio: f64, image_width: u32, samples_per_pixel: u32
     let viewport_width: f64 = viewport_height * (image_width as f64/image_height as f64);
     
     // Calculate the basis vectors for the camera coordinate frame
-    let w: Point3 = unit_vector(camera_position.look_from - camera_position.look_at);
-    let u: Point3 = unit_vector(cross(&camera_position.view_up, &w));
-    let v: Point3 = unit_vector(cross(&w, &u));
+    let w: Vector3 = unit_vector(camera_position.look_from - camera_position.look_at);
+    let u: Vector3 = unit_vector(cross(&camera_position.view_up, &w));
+    let v: Vector3 = unit_vector(cross(&w, &u));
 
     // Calcualte the vectors across the horizontal and down the vertical viewport edges
-    let viewport_u: Point3 = u*viewport_width;
-    let viewport_v: Point3 = v*(-viewport_height);
+    let viewport_u: Vector3 = u*viewport_width;
+    let viewport_v: Vector3 = v*(-viewport_height);
 
     // Calculate the horizontal and vertical delta vectors from pixel to pixel.
     let pixel_delta_u: Point3 = viewport_u / image_width as f64;
@@ -139,14 +140,14 @@ impl Camera {
 
         Ray{origin:ray_origin, direction:ray_direction}
     }
-    fn defocus_disk_sample(&self) -> Point3 {
+    fn defocus_disk_sample(&self) -> Vector3 {
         let p: Point3 = random_in_unit_disk();
         self.camera_center + p.x*self.defocus_disk_u + p.y*self.defocus_disk_v
     }
 }
 
-fn sample_square() -> Point3 {
+fn sample_square() -> Vector3 {
     // Returns a vector to a random point in the x, y € [-0.5, 0.5] square
-    Point3 { x: rand::random_range(-0.5..0.5), y: rand::random_range(-0.5..0.5), z: 0.0f64 }
+    Vector3 { x: rand::random_range(-0.5..0.5), y: rand::random_range(-0.5..0.5), z: 0.0f64 }
 }
 

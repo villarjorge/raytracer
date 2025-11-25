@@ -3,7 +3,7 @@ use std::ops::Range;
 use std::rc::Rc;
 
 use crate::aabb::{AABB, aabb_from_points};
-use crate::point3::{Point3, point_from_array, rotate_y};
+use crate::point3::{Point3, Vector3, point_from_array, rotate_y};
 use crate::ray::Ray;
 use crate::material::Material;
 
@@ -16,14 +16,14 @@ pub struct SurfaceCoordinate {
 
 pub struct HitRecord<'a> {
     pub p: Point3,
-    pub normal: Point3,
+    pub normal: Vector3,
     pub material: &'a dyn Material,  // &'a Box<dyn Material>
     pub t: f64,
     pub surface_coords: SurfaceCoordinate,
     pub front_face: bool,
 }
 
-pub fn create_hit_record<'a>(ray: &Ray, t: f64, outward_normal: Point3, material: &'a dyn Material, surface_coords: SurfaceCoordinate) -> HitRecord<'a> {
+pub fn create_hit_record<'a>(ray: &Ray, t: f64, outward_normal: Vector3, material: &'a dyn Material, surface_coords: SurfaceCoordinate) -> HitRecord<'a> {
     // Creates a HitRecord with all it's parameters from the colliding ray, the 
     // parameter of the ray at the point of collision, the normal at that point, and the material of the surface
     let p: Point3 = ray.at(t);
@@ -31,7 +31,7 @@ pub fn create_hit_record<'a>(ray: &Ray, t: f64, outward_normal: Point3, material
     // let unit_outward_normal: Point3 = unit_vector(outward_normal);
 
     let front_face: bool = outward_normal.dot(ray.direction) < 0.0;
-    let normal: Point3 = if front_face {outward_normal} else {-outward_normal};
+    let normal: Vector3 = if front_face {outward_normal} else {-outward_normal};
 
     HitRecord {p, normal, material, t, surface_coords, front_face }
 }
@@ -53,7 +53,7 @@ pub trait Hittable {
 
 pub struct Translate {
     object: Rc<dyn Hittable>,
-    offset: Point3,
+    offset: Vector3,
     bounding_box: AABB
 }
 
@@ -75,7 +75,7 @@ impl Hittable for Translate {
     }
 }
 
-pub fn create_translation(object: Rc<dyn Hittable>, offset: Point3) -> Translate {
+pub fn create_translation(object: Rc<dyn Hittable>, offset: Vector3) -> Translate {
     let bounding_box: AABB = (*object.bounding_box()).clone();
     Translate { object, offset, bounding_box: bounding_box + offset }
 }
@@ -141,7 +141,7 @@ pub fn create_rotate_y(object: Rc<dyn Hittable>, angle_in_degrees: f64) -> Rotat
                 let x_new =  cos_theta*x + sin_theta*z;
                 let z_new: f64 = -sin_theta*x + cos_theta*z;
 
-                let tester: Point3 = Point3 { x:x_new, y:y, z:z_new };
+                let tester: Vector3 = Vector3 { x:x_new, y:y, z:z_new };
 
                 for c in 0..2 {
                     minimum[c] = minimum[c].min(tester[c as u8]);

@@ -282,6 +282,8 @@ fn cornell_box() {
     world.add(create_parallelogram(Point3{x:  343.0, y: 554.0, z: 332.0}, Point3{x: -130.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:-105.0}, diffuse_light));
     world.add(create_parallelogram(Point3{x: 555.0, y: 555.0, z: 555.0}, Point3{x: -555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:-555.0}, white.clone()));
     world.add(create_parallelogram(Point3{x: 0.0, y: 0.0, z:555.0}, Point3{x: 555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:555.0, z:0.0}, white.clone()));
+    world.add(create_parallelogram(point_from_array([0.0, 0.0, 555.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 555.0, 0.0]), white.clone()));
+
 
     let box1: Rc<HittableList> = Rc::new(create_box(point_from_array([0.0, 0.0, 0.0]), point_from_array([165.0, 330.0, 165.0]), white.clone()));
     let box1_rotated: Rc<RotateY>  = Rc::new(create_rotate_y(box1, 15.0));
@@ -291,7 +293,7 @@ fn cornell_box() {
 
     let box2: Rc<HittableList> = Rc::new(create_box(point_from_array([0.0, 0.0, 0.0]), point_from_array([165.0, 165.0, 165.0]), white));
     let box2_rotated: Rc<RotateY>  = Rc::new(create_rotate_y(box2, -18.0));
-    let box2_trans: Translate = create_translation(box2_rotated, point_from_array([265.0, 0.0, 295.0]));
+    let box2_trans: Translate = create_translation(box2_rotated, point_from_array([130.0, 0.0, 65.0]));
 
     world.add(box2_trans);
 

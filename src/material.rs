@@ -1,6 +1,7 @@
 use std::rc::Rc;
 
-use crate::point3::{dot, random_unit_vector, reflect, refract, Point3};
+use crate::point3::color::Color;
+use crate::point3::{Point3, Vector3, dot, random_unit_vector, reflect, refract};
 use crate::ray::Ray;
 use crate::hittable::{HitRecord, SurfaceCoordinate};
 use crate::texture::{Texture, create_solid_color};
@@ -67,14 +68,14 @@ impl Material for Lambertian {
 }
 
 pub struct Metal {
-    pub albedo: Point3,
+    pub albedo: Color,
     pub fuzz: f64
 }
 
 impl Material for Metal {
     fn scatter(&self, ray_in: &Ray, record: &HitRecord) -> ScatterResult {
-        let reflected: Point3 = reflect(ray_in.direction, record.normal);
-        let reflected_with_fuzz: Point3 = unit_vector(reflected) + (self.fuzz * random_unit_vector());
+        let reflected: Vector3 = reflect(ray_in.direction, record.normal);
+        let reflected_with_fuzz: Vector3 = unit_vector(reflected) + (self.fuzz * random_unit_vector());
         let scattered_ray: Ray = Ray{origin: record.p, direction: reflected_with_fuzz};
 
         let sca_att: ScatteredRayAndAttenuation = ScatteredRayAndAttenuation{scattered_ray, attenuation: self.albedo};
@@ -91,14 +92,14 @@ impl Material for Dielectric {
     fn scatter(&self, ray_in: &Ray, record: &HitRecord) -> ScatterResult {
         let ratio_indexes: f64 = if record.front_face {1.0/self.refraction_index} else {self.refraction_index};
 
-        let unit_direction: Point3 = unit_vector(ray_in.direction);
+        let unit_direction: Vector3 = unit_vector(ray_in.direction);
         let cos_theta: f64 = dot(&record.normal, &(-unit_direction)).min(1.0);
         let sin_theta: f64 = (1.0 - cos_theta*cos_theta).sqrt();
 
         let cannot_refract: bool = ratio_indexes*sin_theta > 1.0;
         let reflectance_bigger_than_random: bool = reflectance(cos_theta, ratio_indexes) > rand::random_range(0.0..1.0);
 
-        let direction: Point3 = {
+        let direction: Vector3 = {
             if cannot_refract | reflectance_bigger_than_random {
                 reflect(unit_direction, record.normal)
             }

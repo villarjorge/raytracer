@@ -2,21 +2,21 @@ use std::array::{from_fn};
 
 use rand::random_range;
 
-use crate::point3::{Point3, random_vector};
+use crate::point3::{Point3, Vector3, random_vector};
 
 const POINT_COUNT: u32 = 256;
 
 // To do: deal with the large amount of conversion done by these functions
 
 pub struct PerlinNoise {
-    pub random_vectors: [Point3; POINT_COUNT as usize],
+    pub random_vectors: [Vector3; POINT_COUNT as usize],
     pub x_perm: [u32; POINT_COUNT as usize],
     pub y_perm: [u32; POINT_COUNT as usize],
     pub z_perm: [u32; POINT_COUNT as usize],
 }
 
 pub fn create_perlin_noise() -> PerlinNoise {
-    let random_vectors: [Point3; POINT_COUNT as usize] = from_fn(|_i| random_vector(-1.0, 1.0));
+    let random_vectors: [Vector3; POINT_COUNT as usize] = from_fn(|_i| random_vector(-1.0, 1.0));
 
     let x_perm: [u32; POINT_COUNT as usize] = perlin_generate_perm();
     let y_perm: [u32; POINT_COUNT as usize] = perlin_generate_perm();
@@ -61,7 +61,7 @@ impl PerlinNoise {
         let j: i64 = p.y.floor() as i64;
         let k: i64 = p.z.floor() as i64;
 
-        let mut c: [[[Point3; 2]; 2]; 2] = [[[Point3::default(); 2]; 2]; 2];
+        let mut c: [[[Vector3; 2]; 2]; 2] = [[[Vector3::default(); 2]; 2]; 2];
 
         for di in 0_i64..2 {
             for dj in 0_i64..2 {
@@ -122,7 +122,7 @@ pub fn trilinear_interp(c: [[[f64; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
     accum
 }
 
-pub fn perlin_interpolation(c: [[[Point3; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
+pub fn perlin_interpolation(c: [[[Vector3; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
     let uu: f64 = u*u*(3.0 - 2.0*u);
     let vv: f64 = v*v*(3.0 - 2.0*v);
     let ww: f64 = w*w*(3.0 - 2.0*w);

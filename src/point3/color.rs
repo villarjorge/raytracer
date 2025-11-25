@@ -2,6 +2,9 @@
 use super::Point3;
 use std::{fs::File, io::{BufWriter, Write}};
 
+// Define this alias
+pub type Color = Point3;
+
 fn linear_to_gamma(linear_component: f64) -> f64 {
     if linear_component > 0.0 {
         return linear_component.sqrt();
@@ -9,7 +12,7 @@ fn linear_to_gamma(linear_component: f64) -> f64 {
     0.0
 }
 
-pub fn write_color(out_buffer: &mut BufWriter<File>, pixel_color: Point3) {
+pub fn write_color(out_buffer: &mut BufWriter<File>, pixel_color: Color) {
     let r: f64 = pixel_color.x;
     let g: f64 = pixel_color.y;
     let b: f64 = pixel_color.z;
