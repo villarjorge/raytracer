@@ -1,4 +1,3 @@
-use std::f64::INFINITY;
 use std::ops::Range;
 use std::rc::Rc;
 
@@ -122,8 +121,8 @@ pub fn create_rotate_y(object: Rc<dyn Hittable>, angle_in_degrees: f64) -> Rotat
     let cos_theta: f64 = radians.cos();
     let bounding_box: AABB = object.bounding_box().clone();
 
-    let mut minimum: [f64; 3] = [ INFINITY, INFINITY, INFINITY ];
-    let mut maximum: [f64; 3] = [ -INFINITY, -INFINITY, -INFINITY ];
+    let mut minimum: [f64; 3] = [ f64::INFINITY, f64::INFINITY, f64::INFINITY ];
+    let mut maximum: [f64; 3] = [ -f64::INFINITY, -f64::INFINITY, -f64::INFINITY ];
 
     for i_int in 0..2 {
         for j_int in 0..2 {
@@ -141,7 +140,7 @@ pub fn create_rotate_y(object: Rc<dyn Hittable>, angle_in_degrees: f64) -> Rotat
                 let x_new =  cos_theta*x + sin_theta*z;
                 let z_new: f64 = -sin_theta*x + cos_theta*z;
 
-                let tester: Vector3 = Vector3 { x:x_new, y:y, z:z_new };
+                let tester: Vector3 = Vector3 { x:x_new, y, z:z_new };
 
                 for c in 0..2 {
                     minimum[c] = minimum[c].min(tester[c as u8]);

@@ -14,7 +14,7 @@ pub mod parallelogram;
 use std::rc::Rc;
 
 use crate::bvh::{BVHNode, bvh_node_from_hittable_list};
-use crate::camera::{create_camera, Camera, CameraPosition, ThinLens};
+use crate::camera::{Camera, CameraPosition, ImageQuality, ThinLens, create_camera};
 use crate::hittable::{RotateY, Translate, create_rotate_y, create_translation};
 use crate::parallelogram::{create_box, create_parallelogram};
 use crate::perlin::create_perlin_noise;
@@ -79,6 +79,7 @@ fn many_spheres() {
     let image_width: u32 = 1200; // 1200
     let samples_per_pixel: u32 = 10; // 500
     let max_depth: u32 = 100;
+    let image_quality: ImageQuality = ImageQuality {samples_per_pixel, max_depth};
 
     let vfov: f64 = 20.0;
     let defocus_angle: f64 = 0.6;
@@ -92,7 +93,7 @@ fn many_spheres() {
 
     let camera_position: CameraPosition = CameraPosition{look_from, look_at, view_up};
 
-    let cam: Camera = create_camera(aspect_ratio, image_width, samples_per_pixel, max_depth, vfov, thin_lens, camera_position, Point3 { x: 0.7, y: 0.8, z: 1.0 });
+    let cam: Camera = create_camera(aspect_ratio, image_width, image_quality, vfov, thin_lens, camera_position, Point3 { x: 0.7, y: 0.8, z: 1.0 });
 
     // To do: Make this a parameter that can be passed in the console
     // If you want to compare without the bvh
@@ -115,6 +116,7 @@ fn checkered_spheres() {
     let image_width: u32 = 400;
     let samples_per_pixel: u32 = 100;
     let max_depth: u32 = 50;
+    let image_quality: ImageQuality = ImageQuality {samples_per_pixel, max_depth};
 
     let vfov: f64 = 20.0;
     let defocus_angle:f64 = 0.0;
@@ -128,7 +130,7 @@ fn checkered_spheres() {
 
     let camera_position: CameraPosition = CameraPosition { look_from, look_at, view_up };
 
-    let cam: Camera = create_camera(aspect_ratio, image_width, samples_per_pixel, max_depth, vfov, lens, camera_position, Point3 { x: 0.7, y: 0.8, z: 1.0 });
+    let cam: Camera = create_camera(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, Point3 { x: 0.7, y: 0.8, z: 1.0 });
 
     cam.render(&world);
 }
@@ -145,6 +147,7 @@ fn earth() {
     let image_width: u32 = 400;
     let samples_per_pixel: u32 = 100;
     let max_depth: u32 = 50;
+    let image_quality: ImageQuality = ImageQuality {samples_per_pixel, max_depth};
 
     let vfov: f64 = 20.0;
     let defocus_angle:f64 = 0.0;
@@ -158,7 +161,7 @@ fn earth() {
 
     let camera_position: CameraPosition = CameraPosition { look_from, look_at, view_up };
 
-    let cam: Camera = create_camera(aspect_ratio, image_width, samples_per_pixel, max_depth, vfov, lens, camera_position, Point3 { x: 0.7, y: 0.8, z: 1.0 });
+    let cam: Camera = create_camera(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, Point3 { x: 0.7, y: 0.8, z: 1.0 });
 
     cam.render(&world);
 }
@@ -176,6 +179,7 @@ fn perlin_spheres() {
     let image_width: u32 = 400;
     let samples_per_pixel: u32 = 100;
     let max_depth: u32 = 50;
+    let image_quality: ImageQuality = ImageQuality {samples_per_pixel, max_depth};
 
     let vfov: f64 = 20.0;
     let defocus_angle:f64 = 0.0;
@@ -189,7 +193,7 @@ fn perlin_spheres() {
 
     let camera_position: CameraPosition = CameraPosition { look_from, look_at, view_up };
 
-    let cam: Camera = create_camera(aspect_ratio, image_width, samples_per_pixel, max_depth, vfov, lens, camera_position, Point3 { x: 0.7, y: 0.8, z: 1.0 });
+    let cam: Camera = create_camera(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, Point3 { x: 0.7, y: 0.8, z: 1.0 });
 
     cam.render(&world);
 }
@@ -214,6 +218,7 @@ fn para() {
     let image_width: u32 = 400;
     let samples_per_pixel: u32 = 100;
     let max_depth: u32 = 50;
+    let image_quality: ImageQuality = ImageQuality {samples_per_pixel, max_depth};
 
     let vfov: f64 = 80.0;
     let defocus_angle:f64 = 0.0;
@@ -227,7 +232,7 @@ fn para() {
 
     let camera_position: CameraPosition = CameraPosition { look_from, look_at, view_up };
 
-    let cam: Camera = create_camera(aspect_ratio, image_width, samples_per_pixel, max_depth, vfov, lens, camera_position, Point3 { x: 0.7, y: 0.8, z: 1.0 });
+    let cam: Camera = create_camera(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, Point3 { x: 0.7, y: 0.8, z: 1.0 });
 
     cam.render(&world);
 }
@@ -249,6 +254,7 @@ fn simple_light() {
     let image_width: u32 = 400;
     let samples_per_pixel: u32 = 100;
     let max_depth: u32 = 50;
+    let image_quality: ImageQuality = ImageQuality {samples_per_pixel, max_depth};
 
     let background_color: Point3 = Point3 { x: 0.0, y: 0.0, z: 0.0 };
 
@@ -264,7 +270,7 @@ fn simple_light() {
 
     let camera_position: CameraPosition = CameraPosition { look_from, look_at, view_up };
 
-    let cam: Camera = create_camera(aspect_ratio, image_width, samples_per_pixel, max_depth, vfov, lens, camera_position, background_color);
+    let cam: Camera = create_camera(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
 
     cam.render(&world);
 }
@@ -281,9 +287,8 @@ fn cornell_box() {
     world.add(create_parallelogram(Point3{x: 0.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:555.0}, red));
     world.add(create_parallelogram(Point3{x:  343.0, y: 554.0, z: 332.0}, Point3{x: -130.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:-105.0}, diffuse_light));
     world.add(create_parallelogram(Point3{x: 555.0, y: 555.0, z: 555.0}, Point3{x: -555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:-555.0}, white.clone()));
-    world.add(create_parallelogram(Point3{x: 0.0, y: 0.0, z:555.0}, Point3{x: 555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:555.0, z:0.0}, white.clone()));
+    world.add(create_parallelogram(Point3{x: 555.0, y: 555.0, z:555.0}, Point3{x: -555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:-555.0}, white.clone()));
     world.add(create_parallelogram(point_from_array([0.0, 0.0, 555.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 555.0, 0.0]), white.clone()));
-
 
     let box1: Rc<HittableList> = Rc::new(create_box(point_from_array([0.0, 0.0, 0.0]), point_from_array([165.0, 330.0, 165.0]), white.clone()));
     let box1_rotated: Rc<RotateY>  = Rc::new(create_rotate_y(box1, 15.0));
@@ -301,6 +306,7 @@ fn cornell_box() {
     let image_width: u32 = 600;
     let samples_per_pixel: u32 = 200;
     let max_depth: u32 = 50;
+    let image_quality: ImageQuality = ImageQuality {samples_per_pixel, max_depth};
 
     let background_color: Point3 = Point3 { x: 0.0, y: 0.0, z: 0.0 };
 
@@ -316,7 +322,7 @@ fn cornell_box() {
 
     let camera_position: CameraPosition = CameraPosition { look_from, look_at, view_up };
 
-    let cam: Camera = create_camera(aspect_ratio, image_width, samples_per_pixel, max_depth, vfov, lens, camera_position, background_color);
+    let cam: Camera = create_camera(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
 
     cam.render(&world);
 }

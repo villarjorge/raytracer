@@ -129,7 +129,7 @@ pub fn create_bvh_node(mut objects: Vec<Rc<dyn Hittable>>) -> BVHNode {
     } else {
         //objects.sort_by(|arg0: &Box<dyn Hittable + 'static>, arg1: &Box<dyn Hittable + 'static>| current_box_compare(arg0, arg1));
         // Use a clousure here: more idiomatic and much shorter
-        // To do: Change &Box<dyn Hittable> to &dyn Hittable (Makes clippy happy)
+        // When I changed HittableList from Vec<Box<dyn Hittable>> to Vec<Rc<dyn Hittable> clippy stopped raising this as an issue
         objects.sort_by(|a: &Rc<dyn Hittable + 'static>, b: &Rc<dyn Hittable + 'static>| {
             let a_axis_interval: &Range<f64> = a.bounding_box().axis_interval(axis);
             let b_axis_interval: &Range<f64> = b.bounding_box().axis_interval(axis);

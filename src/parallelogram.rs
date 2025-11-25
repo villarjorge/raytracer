@@ -95,12 +95,13 @@ pub fn create_box(a: Point3, b: Point3, material: Rc<dyn Material>) -> HittableL
     let dy: Point3 = Point3 { x: 0.0, y: vertex_max.y - vertex_min.y, z: 0.0 };
     let dz: Point3 = Point3 { x: 0.0, y: 0.0, z: vertex_max.z - vertex_min.z };
 
+    // To do: think of a better way to do this with a loop and an indicator
     sides.add(create_parallelogram(Point3 { x: vertex_min.x, y: vertex_min.y, z: vertex_max.z }, dx, dy, material.clone()));
     sides.add(create_parallelogram(Point3 { x: vertex_max.x, y: vertex_min.y, z: vertex_max.z }, -dz, dy, material.clone()));
     sides.add(create_parallelogram(Point3 { x: vertex_max.x, y: vertex_min.y, z: vertex_min.z }, -dx, dy, material.clone()));
     sides.add(create_parallelogram(Point3 { x: vertex_min.x, y: vertex_min.y, z: vertex_min.z }, dz, dy, material.clone()));
     sides.add(create_parallelogram(Point3 { x: vertex_min.x, y: vertex_max.y, z: vertex_max.z }, dx, -dz, material.clone()));
-    sides.add(create_parallelogram(Point3 { x: vertex_min.x, y: vertex_min.y, z: vertex_min.z }, dx, dz, material));
+    sides.add(create_parallelogram(Point3 { x: vertex_min.x, y: vertex_min.y, z: vertex_min.z }, dx, dz, material.clone()));
 
     sides
 }

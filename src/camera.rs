@@ -24,6 +24,7 @@ pub struct Camera {
     background_color: Point3,
 }
 
+// Create a few structs to group similar arguments together and reduce the arguments to pass to create_camera
 pub struct CameraPosition {
     pub look_from: Point3,
     pub look_at: Point3,
@@ -35,8 +36,13 @@ pub struct ThinLens {
     pub focus_distance: f64
 }
 
+pub struct ImageQuality {
+    pub samples_per_pixel: u32,
+    pub max_depth: u32,
+}
+
 // To do: function has to many arguments
-pub fn create_camera(aspect_ratio: f64, image_width: u32, samples_per_pixel: u32, max_depth: u32, vfov: f64, thin_lens: ThinLens, camera_position: CameraPosition, background_color: Point3) -> Camera {
+pub fn create_camera(aspect_ratio: f64, image_width: u32, image_quality: ImageQuality, vfov: f64, thin_lens: ThinLens, camera_position: CameraPosition, background_color: Point3) -> Camera {
     // Calculate the image height, and ensure that it's at least 1.
     let image_height: u32 = cmp::max(1, (image_width as f64 / aspect_ratio) as u32);
 
@@ -71,6 +77,8 @@ pub fn create_camera(aspect_ratio: f64, image_width: u32, samples_per_pixel: u32
     let defocus_disk_v: Point3 = v * defocus_radius;
 
     // To do: I don't like to have this many parameters here. Maybe use ray to encapsulate two points? 
+    let samples_per_pixel: u32 = image_quality.samples_per_pixel;
+    let max_depth: u32 = image_quality.max_depth;
     Camera { image_width, image_height, samples_per_pixel, max_depth, pixel00_loc, pixel_delta_u, pixel_delta_v, camera_center, defocus_angle: thin_lens.defocus_angle, defocus_disk_u, defocus_disk_v, background_color}
 }
 
