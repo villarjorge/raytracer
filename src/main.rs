@@ -25,7 +25,7 @@ use crate::point3::{Point3, unit_vector};
 use crate::material::{Dielectric, DiffuseLight, Lambertian, Metal, dielectric, diffuse_light_from_color, lambertian, metal};
 use crate::sphere::{Sphere, create_sphere};
 use crate::hittable_list::HittableList;
-use crate::texture::{CheckerTexture, PerlinNoiseTexture, checker_texture_from_colors, create_image_texture, create_solid_color};
+use crate::texture::{CheckerTexture, PerlinNoiseTexture, Texture, checker_texture_from_colors, create_image_texture, create_solid_color};
 
 fn many_spheres() {
     // World
@@ -140,7 +140,7 @@ fn checkered_spheres() {
 fn earth() {
     let mut world: HittableList = HittableList::default();
 
-    let earth_texture: Rc<texture::ImageTexture> = create_image_texture("textures/earthmap.jpg");
+    let earth_texture: Rc<dyn Texture> = create_image_texture("textures/earthmap.jpg");
     let earth_material: Rc<Lambertian> = Rc::new(Lambertian{texture: earth_texture});
 
     world.add(create_sphere(Point3{x: 0.0, y: 0.0, z: 0.0}, 2.0, earth_material));
