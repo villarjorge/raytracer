@@ -288,8 +288,8 @@ fn cornell_box() {
     world.add(create_parallelogram(Point3{x: 555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z:0.0}, Point3{x: 0.0, y:0.0, z:555.0}, green));
     world.add(create_parallelogram(Point3{x: 0.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:555.0}, red));
     world.add(create_parallelogram(Point3{x:  343.0, y: 554.0, z: 332.0}, Point3{x: -130.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:-105.0}, diffuse_light));
-    world.add(create_parallelogram(Point3{x: 555.0, y: 555.0, z: 555.0}, Point3{x: -555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:-555.0}, white.clone()));
-    world.add(create_parallelogram(Point3{x: 555.0, y: 555.0, z:555.0}, Point3{x: -555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:-555.0}, white.clone()));
+    world.add(create_parallelogram(point_from_array([0.0, 555.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
+    world.add(create_parallelogram(point_from_array([0.0, 0.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
     world.add(create_parallelogram(point_from_array([0.0, 0.0, 555.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 555.0, 0.0]), white.clone()));
 
     let box1: Rc<HittableList> = Rc::new(create_box(point_from_array([0.0, 0.0, 0.0]), point_from_array([165.0, 330.0, 165.0]), white.clone()));
@@ -335,13 +335,13 @@ fn cornell_smoke() {
     let red: Rc<Lambertian> = Rc::new(Lambertian{ texture: create_solid_color(Point3 { x: 0.65, y: 0.05, z: 0.05 }) });
     let white: Rc<Lambertian> = Rc::new(Lambertian{ texture: create_solid_color(Point3 { x: 0.73, y: 0.73, z: 0.73 }) });
     let green: Rc<Lambertian> = Rc::new(Lambertian{ texture: create_solid_color(Point3 { x: 0.12, y: 0.45, z: 0.15 }) });
-    let diffuse_light: Rc<DiffuseLight> = diffuse_light_from_color(Point3 { x: 15.0, y: 15.0, z: 15.0 });
+    let diffuse_light: Rc<DiffuseLight> = diffuse_light_from_color(Point3 { x: 7.0, y: 7.0, z: 7.0 });
 
     world.add(create_parallelogram(Point3{x: 555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z:0.0}, Point3{x: 0.0, y:0.0, z:555.0}, green));
     world.add(create_parallelogram(Point3{x: 0.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:555.0}, red));
-    world.add(create_parallelogram(Point3{x:  343.0, y: 554.0, z: 332.0}, Point3{x: -130.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:-105.0}, diffuse_light));
-    world.add(create_parallelogram(Point3{x: 555.0, y: 555.0, z: 555.0}, Point3{x: -555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:-555.0}, white.clone()));
-    world.add(create_parallelogram(Point3{x: 555.0, y: 555.0, z:555.0}, Point3{x: -555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:-555.0}, white.clone()));
+    world.add(create_parallelogram(Point3{x:  113.0, y: 554.0, z: 127.0}, Point3{x: 330.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:305.0}, diffuse_light));
+    world.add(create_parallelogram(point_from_array([0.0, 555.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
+    world.add(create_parallelogram(point_from_array([0.0, 0.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
     world.add(create_parallelogram(point_from_array([0.0, 0.0, 555.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 555.0, 0.0]), white.clone()));
 
     let box1: Rc<HittableList> = Rc::new(create_box(point_from_array([0.0, 0.0, 0.0]), point_from_array([165.0, 330.0, 165.0]), white.clone()));
