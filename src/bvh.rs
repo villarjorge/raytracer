@@ -64,7 +64,7 @@ impl Hittable for BVHNode {
     }
 }
 
-pub fn create_bvh_node_from_hittable_list(list: HittableList) -> BVHNode {
+pub fn bvh_node_from_hittable_list(list: HittableList) -> BVHNode {
     // Doing this for now to get rid of references to box of dyn Hittable
     // let mut list_of_references: Vec<&dyn Hittable> = Vec::new();
 

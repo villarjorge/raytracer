@@ -32,7 +32,7 @@ pub fn create_checker_texture_from_pointers(scale: f64, even: Rc<dyn Texture>, o
     Rc::new(CheckerTexture { inverse_scale: 1.0/scale, even, odd })
 }
 
-pub fn create_checker_texture_from_colors(scale: f64, even: Point3, odd: Point3) -> Rc<CheckerTexture> {
+pub fn checker_texture_from_colors(scale: f64, even: Point3, odd: Point3) -> Rc<CheckerTexture> {
     Rc::new(CheckerTexture { inverse_scale: 1.0/scale, even: create_solid_color(even), odd: create_solid_color(odd) })
 }
 

@@ -128,7 +128,7 @@ pub struct DiffuseLight {
     texture: Rc<dyn Texture>
 }
 
-pub fn create_diffuse_light_from_color(color: Point3) -> Rc<DiffuseLight> {
+pub fn diffuse_light_from_color(color: Point3) -> Rc<DiffuseLight> {
     Rc::new(DiffuseLight { texture: create_solid_color(color) })
 }
 

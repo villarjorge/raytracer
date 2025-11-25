@@ -1,6 +1,6 @@
 use std::{ops::Range, rc::Rc};
 
-use crate::aabb::{AABB, create_aabb_from_points, join_aabbs};
+use crate::aabb::{AABB, aabb_from_points, join_aabbs};
 use crate::hittable_list::HittableList;
 use crate::hittable::{HitResult, Hittable, SurfaceCoordinate, create_hit_record};
 use crate::material::Material;
@@ -20,8 +20,8 @@ pub struct Parallelogram {
 
 fn create_aabb_para(q: Point3, u: Point3, v: Point3) -> AABB {
     // Create the bounding boxes for each diagonal and then join them
-    let bounding_box0: AABB = create_aabb_from_points(q, q + u + v);
-    let bounding_box1: AABB = create_aabb_from_points(q + u, q + v);
+    let bounding_box0: AABB = aabb_from_points(q, q + u + v);
+    let bounding_box1: AABB = aabb_from_points(q + u, q + v);
 
     join_aabbs(&bounding_box0, &bounding_box1)
 }
@@ -36,6 +36,8 @@ pub fn create_parallelogram(q: Point3, u: Point3, v: Point3, material: Rc<dyn Ma
 
     Parallelogram { q, u, v, w, material, bounding_box, normal, d }
 }
+
+// To do: extend parallelogram to any polygon. How to do it efficiently and with little code?
 
 impl Hittable for Parallelogram {
     fn hit(&'_ self, ray: &Ray, ray_t: Range<f64>) -> HitResult<'_> {

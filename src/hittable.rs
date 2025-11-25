@@ -2,7 +2,7 @@ use std::f64::INFINITY;
 use std::ops::Range;
 use std::rc::Rc;
 
-use crate::aabb::{AABB, create_aabb_from_points};
+use crate::aabb::{AABB, aabb_from_points};
 use crate::point3::{Point3, point_from_array, rotate_y};
 use crate::ray::Ray;
 use crate::material::Material;
@@ -151,5 +151,5 @@ pub fn create_rotate_y(object: Rc<dyn Hittable>, angle_in_degrees: f64) -> Rotat
         }
     }
 
-    RotateY { object, sin_theta, cos_theta, bounding_box:create_aabb_from_points(point_from_array(minimum), point_from_array(maximum)) }
+    RotateY { object, sin_theta, cos_theta, bounding_box:aabb_from_points(point_from_array(minimum), point_from_array(maximum)) }
 }

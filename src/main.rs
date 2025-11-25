@@ -13,24 +13,24 @@ pub mod parallelogram;
 
 use std::rc::Rc;
 
-use crate::bvh::{BVHNode, create_bvh_node_from_hittable_list};
+use crate::bvh::{BVHNode, bvh_node_from_hittable_list};
 use crate::camera::{create_camera, Camera, CameraPosition, ThinLens};
 use crate::hittable::{RotateY, Translate, create_rotate_y, create_translation};
 use crate::parallelogram::{create_box, create_parallelogram};
 use crate::perlin::create_perlin_noise;
 use crate::point3::{point_from_array, random_vector};
 use crate::point3::{Point3, unit_vector};
-use crate::material::{Dielectric, DiffuseLight, Lambertian, Metal, create_diffuse_light_from_color};
+use crate::material::{Dielectric, DiffuseLight, Lambertian, Metal, diffuse_light_from_color};
 use crate::sphere::{create_sphere};
 use crate::hittable_list::HittableList;
-use crate::texture::{CheckerTexture, PerlinNoiseTexture, create_checker_texture_from_colors, create_image_texture, create_solid_color};
+use crate::texture::{CheckerTexture, PerlinNoiseTexture, checker_texture_from_colors, create_image_texture, create_solid_color};
 
 fn many_spheres() {
     // World
 
     let mut world: HittableList = HittableList::default();
 
-    let checker: Rc<CheckerTexture> = create_checker_texture_from_colors(3.1, Point3 {x: 0.2, y: 0.3, z: 0.1}, Point3 {x: 0.9, y: 0.9, z: 0.9});
+    let checker: Rc<CheckerTexture> = checker_texture_from_colors(3.1, Point3 {x: 0.2, y: 0.3, z: 0.1}, Point3 {x: 0.9, y: 0.9, z: 0.9});
     // let ground_material = Lambertian{texture: create_solid_color(Point3 { x: 0.5, y: 0.5, z: 0.5 })};
     let ground_material: Lambertian = Lambertian{texture: checker};
     world.add(create_sphere(Point3{x: 0.0, y: -1000.0, z: -1.0}, 1000.0, Rc::new(ground_material)));
@@ -98,14 +98,14 @@ fn many_spheres() {
     // If you want to compare without the bvh
     // cam.render(&world);
 
-    let bvh_world: BVHNode = create_bvh_node_from_hittable_list(world);
+    let bvh_world: BVHNode = bvh_node_from_hittable_list(world);
     cam.render(&bvh_world);
 }
 
 fn checkered_spheres() {
     let mut world: HittableList = HittableList::default();
 
-    let checker: Rc<CheckerTexture> = create_checker_texture_from_colors(0.10, Point3 {x: 0.2, y: 0.3, z: 0.1}, Point3 {x: 0.9, y: 0.9, z: 0.9});
+    let checker: Rc<CheckerTexture> = checker_texture_from_colors(0.10, Point3 {x: 0.2, y: 0.3, z: 0.1}, Point3 {x: 0.9, y: 0.9, z: 0.9});
     let material: Rc<Lambertian> = Rc::new(Lambertian{texture: checker});
 
     world.add(create_sphere(Point3{x: 0.0, y: -10.0, z: 0.0}, 10.0, material.clone()));
@@ -242,7 +242,7 @@ fn simple_light() {
     world.add(create_sphere(Point3{x: 0.0, y: -1000.0, z: 0.0}, 1000.0, perlin_material.clone()));
     world.add(create_sphere(Point3{x: 0.0, y: 2.0, z: 0.0}, 2.0, perlin_material));
 
-    let diffuse_light: Rc<DiffuseLight> = create_diffuse_light_from_color(Point3 { x: 4.0, y: 4.0, z: 4.0 });
+    let diffuse_light: Rc<DiffuseLight> = diffuse_light_from_color(Point3 { x: 4.0, y: 4.0, z: 4.0 });
     world.add(create_parallelogram(Point3{x: 3.0, y: 1.0, z:-2.0}, Point3{x: 2.0, y: 0.0, z:0.0}, Point3{x: 0.0, y:2.0, z:0.0}, diffuse_light));
 
     let aspect_ratio: f64 = 16.0/9.0;
@@ -275,7 +275,7 @@ fn cornell_box() {
     let red: Rc<Lambertian> = Rc::new(Lambertian{ texture: create_solid_color(Point3 { x: 0.65, y: 0.05, z: 0.05 }) });
     let white: Rc<Lambertian> = Rc::new(Lambertian{ texture: create_solid_color(Point3 { x: 0.73, y: 0.73, z: 0.73 }) });
     let green: Rc<Lambertian> = Rc::new(Lambertian{ texture: create_solid_color(Point3 { x: 0.12, y: 0.45, z: 0.15 }) });
-    let diffuse_light: Rc<DiffuseLight> = create_diffuse_light_from_color(Point3 { x: 15.0, y: 15.0, z: 15.0 });
+    let diffuse_light: Rc<DiffuseLight> = diffuse_light_from_color(Point3 { x: 15.0, y: 15.0, z: 15.0 });
 
     world.add(create_parallelogram(Point3{x: 555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z:0.0}, Point3{x: 0.0, y:0.0, z:555.0}, green));
     world.add(create_parallelogram(Point3{x: 0.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:555.0}, red));

@@ -6,7 +6,7 @@ use crate::point3::Point3;
 use crate::hittable::{HitRecord, HitResult, Hittable, SurfaceCoordinate, create_hit_record};
 use crate::ray::Ray;
 use crate::material::Material;
-use crate::aabb::{AABB, create_aabb_from_points};
+use crate::aabb::{AABB, aabb_from_points};
 
 pub struct Sphere {
     center: Point3,
@@ -20,7 +20,7 @@ pub struct Sphere {
 
 pub fn create_sphere(center: Point3, radius: f64, material: Rc<dyn Material>) -> Sphere {
     let radius_vector: Point3 = Point3 { x: radius, y: radius, z: radius };
-    let bounding_box: AABB = create_aabb_from_points(center - radius_vector, center + radius_vector);
+    let bounding_box: AABB = aabb_from_points(center - radius_vector, center + radius_vector);
     Sphere { center, radius: radius.max(0.0), material, bounding_box}
 }
 

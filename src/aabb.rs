@@ -12,7 +12,7 @@ pub struct AABB {
 
 impl Default for AABB {
     fn default() -> Self {
-        create_aabb_from_points(Point3::default(), Point3::default())
+        aabb_from_points(Point3::default(), Point3::default())
     }
 }
 
@@ -62,7 +62,7 @@ fn pad_to_minimums(x: Range<f64>, y: Range<f64>, z: Range<f64>) -> (Range<f64>, 
     (x_expanded, y_expanded, z_expanded)
 }
  
-pub fn create_aabb_from_points(a: Point3, b: Point3) -> AABB {
+pub fn aabb_from_points(a: Point3, b: Point3) -> AABB {
     let x: Range<f64> = if a.x <= b.x {a.x..b.x} else {b.x..a.x};
     let y: Range<f64> = if a.y <= b.y {a.y..b.y} else {b.y..a.y};
     let z: Range<f64> = if a.z <= b.z {a.z..b.z} else {b.z..a.z};
