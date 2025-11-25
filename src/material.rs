@@ -67,6 +67,14 @@ impl Material for Lambertian {
     }
 }
 
+pub fn lambertian(color: Color) -> Rc<Lambertian> {
+    Rc::new(Lambertian{ texture: create_solid_color(color) })
+}
+
+// pub fn lambertian(texture: Rc<dyn Texture>) -> Rc<Lambertian> {
+//     Rc::new(Lambertian{ texture })
+// }
+
 pub struct Metal {
     pub albedo: Color,
     pub fuzz: f64
@@ -82,6 +90,10 @@ impl Material for Metal {
 
         ScatterResult::DidScatter(sca_att)
     }
+}
+
+pub fn metal(albedo: Color, fuzz: f64) -> Rc<Metal> {
+    Rc::new(Metal { albedo, fuzz })
 }
 
 pub struct Dielectric {
@@ -123,6 +135,10 @@ fn reflectance(cosine: f64, refraction_index: f64) -> f64 {
         let r0_squared: f64 = r0*r0;
 
         r0_squared + (1.0 - r0_squared)*((1.0 - cosine).powf(5.0))
+}
+
+pub fn dielectric(refraction_index: f64) -> Rc<Dielectric> {
+    Rc::new(Dielectric { refraction_index })
 }
 
 pub struct DiffuseLight {

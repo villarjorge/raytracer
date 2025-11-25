@@ -22,8 +22,8 @@ use crate::parallelogram::{create_box, create_parallelogram};
 use crate::perlin::create_perlin_noise;
 use crate::point3::{point_from_array, random_vector};
 use crate::point3::{Point3, unit_vector};
-use crate::material::{Dielectric, DiffuseLight, Lambertian, Metal, diffuse_light_from_color};
-use crate::sphere::{create_sphere};
+use crate::material::{Dielectric, DiffuseLight, Lambertian, Metal, dielectric, diffuse_light_from_color, lambertian, metal};
+use crate::sphere::{Sphere, create_sphere};
 use crate::hittable_list::HittableList;
 use crate::texture::{CheckerTexture, PerlinNoiseTexture, checker_texture_from_colors, create_image_texture, create_solid_color};
 
@@ -380,8 +380,99 @@ fn cornell_smoke() {
     cam.render(&world);
 }
 
+fn final_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
+    let mut boxes1: HittableList = HittableList::default();
+    let ground: Rc<Lambertian> = lambertian(point_from_array([0.48, 0.83, 0.53]));
+
+    let boxes_per_side: u32 = 20;
+    for i in 0..boxes_per_side {
+        for j in 0..boxes_per_side {
+            let w: f64 = 100.0;
+            let x0: f64 = -1000.0 + (i as f64)*w;
+            let z0: f64 = -1000.0 + (j as f64)*w;
+            let y0: f64 = 0.0;
+            let x1: f64 = x0 + w;
+            let y1: f64 = rand::random_range(1.0..101.0);
+            let z1: f64 = z0 + w;
+
+            boxes1.add(create_box(point_from_array([x0,y0,z0]), point_from_array([x1,y1,z1]), ground.clone()));
+        }
+    }
+
+    let mut world: HittableList = HittableList::default();
+
+    world.add(bvh_node_from_hittable_list(boxes1));
+
+    let light: Rc<DiffuseLight> = diffuse_light_from_color(point_from_array([7.0, 7.0, 7.0]));
+    world.add(create_parallelogram(point_from_array([123.0,554.0,147.0]), point_from_array([300.0, 0.0, 0.0]), point_from_array([0.0,0.0,265.0]), light));
+
+    let center: Point3 = point_from_array([400.0, 400.0, 200.0]);
+    let sphere_material: Rc<Lambertian> = lambertian(point_from_array([0.7, 0.3, 0.1]));
+    world.add(create_sphere(center, 50.0, sphere_material));
+
+    world.add(create_sphere(point_from_array([260.0, 150.0, 45.0]), 50.0, dielectric(1.5)));
+    world.add(create_sphere(
+        point_from_array([0.0, 150.0, 145.0]), 50.0, metal(point_from_array([0.8, 0.8, 0.9]), 1.0)
+    ));
+
+    let boundary: Rc<Sphere> = Rc::new(create_sphere(point_from_array([360.0,150.0,145.0]), 70.0, dielectric(1.5)));
+    world.add_pointer(boundary.clone());
+    world.add(constant_medium_from_color(boundary.clone(), 0.2, point_from_array([0.2, 0.4, 0.9])));
+
+    let boundary2: Rc<Sphere> = Rc::new(create_sphere(point_from_array([0.0, 0.0, 0.0]), 5000.0, dielectric(1.5)));
+    world.add(constant_medium_from_color(boundary2, 0.0001, point_from_array([1.0, 1.0, 1.0])));
+
+    let emat: Rc<Lambertian> = Rc::new(Lambertian{texture: create_image_texture("textures/earthmap.jpg")});
+    world.add(create_sphere(point_from_array([400.0, 200.0, 400.0]), 100.0, emat));
+    let perlin_texture: Rc<PerlinNoiseTexture>  = Rc::new(PerlinNoiseTexture { perlin_noise: create_perlin_noise(), scale: 2.0});
+    let perlin_material: Rc<Lambertian> = Rc::new(Lambertian{ texture: perlin_texture });
+    world.add(create_sphere(point_from_array([220.0, 280.0, 300.0]), 80.0, perlin_material));
+
+    let mut boxes2: HittableList = HittableList::default();
+    let white: Rc<Lambertian> = lambertian(point_from_array([0.73, 0.73, 0.73]));
+
+    let ns: u32 = 1000;
+    for _ in 0..ns {
+        boxes2.add(create_sphere(random_vector(0.0, 165.0), 10.0, white.clone()));
+    }
+
+    world.add_pointer(Rc::new(create_translation(
+            Rc::new(
+                create_rotate_y(
+                    Rc::new(bvh_node_from_hittable_list(boxes2)),
+                    15.0)
+            ),
+            point_from_array([-100.0, 270.0, 395.0])
+            ))
+    );
+
+    let aspect_ratio: f64 = 1.0;
+    let image_width: u32 = image_width;
+    let samples_per_pixel: u32 = samples_per_pixel;
+    let max_depth: u32 = max_depth;
+    let image_quality: ImageQuality = ImageQuality {samples_per_pixel, max_depth};
+
+    let background_color: Point3 = Point3 { x: 0.0, y: 0.0, z: 0.0 };
+
+    let vfov: f64 = 40.0;
+    let defocus_angle:f64 = 0.0;
+    let focus_distance: f64 = 10.0;
+
+    let lens: ThinLens = ThinLens { defocus_angle, focus_distance };
+
+    let look_from: Point3 = Point3{x: 478.0, y: 278.0, z: -600.0};
+    let look_at: Point3 = Point3{x: 278.0, y: 278.0, z: 0.0};
+    let view_up: Point3 = Point3{x: 0.0, y: 1.0, z: 0.0};
+
+    let camera_position: CameraPosition = CameraPosition { look_from, look_at, view_up };
+
+    let cam: Camera = create_camera(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
+
+    cam.render(&world);
+}
+
 fn main() {
-    let scene_number: u32 = 7;
+    let scene_number: u32 = 10;
 
     match scene_number {
         0 => many_spheres(),
@@ -392,6 +483,7 @@ fn main() {
         5 => simple_light(),
         6 => cornell_box(),
         7 => cornell_smoke(),
-        _ => panic!()
+        8 => final_scene(800, 10_000, 40),
+        _ => final_scene(400, 250, 4),
     }
 }
