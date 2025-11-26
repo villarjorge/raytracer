@@ -173,3 +173,4 @@ pub fn create_rotate_y(object: Rc<dyn Hittable>, angle_in_degrees: f64) -> Rotat
 pub mod hittable_list;
 pub mod parallelogram;
 pub mod sphere;
+pub mod quadric;

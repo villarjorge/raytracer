@@ -43,6 +43,7 @@ impl Hittable for Sphere {
 
         // Find the nearest root that lies in the acceptable range
         let mut root: f64 = (h - sqrt_discriminant)/a;
+        
         if !ray_t.contains(&root) {
             root = (h+sqrt_discriminant)/a;
             if !ray_t.contains(&root) {
@@ -64,8 +65,8 @@ impl Hittable for Sphere {
 
 /// Compute apropiate coordinates in the surface of the sphere
 ///     p: a given point on the sphere of radius one, centered at the origin.
-///     u: returned value [0,1] of angle around the Y axis from X=-1.
-///     v: returned value [0,1] of angle from Y=-1 to Y=+1.
+///     u: returned value \[0,1\] of angle around the Y axis from X=-1.
+///     v: returned value \[0,1\] of angle from Y=-1 to Y=+1.
 /// 
 ///     <1 0 0> yields <0.50 0.50>       <-1  0  0> yields <0.00 0.50>
 ///     <0 1 0> yields <0.50 1.00>       < 0 -1  0> yields <0.50 0.00>
