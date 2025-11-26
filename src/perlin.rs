@@ -37,21 +37,7 @@ fn perlin_generate_perm() -> [u32; POINT_COUNT as usize] {
 }
 
 impl PerlinNoise {
-    // pub fn block_noise(&self, p: &Point3) -> f64 {
-    //     let i: i64 = ((4.0*p.x) as i64) & 255;
-    //     let j: i64 = ((4.0*p.y) as i64) & 255;
-    //     let k: i64 = ((4.0*p.z) as i64) & 255;
-
-    //     let float_index = self.x_perm[i as usize] ^ self.y_perm[j as usize] ^ self.z_perm[k as usize];
-    //     self.random_floats[float_index as usize]
-    // }
-
     pub fn noise(&self, p: &Point3) -> f64 {
-        // Leave this here as a reminder
-        // let u: f64 = p.x.fract();
-        // let v: f64 = p.y.fract();
-        // let w: f64 = p.z.fract();
-
         // Not the fractional part, since for 3.6 -> 0.6 but for -3.6 -> -3.6 - (-4) = 0.4
         let u: f64 = p.x - p.x.floor();
         let v: f64 = p.y - p.y.floor();

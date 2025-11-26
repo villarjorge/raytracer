@@ -18,14 +18,12 @@ mod point3 {
         assert!(resulting_point.y.abs() < 1e-10);
         assert!(resulting_point.z.abs() < 1e-10);
     }
-
     #[test]
     fn negation() {
         let p1: Point3 = Point3 { x: 1.0, y: 1.0, z: 1.0 };
         let negation: Point3 = Point3 { x: -1.0, y: -1.0, z: -1.0 };
         assert_eq!(-p1, negation);
     }
-
     #[test]
     fn indexing() {
         let p1: Point3 = Point3 { x: 1.0, y: 1.0, z: 1.0 };

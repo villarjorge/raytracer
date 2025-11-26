@@ -1,5 +1,6 @@
 use crate::{Point3, point3::Vector3};
 
+/// Ray is a geometrical line: \vec{A} + \vec{B}t
 pub struct Ray {
     pub origin: Point3,
     pub direction: Vector3,

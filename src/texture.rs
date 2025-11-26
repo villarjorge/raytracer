@@ -59,23 +59,24 @@ impl Texture for CheckerTexture {
     }
 }
 
-// To do: Make this the error texture
-// https://www.color-hex.com/color-palette/1024383
+/// An image texture, build on the image crate. Create with create_image_texture(). 
+/// If the path gives an error, load an error texture that is easy to see
 pub struct ImageTexture {
     image: ImageBuffer<Rgb<u8>, Vec<u8>>
 }
 
 pub fn create_image_texture(path: &str) -> Rc<dyn Texture> {
-    // let image: ImageBuffer<Rgb<u8>, Vec<u8>> = open(path).unwrap().into_rgb8();
-
-    // Rc::new(ImageTexture { image })
     match open(path) {
         Ok(image) => Rc::new(ImageTexture { image: image.into_rgb8() }),
         Err(image_error) => {
             eprintln!("Could not load the image texture. Falling back to default. Error:");
             eprintln!("{}", image_error);
 
-            checker_texture_from_colors(2.0, Point3 { x: 1.0, y: 0.0, z: 0.862745098039 }, Point3 { x: 0.00392156862745, y: 0.0, z: 0.00392156862745 })
+            checker_texture_from_colors(
+                2.0,
+                Point3 { x: 1.0, y: 0.0, z: 0.862745098039 },
+                Point3 { x: 0.00392156862745, y: 0.0, z: 0.00392156862745 }
+            )
         },
     }
 }

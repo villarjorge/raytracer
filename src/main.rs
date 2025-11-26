@@ -19,12 +19,12 @@ use crate::bvh::{BVHNode, bvh_node_from_hittable_list};
 use crate::camera::{Camera, CameraPosition, ImageQuality, ThinLens, create_camera};
 use crate::constant_medium::{constant_medium_from_color};
 use crate::hittable::{RotateY, Translate, create_rotate_y, create_translation};
-use crate::parallelogram::{create_box, create_parallelogram};
+use crate::parallelogram::{create_box, parallelogram};
 use crate::perlin::create_perlin_noise;
 use crate::point3::{point_from_array, random_vector};
 use crate::point3::{Point3, unit_vector};
 use crate::material::{Dielectric, DiffuseLight, Lambertian, Metal, dielectric, diffuse_light_from_color, lambertian, metal};
-use crate::sphere::{Sphere, create_sphere};
+use crate::sphere::{Sphere, sphere};
 use crate::hittable_list::HittableList;
 use crate::texture::{CheckerTexture, PerlinNoiseTexture, Texture, checker_texture_from_colors, create_image_texture, create_solid_color};
 
@@ -36,7 +36,7 @@ fn many_spheres() {
     let checker: Rc<CheckerTexture> = checker_texture_from_colors(3.1, Point3 {x: 0.2, y: 0.3, z: 0.1}, Point3 {x: 0.9, y: 0.9, z: 0.9});
     // let ground_material = Lambertian{texture: create_solid_color(Point3 { x: 0.5, y: 0.5, z: 0.5 })};
     let ground_material: Lambertian = Lambertian{texture: checker};
-    world.add(create_sphere(Point3{x: 0.0, y: -1000.0, z: -1.0}, 1000.0, Rc::new(ground_material)));
+    world.add(sphere(Point3{x: 0.0, y: -1000.0, z: -1.0}, 1000.0, Rc::new(ground_material)));
 
     const N: i32 = 11;
 
@@ -50,30 +50,30 @@ fn many_spheres() {
                     // Diffuse
                     let albedo: Point3 = random_vector(0.0, 1.0)*random_vector(0.0, 1.0);
                     let sphere_material: Lambertian = Lambertian{texture: create_solid_color(albedo)};
-                    world.add(create_sphere(center, 0.2, Rc::new(sphere_material)));
+                    world.add(sphere(center, 0.2, Rc::new(sphere_material)));
                 } else if choose_mat < 0.95 {
                     // Metal
                     let albedo: Point3 = random_vector(0.0, 1.0)*random_vector(0.0, 1.0);
                     let fuzz: f64 = rand::random_range(0.0..0.5);
                     let sphere_material: Metal = Metal{albedo, fuzz};
-                    world.add(create_sphere(center, 0.2, Rc::new(sphere_material)));
+                    world.add(sphere(center, 0.2, Rc::new(sphere_material)));
                 } else {
                     // Glass
                     let sphere_material: Dielectric = Dielectric { refraction_index: 1.5 };
-                    world.add(create_sphere(center, 0.2, Rc::new(sphere_material)));
+                    world.add(sphere(center, 0.2, Rc::new(sphere_material)));
                 }
             }
         }
     }
 
     let material1: Dielectric = Dielectric { refraction_index: 1.5 };
-    world.add(create_sphere(Point3 { x: 0.0, y: 1.0, z: 0.0 }, 1.0, Rc::new(material1)));
+    world.add(sphere(Point3 { x: 0.0, y: 1.0, z: 0.0 }, 1.0, Rc::new(material1)));
 
     let material2: Lambertian = Lambertian { texture: create_solid_color(Point3 { x: 0.4, y: 0.2, z: 0.1 }) };
-    world.add(create_sphere(Point3 { x: -4.0, y: 1.0, z: 0.0 }, 1.0, Rc::new(material2)));
+    world.add(sphere(Point3 { x: -4.0, y: 1.0, z: 0.0 }, 1.0, Rc::new(material2)));
 
     let material3: Metal = Metal { albedo: Point3 { x: 0.7, y: 0.6, z: 0.5 }, fuzz: 0.0 };
-    world.add(create_sphere(Point3 { x: 4.0, y: 1.0, z: 0.0 },  1.0,  Rc::new(material3)));
+    world.add(sphere(Point3 { x: 4.0, y: 1.0, z: 0.0 },  1.0,  Rc::new(material3)));
 
     // let material3: BlackBody = BlackBody {  };
     // world.add(Sphere{center: Point3 { x: 4.0, y: 1.0, z: 0.0 }, radius: 1.0, material: Rc::new(material3)});
@@ -112,8 +112,8 @@ fn checkered_spheres() {
     let checker: Rc<CheckerTexture> = checker_texture_from_colors(0.10, Point3 {x: 0.2, y: 0.3, z: 0.1}, Point3 {x: 0.9, y: 0.9, z: 0.9});
     let material: Rc<Lambertian> = Rc::new(Lambertian{texture: checker});
 
-    world.add(create_sphere(Point3{x: 0.0, y: -10.0, z: 0.0}, 10.0, material.clone()));
-    world.add(create_sphere(Point3{x: 0.0, y: 10.0, z: 0.0}, 10.0, material));
+    world.add(sphere(Point3{x: 0.0, y: -10.0, z: 0.0}, 10.0, material.clone()));
+    world.add(sphere(Point3{x: 0.0, y: 10.0, z: 0.0}, 10.0, material));
 
     let aspect_ratio: f64 = 16.0/9.0;
     let image_width: u32 = 400;
@@ -144,7 +144,7 @@ fn earth() {
     let earth_texture: Rc<dyn Texture> = create_image_texture("textures/earthmap.jpg");
     let earth_material: Rc<Lambertian> = Rc::new(Lambertian{texture: earth_texture});
 
-    world.add(create_sphere(Point3{x: 0.0, y: 0.0, z: 0.0}, 2.0, earth_material));
+    world.add(sphere(Point3{x: 0.0, y: 0.0, z: 0.0}, 2.0, earth_material));
 
     let aspect_ratio: f64 = 16.0/9.0;
     let image_width: u32 = 400;
@@ -175,8 +175,8 @@ fn perlin_spheres() {
     let perlin_texture: Rc<PerlinNoiseTexture>  = Rc::new(PerlinNoiseTexture { perlin_noise: create_perlin_noise(), scale: 2.0});
     let perlin_material: Rc<Lambertian> = Rc::new(Lambertian{ texture: perlin_texture });
 
-    world.add(create_sphere(Point3{x: 0.0, y: -1000.0, z: 0.0}, 1000.0, perlin_material.clone()));
-    world.add(create_sphere(Point3{x: 0.0, y: 2.0, z: 0.0}, 2.0, perlin_material));
+    world.add(sphere(Point3{x: 0.0, y: -1000.0, z: 0.0}, 1000.0, perlin_material.clone()));
+    world.add(sphere(Point3{x: 0.0, y: 2.0, z: 0.0}, 2.0, perlin_material));
 
     let aspect_ratio: f64 = 16.0/9.0;
     let image_width: u32 = 400;
@@ -211,11 +211,11 @@ fn para() {
     let upper_orange: Rc<Lambertian> = Rc::new(Lambertian{texture: create_solid_color(Point3 { x: 1.0, y: 0.5, z: 0.0 })});
     let lower_teal: Rc<Lambertian> = Rc::new(Lambertian{texture: create_solid_color(Point3 { x: 0.2, y: 0.8, z: 0.8})});
 
-    world.add(create_parallelogram(Point3{x: -3.0, y: -2.0, z:5.0}, Point3{x: 0.0, y: 0.0, z:-4.0}, Point3{x: 0.0, y:4.0, z:0.0}, left_red));
-    world.add(create_parallelogram(Point3{x: -2.0, y: -2.0, z:0.0}, Point3{x: 4.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:4.0, z:0.0}, back_green));
-    world.add(create_parallelogram(Point3{x:  3.0, y: -2.0, z:1.0}, Point3{x: 0.0, y: 0.0, z: 4.0}, Point3{x: 0.0, y:4.0, z:0.0}, right_blue));
-    world.add(create_parallelogram(Point3{x: -2.0, y:  3.0, z:1.0}, Point3{x: 4.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:4.0}, upper_orange));
-    world.add(create_parallelogram(Point3{x: -2.0, y: -3.0, z:5.0}, Point3{x: 4.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:-4.0}, lower_teal));
+    world.add(parallelogram(Point3{x: -3.0, y: -2.0, z:5.0}, Point3{x: 0.0, y: 0.0, z:-4.0}, Point3{x: 0.0, y:4.0, z:0.0}, left_red));
+    world.add(parallelogram(Point3{x: -2.0, y: -2.0, z:0.0}, Point3{x: 4.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:4.0, z:0.0}, back_green));
+    world.add(parallelogram(Point3{x:  3.0, y: -2.0, z:1.0}, Point3{x: 0.0, y: 0.0, z: 4.0}, Point3{x: 0.0, y:4.0, z:0.0}, right_blue));
+    world.add(parallelogram(Point3{x: -2.0, y:  3.0, z:1.0}, Point3{x: 4.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:4.0}, upper_orange));
+    world.add(parallelogram(Point3{x: -2.0, y: -3.0, z:5.0}, Point3{x: 4.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:-4.0}, lower_teal));
 
     let aspect_ratio: f64 = 1.0;
     let image_width: u32 = 400;
@@ -247,11 +247,11 @@ fn simple_light() {
     let perlin_texture: Rc<PerlinNoiseTexture>  = Rc::new(PerlinNoiseTexture { perlin_noise: create_perlin_noise(), scale: 2.0});
     let perlin_material: Rc<Lambertian> = Rc::new(Lambertian{ texture: perlin_texture });
 
-    world.add(create_sphere(Point3{x: 0.0, y: -1000.0, z: 0.0}, 1000.0, perlin_material.clone()));
-    world.add(create_sphere(Point3{x: 0.0, y: 2.0, z: 0.0}, 2.0, perlin_material));
+    world.add(sphere(Point3{x: 0.0, y: -1000.0, z: 0.0}, 1000.0, perlin_material.clone()));
+    world.add(sphere(Point3{x: 0.0, y: 2.0, z: 0.0}, 2.0, perlin_material));
 
     let diffuse_light: Rc<DiffuseLight> = diffuse_light_from_color(Point3 { x: 4.0, y: 4.0, z: 4.0 });
-    world.add(create_parallelogram(Point3{x: 3.0, y: 1.0, z:-2.0}, Point3{x: 2.0, y: 0.0, z:0.0}, Point3{x: 0.0, y:2.0, z:0.0}, diffuse_light));
+    world.add(parallelogram(Point3{x: 3.0, y: 1.0, z:-2.0}, Point3{x: 2.0, y: 0.0, z:0.0}, Point3{x: 0.0, y:2.0, z:0.0}, diffuse_light));
 
     let aspect_ratio: f64 = 16.0/9.0;
     let image_width: u32 = 400;
@@ -286,12 +286,12 @@ fn cornell_box() {
     let green: Rc<Lambertian> = Rc::new(Lambertian{ texture: create_solid_color(Point3 { x: 0.12, y: 0.45, z: 0.15 }) });
     let diffuse_light: Rc<DiffuseLight> = diffuse_light_from_color(Point3 { x: 15.0, y: 15.0, z: 15.0 });
 
-    world.add(create_parallelogram(Point3{x: 555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z:0.0}, Point3{x: 0.0, y:0.0, z:555.0}, green));
-    world.add(create_parallelogram(Point3{x: 0.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:555.0}, red));
-    world.add(create_parallelogram(Point3{x:  343.0, y: 554.0, z: 332.0}, Point3{x: -130.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:-105.0}, diffuse_light));
-    world.add(create_parallelogram(point_from_array([0.0, 555.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
-    world.add(create_parallelogram(point_from_array([0.0, 0.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
-    world.add(create_parallelogram(point_from_array([0.0, 0.0, 555.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 555.0, 0.0]), white.clone()));
+    world.add(parallelogram(Point3{x: 555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z:0.0}, Point3{x: 0.0, y:0.0, z:555.0}, green));
+    world.add(parallelogram(Point3{x: 0.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:555.0}, red));
+    world.add(parallelogram(Point3{x:  343.0, y: 554.0, z: 332.0}, Point3{x: -130.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:-105.0}, diffuse_light));
+    world.add(parallelogram(point_from_array([0.0, 555.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
+    world.add(parallelogram(point_from_array([0.0, 0.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
+    world.add(parallelogram(point_from_array([0.0, 0.0, 555.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 555.0, 0.0]), white.clone()));
 
     let box1: Rc<HittableList> = Rc::new(create_box(point_from_array([0.0, 0.0, 0.0]), point_from_array([165.0, 330.0, 165.0]), white.clone()));
     let box1_rotated: Rc<RotateY>  = Rc::new(create_rotate_y(box1, 15.0));
@@ -338,12 +338,12 @@ fn cornell_smoke() {
     let green: Rc<Lambertian> = Rc::new(Lambertian{ texture: create_solid_color(Point3 { x: 0.12, y: 0.45, z: 0.15 }) });
     let diffuse_light: Rc<DiffuseLight> = diffuse_light_from_color(Point3 { x: 7.0, y: 7.0, z: 7.0 });
 
-    world.add(create_parallelogram(Point3{x: 555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z:0.0}, Point3{x: 0.0, y:0.0, z:555.0}, green));
-    world.add(create_parallelogram(Point3{x: 0.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:555.0}, red));
-    world.add(create_parallelogram(Point3{x:  113.0, y: 554.0, z: 127.0}, Point3{x: 330.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:305.0}, diffuse_light));
-    world.add(create_parallelogram(point_from_array([0.0, 555.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
-    world.add(create_parallelogram(point_from_array([0.0, 0.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
-    world.add(create_parallelogram(point_from_array([0.0, 0.0, 555.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 555.0, 0.0]), white.clone()));
+    world.add(parallelogram(Point3{x: 555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z:0.0}, Point3{x: 0.0, y:0.0, z:555.0}, green));
+    world.add(parallelogram(Point3{x: 0.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:555.0}, red));
+    world.add(parallelogram(Point3{x:  113.0, y: 554.0, z: 127.0}, Point3{x: 330.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:305.0}, diffuse_light));
+    world.add(parallelogram(point_from_array([0.0, 555.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
+    world.add(parallelogram(point_from_array([0.0, 0.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
+    world.add(parallelogram(point_from_array([0.0, 0.0, 555.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 555.0, 0.0]), white.clone()));
 
     let box1: Rc<HittableList> = Rc::new(create_box(point_from_array([0.0, 0.0, 0.0]), point_from_array([165.0, 330.0, 165.0]), white.clone()));
     let box1_rotated: Rc<RotateY>  = Rc::new(create_rotate_y(box1, 15.0));
@@ -406,36 +406,36 @@ fn final_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
     world.add(bvh_node_from_hittable_list(boxes1));
 
     let light: Rc<DiffuseLight> = diffuse_light_from_color(point_from_array([7.0, 7.0, 7.0]));
-    world.add(create_parallelogram(point_from_array([123.0,554.0,147.0]), point_from_array([300.0, 0.0, 0.0]), point_from_array([0.0,0.0,265.0]), light));
+    world.add(parallelogram(point_from_array([123.0,554.0,147.0]), point_from_array([300.0, 0.0, 0.0]), point_from_array([0.0,0.0,265.0]), light));
 
     // Moving sphere that does not move
     let center: Point3 = point_from_array([400.0, 400.0, 200.0]);
     let sphere_material: Rc<Lambertian> = lambertian(point_from_array([0.7, 0.3, 0.1]));
-    world.add(create_sphere(center, 50.0, sphere_material));
+    world.add(sphere(center, 50.0, sphere_material));
 
     // Fuzzy metal and glass spheres
-    world.add(create_sphere(point_from_array([260.0, 150.0, 45.0]), 50.0, dielectric(1.5)));
-    world.add(create_sphere(
+    world.add(sphere(point_from_array([260.0, 150.0, 45.0]), 50.0, dielectric(1.5)));
+    world.add(sphere(
         point_from_array([0.0, 150.0, 145.0]), 50.0, metal(point_from_array([0.8, 0.8, 0.9]), 1.0)
     ));
 
     // Blue sphere with subsurface scattering (volume inside a dielectric)
-    let boundary: Rc<Sphere> = Rc::new(create_sphere(point_from_array([360.0, 150.0, 145.0]), 70.0, dielectric(1.5)));
+    let boundary: Rc<Sphere> = Rc::new(sphere(point_from_array([360.0, 150.0, 145.0]), 70.0, dielectric(1.5)));
     world.add_pointer(boundary.clone());
     world.add(constant_medium_from_color(boundary.clone(), 0.2, point_from_array([0.2, 0.4, 0.9])));
 
     // Big mist covering everything
-    let boundary2: Rc<Sphere> = Rc::new(create_sphere(point_from_array([0.0, 0.0, 0.0]), 5000.0, dielectric(1.5)));
+    let boundary2: Rc<Sphere> = Rc::new(sphere(point_from_array([0.0, 0.0, 0.0]), 5000.0, dielectric(1.5)));
     world.add(constant_medium_from_color(boundary2, 0.0001, point_from_array([1.0, 1.0, 1.0])));
 
     // Earth texture
     let emat: Rc<Lambertian> = Rc::new(Lambertian{texture: create_image_texture("textures/earthmap.jpg")});
-    world.add(create_sphere(point_from_array([400.0, 200.0, 400.0]), 100.0, emat));
+    world.add(sphere(point_from_array([400.0, 200.0, 400.0]), 100.0, emat));
 
     // Perlin sphere
     let perlin_texture: Rc<PerlinNoiseTexture>  = Rc::new(PerlinNoiseTexture { perlin_noise: create_perlin_noise(), scale: 0.2});
     let perlin_material: Rc<Lambertian> = Rc::new(Lambertian{ texture: perlin_texture });
-    world.add(create_sphere(point_from_array([220.0, 280.0, 300.0]), 80.0, perlin_material));
+    world.add(sphere(point_from_array([220.0, 280.0, 300.0]), 80.0, perlin_material));
 
     // Group of spheres
     let mut spheres: HittableList = HittableList::default();
@@ -443,7 +443,7 @@ fn final_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
 
     let ns: u32 = 1000;
     for _ in 0..ns {
-        spheres.add(create_sphere(random_vector(0.0, 165.0), 10.0, white.clone()));
+        spheres.add(sphere(random_vector(0.0, 165.0), 10.0, white.clone()));
     }
     // Translate and rotate them at the same time
     world.add_pointer(Rc::new(create_translation(

@@ -8,6 +8,7 @@ use crate::ray::Ray;
 use crate::material::Material;
 use crate::aabb::{AABB, aabb_from_points};
 
+/// An sphere hittable (you know the one, round etc). Constructed with sphere
 pub struct Sphere {
     center: Point3,
     radius: f64,
@@ -18,7 +19,7 @@ pub struct Sphere {
     bounding_box: AABB
 }
 
-pub fn create_sphere(center: Point3, radius: f64, material: Rc<dyn Material>) -> Sphere {
+pub fn sphere(center: Point3, radius: f64, material: Rc<dyn Material>) -> Sphere {
     let radius_vector: Point3 = Point3 { x: radius, y: radius, z: radius };
     let bounding_box: AABB = aabb_from_points(center - radius_vector, center + radius_vector);
     Sphere { center, radius: radius.max(0.0), material, bounding_box}
@@ -61,14 +62,15 @@ impl Hittable for Sphere {
     }
 }
 
+/// Compute apropiate coordinates in the surface of the sphere
+///     p: a given point on the sphere of radius one, centered at the origin.
+///     u: returned value [0,1] of angle around the Y axis from X=-1.
+///     v: returned value [0,1] of angle from Y=-1 to Y=+1.
+/// 
+///     <1 0 0> yields <0.50 0.50>       <-1  0  0> yields <0.00 0.50>
+///     <0 1 0> yields <0.50 1.00>       < 0 -1  0> yields <0.50 0.00>
+///     <0 0 1> yields <0.25 0.50>       < 0  0 -1> yields <0.75 0.50>
 pub fn get_sphere_uv(p: &Point3) -> SurfaceCoordinate {
-    // p: a given point on the sphere of radius one, centered at the origin.
-    // u: returned value [0,1] of angle around the Y axis from X=-1.
-    // v: returned value [0,1] of angle from Y=-1 to Y=+1.
-    //     <1 0 0> yields <0.50 0.50>       <-1  0  0> yields <0.00 0.50>
-    //     <0 1 0> yields <0.50 1.00>       < 0 -1  0> yields <0.50 0.00>
-    //     <0 0 1> yields <0.25 0.50>       < 0  0 -1> yields <0.75 0.50>
-
     let theta: f64 = (-p.y).acos();
     let phi: f64 = (-p.z).atan2(p.x) + PI;
 

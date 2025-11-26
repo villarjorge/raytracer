@@ -7,14 +7,23 @@ use crate::material::Material;
 use crate::point3::{Point3, Vector3, cross, dot, unit_vector};
 use crate::ray::Ray;
 
+/// A parallelogram object hittable. Constructed with parallelogram
 pub struct Parallelogram {
+    /// Starting corner
     q: Point3,
+    /// Vector representing the first side
     u: Vector3,
+    /// Vector representing the second side
     v: Vector3,
+    /// A vector normal to the plane defined by u and v, scaled a certain way
     w: Vector3,
+    /// Material of the parallelogram
     material: Rc<dyn Material>,
+    /// Bounding box of the parallelogram
     bounding_box: AABB,
+    /// Normal defined by cross(u, v)
     normal: Vector3,
+    /// The constant of the plane defined by the vectors
     d: f64,
 }
 
@@ -26,7 +35,7 @@ fn create_aabb_para(q: Point3, u: Point3, v: Point3) -> AABB {
     join_aabbs(&bounding_box0, &bounding_box1)
 }
 
-pub fn create_parallelogram(q: Point3, u: Vector3, v: Vector3, material: Rc<dyn Material>) -> Parallelogram {
+pub fn parallelogram(q: Point3, u: Vector3, v: Vector3, material: Rc<dyn Material>) -> Parallelogram {
     let bounding_box: AABB = create_aabb_para(q, u, v);
 
     let n: Vector3 = cross(&u, &v);
@@ -40,6 +49,10 @@ pub fn create_parallelogram(q: Point3, u: Vector3, v: Vector3, material: Rc<dyn 
 // To do: extend parallelogram to any polygon. How to do it efficiently and with little code?
 
 impl Hittable for Parallelogram {
+    /// Ray-parallelogram intersection will be determined in three steps:
+    ///     1. Finding the plane Ax + By + Cz = d that contains that parallelogram,
+    ///     2. Solving for the intersection of a ray and the parallelogram-containing plane,
+    ///     3. Determining if the hit point lies inside the parallelogram.
     fn hit(&'_ self, ray: &Ray, ray_t: Range<f64>) -> HitResult<'_> {
         let denominator: f64 = dot(&self.normal, &ray.direction);
 
@@ -72,19 +85,14 @@ impl Hittable for Parallelogram {
     }
 }
 
+/// Given the hit point in plane coordinates, return false if it is outside the primitive or true if it is inside
 fn is_interior(alpha: f64, beta: f64) -> bool {
-    // Given the hit point in plane coordinates, return false if it is outside the
-    // primitive, otherwise set the hit record UV coordinates and return true.
-
     let unit_interval: Range<f64> = 0.0..1.0;
-
-    if !unit_interval.contains(&alpha) || !unit_interval.contains(&beta) {
-        return false;
-    }
-
-    true
+    
+    !unit_interval.contains(&alpha) || !unit_interval.contains(&beta)
 }
 
+/// Create a box consisting of six parallelograms
 pub fn create_box(a: Point3, b: Point3, material: Rc<dyn Material>) -> HittableList {
     let mut sides: HittableList = HittableList::default();
 
@@ -96,12 +104,12 @@ pub fn create_box(a: Point3, b: Point3, material: Rc<dyn Material>) -> HittableL
     let dz: Point3 = Point3 { x: 0.0, y: 0.0, z: vertex_max.z - vertex_min.z };
 
     // To do: think of a better way to do this with a loop and an indicator
-    sides.add(create_parallelogram(Point3 { x: vertex_min.x, y: vertex_min.y, z: vertex_max.z }, dx, dy, material.clone()));
-    sides.add(create_parallelogram(Point3 { x: vertex_max.x, y: vertex_min.y, z: vertex_max.z }, -dz, dy, material.clone()));
-    sides.add(create_parallelogram(Point3 { x: vertex_max.x, y: vertex_min.y, z: vertex_min.z }, -dx, dy, material.clone()));
-    sides.add(create_parallelogram(Point3 { x: vertex_min.x, y: vertex_min.y, z: vertex_min.z }, dz, dy, material.clone()));
-    sides.add(create_parallelogram(Point3 { x: vertex_min.x, y: vertex_max.y, z: vertex_max.z }, dx, -dz, material.clone()));
-    sides.add(create_parallelogram(Point3 { x: vertex_min.x, y: vertex_min.y, z: vertex_min.z }, dx, dz, material.clone()));
+    sides.add(parallelogram(Point3 { x: vertex_min.x, y: vertex_min.y, z: vertex_max.z }, dx, dy, material.clone()));
+    sides.add(parallelogram(Point3 { x: vertex_max.x, y: vertex_min.y, z: vertex_max.z }, -dz, dy, material.clone()));
+    sides.add(parallelogram(Point3 { x: vertex_max.x, y: vertex_min.y, z: vertex_min.z }, -dx, dy, material.clone()));
+    sides.add(parallelogram(Point3 { x: vertex_min.x, y: vertex_min.y, z: vertex_min.z }, dz, dy, material.clone()));
+    sides.add(parallelogram(Point3 { x: vertex_min.x, y: vertex_max.y, z: vertex_max.z }, dx, -dz, material.clone()));
+    sides.add(parallelogram(Point3 { x: vertex_min.x, y: vertex_min.y, z: vertex_min.z }, dx, dz, material.clone()));
 
     sides
 }
