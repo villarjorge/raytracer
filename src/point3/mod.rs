@@ -6,7 +6,7 @@ use rand;
 
 // Name is point3 to avoid warning with similarly named vec
 // To do: Remove this derive to sort out references and borrows
-#[derive(Clone, Copy)] 
+#[derive(Clone, Copy, PartialEq, Debug)] 
 pub struct Point3 {
     pub x: f64,
     pub y: f64,

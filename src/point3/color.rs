@@ -2,6 +2,9 @@
 use super::Point3;
 use std::{fs::File, io::{BufWriter, Write}};
 
+// To do: Find and import rgb function. It is a very cool funtion that lets you easyly see the color
+//const RED = rgb(243, 27, 11);
+
 // Define this alias
 pub type Color = Point3;
 
