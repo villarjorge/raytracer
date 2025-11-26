@@ -19,6 +19,7 @@ pub enum ScatterResult {
     DidScatter(ScatteredRayAndAttenuation)
 }
 
+/// The default for scatter is ScatterResult::DidNotScatter and for emitted Point3 { x: 0.0, y: 0.0, z: 0.0 } (black)
 pub trait Material {
     fn scatter(&self, _ray_in: &Ray, _record: &HitRecord) -> ScatterResult {
         ScatterResult::DidNotScatter
@@ -29,19 +30,15 @@ pub trait Material {
     }
 }
 
-// Perfect black body at 0K: absorbs all incoming rays and does not emit anything
+
 // To do: have a temperature parameter, which then gets transformed into color
 // Resources: 
 // - http://www.vendian.org/mncharity/dir3/blackbody/
 // - https://web.archive.org/web/20010821031240/http://astronomy.swin.edu.au:80/pbourke/colour/conversion.html
+/// Perfect black body at 0K: absorbs all incoming rays and does not emit anything
 pub struct BlackBody {} 
 
-impl Material for BlackBody {
-    fn scatter(&self, _ray_in: &Ray, _record: &HitRecord) -> ScatterResult {
-        ScatterResult::DidNotScatter
-    }
-}
-
+/// A Lambertian or ideal diffuse material.  
 pub struct Lambertian {
     pub texture: Rc<dyn Texture>
 }
@@ -75,6 +72,7 @@ pub fn lambertian(color: Color) -> Rc<Lambertian> {
 //     Rc::new(Lambertian{ texture })
 // }
 
+/// A metal material: it reflects according to Snell's law, with some randomness added, controled by the fuzz parameter
 pub struct Metal {
     pub albedo: Color,
     pub fuzz: f64
@@ -96,7 +94,13 @@ pub fn metal(albedo: Color, fuzz: f64) -> Rc<Metal> {
     Rc::new(Metal { albedo, fuzz })
 }
 
+/// A dielectric material: it reflets or refracts depending on the angle:
+///     - Reflects: Angle is shallow enough or reflectance is bigger that some random value
+///     - Refracts: otherwise
+/// Reflectance is calculated with Schlick's aproximation
 pub struct Dielectric {
+    /// Refractive index in vacuum or air, or the ratio of the material's refractive index over
+    /// the refractive index of the enclosing media
     pub refraction_index: f64
 }
 
@@ -141,6 +145,7 @@ pub fn dielectric(refraction_index: f64) -> Rc<Dielectric> {
     Rc::new(Dielectric { refraction_index })
 }
 
+// A diffuse light: always emmits some texture, does not scatter
 pub struct DiffuseLight {
     texture: Rc<dyn Texture>
 }
@@ -155,6 +160,7 @@ impl Material for DiffuseLight {
     }
 }
 
+/// An isotropic material: Scatters light in a uniform random direction
 pub struct Isotropic {
     pub texture: Rc<dyn Texture>
 }

@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod point3 {
-    use crate::point3::{Point3, cross, dot};
+    use crate::{point3::{Point3, cross, dot}};
     #[test]
     fn add_two() {
         let p1: Point3 = Point3{x: 2.5, y: -3.4, z: 0.42};
@@ -63,9 +63,15 @@ mod point3 {
         let y: Point3 = Point3 { x: 0.0, y: 1.0, z: 0.0 };
         let z: Point3 = Point3 { x: 0.0, y: 0.0, z: 1.0 };
 
-        // x -> y -> z -> x -> y -> z ->
+        // x -> y -> z -> x -> y -> z -> ...
         assert_eq!(cross(&x, &y), z);
         assert_eq!(cross(&z, &x), y);
         assert_eq!(cross(&y, &z), x);
+    }
+    #[test]
+    fn lenghts() {
+        let p1: Point3 = Point3 { x: 3.0, y: 4.0, z: 5.0 };
+        assert_eq!(p1.length_squared(), 25.0);
+        assert_eq!(p1.length(), 5.0)
     }
 }

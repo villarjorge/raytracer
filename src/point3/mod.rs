@@ -35,6 +35,7 @@ impl Default for Point3 {
 impl Index<u8> for Point3 {
     /// The indices (0, 1, 2) correspond to (x, y, z)
     type Output = f64;
+    
     fn index(&self, index: u8) -> &Self::Output {
         match index {
             0 => { &self.x },
@@ -227,7 +228,7 @@ pub fn random_in_unit_disk() -> Point3 {
 // "Optical" vector operations
 
 /// Computes the reflection of v across the normal n
-pub fn reflect(v: Point3, n: Point3) -> Point3{
+pub fn reflect(v: Point3, n: Point3) -> Point3 {
     v - 2.0*dot(&v, &n)*n
 }
 

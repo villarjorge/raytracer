@@ -138,9 +138,9 @@ fn ray_color(given_ray: &Ray, depth: u32, world: &dyn Hittable, background_color
 }
 
 impl Camera {
+    /// Construct a camera ray originating from the defocus disk and directed at a randomly
+    /// sampled point around the pixel location i, j.
     fn get_ray(&self, i: u32, j: u32) -> Ray {
-        // Construct a camera ray originating from the defocus disk and directed at a randomly
-        // sampled point around the pixel location i, j.
         let offset: Point3 = sample_square();
         let pixel_sample: Point3 = self.pixel00_loc + (self.pixel_delta_u * (i as f64 + offset.x)) + (self.pixel_delta_v * (j as f64 + offset.y));
         let ray_origin: Point3 = if self.defocus_angle <= 0.0 { self.camera_center } else { self.defocus_disk_sample() };
@@ -148,14 +148,15 @@ impl Camera {
 
         Ray{origin:ray_origin, direction:ray_direction}
     }
+    
     fn defocus_disk_sample(&self) -> Vector3 {
         let p: Point3 = random_in_unit_disk();
         self.camera_center + p.x*self.defocus_disk_u + p.y*self.defocus_disk_v
     }
 }
 
+/// Returns a vector to a random point in the x, y € [-0.5, 0.5] square
 fn sample_square() -> Vector3 {
-    // Returns a vector to a random point in the x, y € [-0.5, 0.5] square
     Vector3 { x: rand::random_range(-0.5..0.5), y: rand::random_range(-0.5..0.5), z: 0.0f64 }
 }
 

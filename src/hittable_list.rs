@@ -6,6 +6,7 @@ use crate::hittable::{HitResult, Hittable};
 use crate::ray::Ray;
 
 #[derive(Default)]
+/// A vector of pointers to objects that implement the hittable trait. 
 pub struct HittableList {
     // HittableList is a list of objects with the hittable trait. 
     // The objects can be of diferent sizes, so it is necesary to use a reference or a pointer. 
@@ -24,10 +25,12 @@ impl HittableList {
     pub fn clear(mut self) {
         self.objects.clear()
     }
+    /// Extend the list's bounding box by the object's and add the object, creating a pointer first 
     pub fn add<T: Hittable + 'static>(&mut self, to_add: T) {
         self.bounding_box = join_aabbs(&self.bounding_box, to_add.bounding_box());
         self.objects.push(Rc::new(to_add));
     }
+    /// Extend the list's bounding box by the object's and add the pointer to the object
     pub fn add_pointer(&mut self, to_add: Rc<dyn Hittable>) {
         self.bounding_box = join_aabbs(&self.bounding_box, to_add.bounding_box());
         self.objects.push(to_add);
@@ -35,6 +38,7 @@ impl HittableList {
 }
 
 impl Hittable for HittableList {
+    /// Go through the objects on the vector and compute their hit functions. Keep track of the closest and return that
     fn hit(&'_ self, ray: &Ray, ray_t: Range<f64>) -> HitResult<'_> {
         let mut current_result: HitResult = HitResult::DidNotHit;
         let mut closest_so_far: f64 = ray_t.end; // max

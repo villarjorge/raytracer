@@ -2,8 +2,10 @@
 use super::Point3;
 use std::{fs::File, io::{BufWriter, Write}};
 
-// To do: Find and import rgb function. It is a very cool funtion that lets you easyly see the color
+// To do: Find and import rgb function. It is integrated in vscode and it lets you easily see the color
 //const RED = rgb(243, 27, 11);
+
+// To do: Make colors physical. Transfrom colors to frequencies for calculations and then transform them back to rgb for printing
 
 // Define this alias
 pub type Color = Point3;

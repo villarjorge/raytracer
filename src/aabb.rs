@@ -4,6 +4,7 @@ use crate::point3::Point3;
 use crate::ray::Ray;
 
 #[derive(Clone)]
+/// An axis aligned bounding box (AABB), composed from three ranges of f64's. 
 pub struct AABB {
     x: Range<f64>, 
     y: Range<f64>, 
@@ -19,6 +20,7 @@ impl Default for AABB {
 // https://doc.rust-lang.org/std/ops/trait.Index.html
 // To do: this does not actually produce a reference, since in hit you still need to borrow
 impl Index<u8> for AABB {
+    /// The indices (0, 1, 2) correspond to (x, y, z)
     type Output = Range<f64>;
 
     fn index(&self, index: u8) -> &Self::Output {
@@ -32,6 +34,7 @@ impl Index<u8> for AABB {
 }
 
 impl Add<Point3> for AABB {
+    /// Shift an AABB by the coordinates of the point 
     type Output = Self;
 
     fn add(self, rhs: Point3) -> Self::Output {
@@ -43,48 +46,40 @@ impl Add<Point3> for AABB {
     }
 }
 
-fn pad_to_minimums(x: Range<f64>, y: Range<f64>, z: Range<f64>) -> (Range<f64>, Range<f64>, Range<f64>) {
+/// Pad a range with a small positive non zero value. If the range is reversed (2..0 for example), panic
+fn pad_to_minimums(x: Range<f64>) -> Range<f64> {
     const DELTA: f64 = 0.0001;
 
     let x_expanded: Range<f64> = {
-        if x.end - x.start < DELTA { (x.start + DELTA)..(x.end + DELTA) }
+        if x.end < x.start { panic!("Tried to pad reversed (and therefore empty) range") }
+        else if x.end - x.start < DELTA { (x.start + DELTA)..(x.end + DELTA) }
         else { x.start..x.end }
     };
-    let y_expanded: Range<f64> = {
-        if y.end - y.start < DELTA { (y.start + DELTA)..(y.end + DELTA) }
-        else { y.start..y.end }
-    };
-    let z_expanded: Range<f64> = {
-        if z.end - z.start < DELTA { (z.start + DELTA)..(z.end + DELTA) }
-        else { z.start..z.end }
-    };
 
-    (x_expanded, y_expanded, z_expanded)
+    x_expanded
 }
- 
+
+/// Create an AABB from two corner points
 pub fn aabb_from_points(a: Point3, b: Point3) -> AABB {
     let x: Range<f64> = if a.x <= b.x {a.x..b.x} else {b.x..a.x};
     let y: Range<f64> = if a.y <= b.y {a.y..b.y} else {b.y..a.y};
     let z: Range<f64> = if a.z <= b.z {a.z..b.z} else {b.z..a.z};
 
-    let (x_expanded, y_expanded, z_expanded): (Range<f64>, Range<f64>, Range<f64>) = pad_to_minimums(x, y, z);
-
-    AABB {x: x_expanded, y: y_expanded, z: z_expanded}
+    AABB {x: pad_to_minimums(x), y: pad_to_minimums(y), z: pad_to_minimums(z)}
 }
 
+/// Unite two ranges, creating one that encompases the two
 fn unite_ranges(r1: &Range<f64>, r2: &Range<f64>) -> Range<f64> {
     r1.start.min(r2.start)..r1.end.max(r2.end)
 }
 
+/// Joins together two bounding boxes to create a new box that encompases the two
 pub fn join_aabbs(bounding_box0: &AABB, bounding_box1: &AABB) -> AABB {
-    // Joins together two bounding boxes to create a new box that encompases the two
     let x: Range<f64> = unite_ranges(&bounding_box0.x, &bounding_box1.x);
     let y: Range<f64> = unite_ranges(&bounding_box0.y, &bounding_box1.y);
     let z: Range<f64> = unite_ranges(&bounding_box0.z, &bounding_box1.z);
-    
-    let (x_expanded, y_expanded, z_expanded): (Range<f64>, Range<f64>, Range<f64>) = pad_to_minimums(x, y, z);
 
-    AABB {x: x_expanded, y: y_expanded, z: z_expanded}
+    AABB {x: pad_to_minimums(x), y: pad_to_minimums(y), z: pad_to_minimums(z)}
 }
 
 // fn check_axis(ray_t: &Range<f64>, axis: &Range<f64>, inverse_coord: f64, origin_coord: f64) -> bool {
@@ -143,12 +138,13 @@ impl AABB {
         }
     }
 
+    /// Returns the index of the longest axis of the bounding box
     pub fn longest_axis(&self) -> u8 {
-        // Returns the idex of the longest axis of the bounding box
         let x_size: f64 = self.x.end - self.x.start;
         let y_size: f64 = self.y.end - self.y.start;
         let z_size: f64 = self.z.end - self.z.start;
 
+        // To do: This can be done with 3 comparisons instead of 4
         if x_size > y_size && x_size > z_size { 0 }
         else if y_size > x_size && y_size > z_size { 1 }
         else { 2 }

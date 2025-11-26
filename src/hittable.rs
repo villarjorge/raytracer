@@ -6,25 +6,37 @@ use crate::point3::{Point3, Vector3, point_from_array, rotate_y};
 use crate::ray::Ray;
 use crate::material::Material;
 
-// A pair of floats, so it does not matter much if you copy them
 #[derive(Clone, Copy)]
+/// The coordinates in a given surface
 pub struct SurfaceCoordinate {
     pub u: f64,
     pub v: f64
 }
 
+/// A grouping of parameters related to the ray-object intersection
 pub struct HitRecord<'a> {
+    /// Point of intersection
     pub p: Point3,
+    /// Normal at that point
     pub normal: Vector3,
+    /// Material at the given intersection
+    // To do: change this to a Rc<dyn Material>
     pub material: &'a dyn Material,  // &'a Box<dyn Material>
+    /// Parameter of the ray at the intersection
     pub t: f64,
+    /// Coordinates of the point of intersection in the surface
     pub surface_coords: SurfaceCoordinate,
+    /// Whether the intersection is on the front or back of the surface
     pub front_face: bool,
 }
 
+/// Creates a HitRecord given some of it's parameters: 
+///     - ray, 
+///     - t: parameter of the ray, 
+///     - outward_normal: normal of the surface, assumed to be unit lenght
+///     - material
+///     - surface_coords
 pub fn create_hit_record<'a>(ray: &Ray, t: f64, outward_normal: Vector3, material: &'a dyn Material, surface_coords: SurfaceCoordinate) -> HitRecord<'a> {
-    // Creates a HitRecord with all it's parameters from the colliding ray, the 
-    // parameter of the ray at the point of collision, the normal at that point, and the material of the surface
     let p: Point3 = ray.at(t);
 
     // let unit_outward_normal: Point3 = unit_vector(outward_normal);
@@ -35,6 +47,9 @@ pub fn create_hit_record<'a>(ray: &Ray, t: f64, outward_normal: Vector3, materia
     HitRecord {p, normal, material, t, surface_coords, front_face }
 }
 
+/// Encapsulates the two possible results of the ray-object intersection: 
+///     - DidNotHit
+///     - HitRecord(_): did hit with it's accompaning hit record 
 // For now, checking for a hit requires calculating it, so in the function that checks for hits return ether 
 pub enum HitResult<'a> {
     DidNotHit,
@@ -50,6 +65,7 @@ pub trait Hittable {
     fn bounding_box(&self) -> &AABB; // Needed since hittables will be behind pointers that will be dereferenced
 }
 
+/// An instance of translation
 pub struct Translate {
     object: Rc<dyn Hittable>,
     offset: Vector3,
@@ -79,6 +95,7 @@ pub fn create_translation(object: Rc<dyn Hittable>, offset: Vector3) -> Translat
     Translate { object, offset, bounding_box: bounding_box + offset }
 }
 
+/// An instance of rotation on the y axis
 pub struct RotateY {
     object: Rc<dyn Hittable>,
     sin_theta: f64,

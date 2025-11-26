@@ -32,6 +32,7 @@ pub fn constant_medium_from_color(boundary: Rc<dyn Hittable>, density: f64, colo
 
 impl Hittable for ConstantMedium {
     fn hit(&'_ self, ray: &Ray, ray_t: Range<f64>) -> HitResult<'_> {
+        // To do: improve this nested structure
         match self.boundary.hit(ray, -f64::INFINITY..f64::INFINITY) {
             HitResult::DidNotHit => HitResult::DidNotHit,
             HitResult::HitRecord(hit_record1) => {
@@ -60,6 +61,7 @@ impl Hittable for ConstantMedium {
                         //     - 4.0*(x - 0.5).powi(4) 
                         //     + 6.4*(x - 0.5).powi(5);
                         // Turns out that to avoid the error you just had to define the variable with its type
+                        // To do: improve the error message for error [E0689]
                         let hit_distance: f64 = self.neg_inv_density * x.ln();
 
                         if hit_distance > distance_inside_boundary { return HitResult::DidNotHit;}
