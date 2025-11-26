@@ -63,6 +63,7 @@ impl Hittable for Quadric {
             z: 2.0*self.p1.z*p.z + self.p2.y*p.x + self.p2.z*p.y,
         } + self.p3;
 
+        // To do: ☠☠ find equations for coordinates in a general quadric and implement them ☠☠
         let surface_coords: SurfaceCoordinate = SurfaceCoordinate {u: 0.0, v: 0.0};
 
         // To do: To deal with the material, dereference the pointer, then create a reference. Change this so you don't
@@ -87,14 +88,14 @@ fn anticross(u: &Point3, v: &Point3) -> Point3 {
     }
 }
 
-pub fn cylinder(material: Rc<dyn Material>) -> Quadric {
-    let bounding_box: AABB = aabb_from_points(Point3 { x: 0.0, y: 0.0, z: 0.0 }, Point3 { x: 1.0, y: 1.0, z: 1.0 });
+pub fn y_cylinder(radius: f64, material: Rc<dyn Material>) -> Quadric {
+    let bounding_box: AABB = aabb_from_points(Point3 { x: 0.0, y: 0.0, z: 0.0 }, Point3 { x: radius, y: radius, z: radius });
 
     Quadric { 
         p1: Point3 { x: 1.0, y: 0.0, z: 1.0 }, 
         p2: Point3::default(), 
         p3: Point3::default(), 
-        j: -1.0, 
+        j: -radius, 
         material, 
         bounding_box
     }

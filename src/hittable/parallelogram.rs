@@ -89,7 +89,11 @@ impl Hittable for Parallelogram {
 fn is_interior(alpha: f64, beta: f64) -> bool {
     let unit_interval: Range<f64> = 0.0..1.0;
     
-    !unit_interval.contains(&alpha) || !unit_interval.contains(&beta)
+    !(!unit_interval.contains(&alpha) || !unit_interval.contains(&beta))
+    // if !unit_interval.contains(&alpha) || !unit_interval.contains(&beta) {
+    //     return false;
+    // }
+    // true
 }
 
 /// Create a box consisting of six parallelograms
