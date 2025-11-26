@@ -20,3 +20,7 @@
 19/11/2025
     13:32 
         With 100 samples per pixel, with BVH nodes and textures: 31.359s
+
+25/11/2025
+    16:17
+        Final scene, 250 samples per pixel, 4 max depth: 480.984s

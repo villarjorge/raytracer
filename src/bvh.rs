@@ -9,6 +9,7 @@ use crate::ray::Ray;
 use crate::hittable::{HitResult};
 
 // To do: consider if this can be replaced by rust's native implementation
+// https://doc.rust-lang.org/std/collections/struct.BTreeMap.html
 pub enum BVHNode {
     Leaf {
         objects: HittableList,
@@ -16,6 +17,7 @@ pub enum BVHNode {
     },
     Internal {
         // When multithreading is implemented, these Boxes will have to become Arc
+        // Or will they? I don't think I need to modify data nor clone pointers on the fly, just access data, so Rc and box should be fine
         left: Box<dyn Hittable>,
         right: Box<dyn Hittable>,
         bounding_box: AABB
