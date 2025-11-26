@@ -1,7 +1,7 @@
 use std::{ops::Range, rc::Rc};
 
 use crate::aabb::{AABB, aabb_from_points, join_aabbs};
-use crate::hittable_list::HittableList;
+use crate::hittable::hittable_list::HittableList;
 use crate::hittable::{HitResult, Hittable, SurfaceCoordinate, create_hit_record};
 use crate::material::Material;
 use crate::point3::{Point3, Vector3, cross, dot, unit_vector};

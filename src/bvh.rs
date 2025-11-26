@@ -3,7 +3,7 @@ use std::ops::Range;
 use std::rc::Rc;
 
 use crate::aabb::join_aabbs;
-use crate::hittable_list::{HittableList};
+use crate::hittable::hittable_list::{HittableList};
 use crate::{aabb::AABB, hittable::Hittable};
 use crate::ray::Ray;
 use crate::hittable::{HitResult};

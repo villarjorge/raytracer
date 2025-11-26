@@ -1,15 +1,12 @@
 pub mod point3;
-pub mod ray;
 pub mod hittable;
-pub mod sphere;
-pub mod hittable_list;
+pub mod ray;
 pub mod camera;
 pub mod material;
 pub mod aabb;
 pub mod bvh;
 pub mod texture;
 pub mod perlin;
-pub mod parallelogram;
 pub mod constant_medium;
 pub mod tests;
 
@@ -19,13 +16,13 @@ use crate::bvh::{BVHNode, bvh_node_from_hittable_list};
 use crate::camera::{Camera, CameraPosition, ImageQuality, ThinLens, create_camera};
 use crate::constant_medium::{constant_medium_from_color};
 use crate::hittable::{RotateY, Translate, create_rotate_y, create_translation};
-use crate::parallelogram::{create_box, parallelogram};
+use crate::hittable::parallelogram::{create_box, parallelogram};
 use crate::perlin::create_perlin_noise;
 use crate::point3::{point_from_array, random_vector};
 use crate::point3::{Point3, unit_vector};
 use crate::material::{Dielectric, DiffuseLight, Lambertian, Metal, dielectric, diffuse_light_from_color, lambertian, metal};
-use crate::sphere::{Sphere, sphere};
-use crate::hittable_list::HittableList;
+use crate::hittable::sphere::{Sphere, sphere};
+use crate::hittable::hittable_list::HittableList;
 use crate::texture::{CheckerTexture, PerlinNoiseTexture, Texture, checker_texture_from_colors, create_image_texture, create_solid_color};
 
 fn many_spheres() {

@@ -169,3 +169,7 @@ pub fn create_rotate_y(object: Rc<dyn Hittable>, angle_in_degrees: f64) -> Rotat
 
     RotateY { object, sin_theta, cos_theta, bounding_box:aabb_from_points(point_from_array(minimum), point_from_array(maximum)) }
 }
+
+pub mod hittable_list;
+pub mod parallelogram;
+pub mod sphere;
