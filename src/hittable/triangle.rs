@@ -86,5 +86,5 @@ impl Hittable for Triangle {
 
 /// Given the hit point in plane coordinates, return false if it is outside the primitive or true if it is inside
 fn is_interior(alpha: f64, beta: f64) -> bool {
-    !(alpha > 0.0 && beta > 0.0 && alpha + beta < 1.0)
+    alpha > 0.0 && beta > 0.0 && alpha + beta < 1.0
 }

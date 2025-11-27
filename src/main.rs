@@ -578,8 +578,9 @@ fn cornell_triangle() {
     world.add(parallelogram(point_from_array([0.0, 0.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
     world.add(parallelogram(point_from_array([0.0, 0.0, 555.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 555.0, 0.0]), white.clone()));
 
-    let anchor: Point3 = Point3 { x: 0.0, y: 0.0, z: 0.0 };
-    world.add(triangle(anchor, anchor + Point3 { x: 200.0, y: 200.0, z: 200.0 }, anchor + Point3 { x: 100.0, y: 0.0, z: 100.0 }, white.clone()));
+
+    world.add(triangle(Point3 { x: 555.0/2.0, y: 555.0/2.0, z: 555.0/2.0 }, Point3 { x: 100.0, y: 100.0, z: 10.0 }, Point3 { x: 100.0, y: 0.0, z: 100.0 }, white.clone()));
+    // world.add(parallelogram(Point3 { x: 555.0/2.0, y: 555.0/2.0, z: 555.0/2.0 }, Point3 { x: 100.0, y: 100.0, z: 10.0 }, Point3 { x: 100.0, y: 0.0, z: 100.0 }, white.clone()));
 
     let aspect_ratio: f64 = 1.0;
     let image_width: u32 = 300;
