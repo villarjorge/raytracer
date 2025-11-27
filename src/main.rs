@@ -489,17 +489,18 @@ fn cornell_quadric() {
 
     world.add(parallelogram(Point3{x: 555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z:0.0}, Point3{x: 0.0, y:0.0, z:555.0}, green));
     world.add(parallelogram(Point3{x: 0.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:555.0}, red));
-    world.add(parallelogram(Point3{x:  343.0, y: 554.0, z: 332.0}, Point3{x: -130.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:-105.0}, diffuse_light));
+    world.add(parallelogram(Point3{x:  113.0, y: 554.0, z: 127.0}, Point3{x: 330.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:305.0}, diffuse_light));
     world.add(parallelogram(point_from_array([0.0, 555.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
     world.add(parallelogram(point_from_array([0.0, 0.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
     world.add(parallelogram(point_from_array([0.0, 0.0, 555.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 555.0, 0.0]), white.clone()));
 
-    world.add(y_cylinder(100.0, white.clone()));
+    world.add(y_cylinder(Point3 { x: 555.0/2.0, y: 555.0/2.0, z: 555.0/2.0 }, 100.0, white.clone()));
+    // world.add(sphere(Point3 { x: 555.0/2.0, y: 555.0/2.0, z: 555.0/2.0 }, 100.0, white.clone()));
 
     let aspect_ratio: f64 = 1.0;
-    let image_width: u32 = 600;
+    let image_width: u32 = 300;
     let samples_per_pixel: u32 = 20;
-    let max_depth: u32 = 50;
+    let max_depth: u32 = 4;
     let image_quality: ImageQuality = ImageQuality {samples_per_pixel, max_depth};
 
     let background_color: Point3 = Point3 { x: 0.0, y: 0.0, z: 0.0 };
@@ -530,12 +531,12 @@ fn debug_quadric() {
 
     let white: Rc<Lambertian> = Rc::new(Lambertian{ texture: create_solid_color(Point3 { x: 0.73, y: 0.73, z: 0.73 }) });
 
-    world.add(sphere(Point3 { x: 0.0, y: 0.0, z: 0.0 }, 1.0, white.clone()));
-    // world.add(y_cylinder(1.0, white.clone()));
+    world.add(sphere(Point3 { x: 3.0, y: 0.0, z: 0.0 }, 1.0, white.clone()));
+    world.add(y_cylinder(Point3 { x: 0.0, y: 0.0, z: 0.0 },1.0, white.clone()));
 
     let aspect_ratio: f64 = 1.0;
-    let image_width: u32 = 300;
-    let samples_per_pixel: u32 = 20;
+    let image_width: u32 = 600;
+    let samples_per_pixel: u32 = 50;
     let max_depth: u32 = 50;
     let image_quality: ImageQuality = ImageQuality {samples_per_pixel, max_depth};
 
@@ -559,7 +560,7 @@ fn debug_quadric() {
 }
 
 fn main() {
-    let scene_number: u32 = 151;
+    let scene_number: u32 = 9;
 
     match scene_number {
         0 => many_spheres(),

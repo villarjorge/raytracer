@@ -10,7 +10,7 @@ use crate::{
     aabb::{AABB, aabb_from_points}, 
     hittable::{HitRecord, HitResult, Hittable, SurfaceCoordinate, create_hit_record}, 
     material::Material, 
-    point3::{Point3, Vector3}, 
+    point3::{Point3, Vector3, dot, unit_vector}, 
     ray::Ray
 };
 
@@ -57,14 +57,19 @@ impl Hittable for Quadric {
         let p: Point3 = ray.at(root);
 
         // This is also in sympy_quadric.py
-        let outward_normal: Vector3 = Point3 { 
+        let normal: Vector3 = Point3 { 
             x: 2.0*self.p1.x*p.x + self.p2.x*p.y + self.p2.y*p.z,
             y: 2.0*self.p1.y*p.y + self.p2.x*p.x + self.p2.z*p.z,
             z: 2.0*self.p1.z*p.z + self.p2.y*p.x + self.p2.z*p.y,
         } + self.p3;
 
+        // If the ray originates inside of the surface, reverse the normal
+        let outward_normal: Point3 = if dot(&d, &p) > 0.0 { -unit_vector(normal) } else { unit_vector(normal) };
+
         // To do: ☠☠ find equations for coordinates in a general quadric and implement them ☠☠
         let surface_coords: SurfaceCoordinate = SurfaceCoordinate {u: 0.0, v: 0.0};
+
+        // To do: ☠☠ once you have those coordinates, you can reverse based on them, like in Parallelogram ☠☠
 
         // To do: To deal with the material, dereference the pointer, then create a reference. Change this so you don't
         let record: HitRecord = create_hit_record(ray, root, outward_normal, &*self.material, surface_coords);
@@ -88,14 +93,14 @@ fn anticross(u: &Point3, v: &Point3) -> Point3 {
     }
 }
 
-pub fn y_cylinder(radius: f64, material: Rc<dyn Material>) -> Quadric {
+pub fn y_cylinder(center: Point3, radius: f64, material: Rc<dyn Material>) -> Quadric {
     let bounding_box: AABB = aabb_from_points(Point3 { x: 0.0, y: 0.0, z: 0.0 }, Point3 { x: radius, y: radius, z: radius });
 
     Quadric { 
         p1: Point3 { x: 1.0, y: 0.0, z: 1.0 }, 
-        p2: Point3::default(), 
+        p2: Point3 { x: -2.0*center.x, y: 0.0, z: -2.0*center.z},
         p3: Point3::default(), 
-        j: -radius, 
+        j: - radius*radius - center.x*center.x - center.z*center.z, 
         material, 
         bounding_box
     }
