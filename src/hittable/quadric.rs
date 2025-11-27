@@ -37,6 +37,7 @@ impl Hittable for Quadric {
         let b: f64 = 2.0*self.p1.dot(d*o) + self.p2.dot(anticross(&d, &o)) + self.p3.dot(d);
         let c: f64 = self.p1.dot(o*o) + self.p2.dot(anticross(&o, &o)) + self.p3.dot(o) + self.j;
 
+        // Once you have those coeficients, you procede in basically the same way as in sphere
         let discriminant: f64 = b*b - 4.0*a*c;
 
         if discriminant < 0.0 {
@@ -93,14 +94,48 @@ fn anticross(u: &Point3, v: &Point3) -> Point3 {
     }
 }
 
+// p1 is basically and "indicator": cylinders in xyz correspond to (011), (101), (110); sphere is (111); Perhaps you can generalize?
+/// An infinite cylinder made from a general quadric. The cylinder is perpendicular to the y axis. The bounding box of the cylinder is 
+/// a cube of side equal to the diameter of the cylinder, and as such it can "shorten" it.
 pub fn y_cylinder(center: Point3, radius: f64, material: Rc<dyn Material>) -> Quadric {
-    let bounding_box: AABB = aabb_from_points(Point3 { x: 0.0, y: 0.0, z: 0.0 }, Point3 { x: radius, y: radius, z: radius });
+    let radius_vector: Point3 = Point3 { x: radius, y: radius, z: radius };
+    let bounding_box: AABB = aabb_from_points(center - radius_vector, center + radius_vector);
 
     Quadric { 
         p1: Point3 { x: 1.0, y: 0.0, z: 1.0 }, 
-        p2: Point3 { x: -2.0*center.x, y: 0.0, z: -2.0*center.z},
-        p3: Point3::default(), 
-        j: - radius*radius - center.x*center.x - center.z*center.z, 
+        p2: Point3::default(),
+        p3: center*Point3 { x: -2.0, y: 0.0, z: -2.0}, 
+        j: - radius*radius + center.x*center.x + center.z*center.z, 
+        material, 
+        bounding_box
+    }
+}
+
+/// Quadric sphere for testing purposes. The other sphere has proper surface coordinates
+pub fn quadric_sphere(center: Point3, radius: f64, material: Rc<dyn Material>) -> Quadric {
+    let radius_vector: Point3 = Point3 { x: radius, y: radius, z: radius };
+    let bounding_box: AABB = aabb_from_points(center - radius_vector, center + radius_vector);
+
+    Quadric { 
+        p1: Point3 { x: 1.0, y: 1.0, z: 1.0 }, 
+        p2: Point3::default(), 
+        p3: -2.0*center, 
+        j: - radius*radius + dot(&center, &center), 
+        material, 
+        bounding_box 
+    }
+}
+
+/// A cone parallel to the y axis. Internaly represented as a general quadric
+pub fn y_cone(center: Point3, offset: Point3, material: Rc<dyn Material>) -> Quadric {
+    let bounding_box: AABB = aabb_from_points(center - offset, center + offset);
+
+    let indicator: Point3 = Point3 { x: 1.0, y: -1.0, z: 1.0 };
+    Quadric { 
+        p1: indicator, 
+        p2: Point3::default(),
+        p3: -2.0*indicator*center,
+        j: dot(&(center*indicator), &center),
         material, 
         bounding_box
     }

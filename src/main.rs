@@ -15,7 +15,7 @@ use std::rc::Rc;
 use crate::bvh::{BVHNode, bvh_node_from_hittable_list};
 use crate::camera::{Camera, CameraPosition, ImageQuality, ThinLens, create_camera};
 use crate::constant_medium::{constant_medium_from_color};
-use crate::hittable::quadric::{y_cylinder};
+use crate::hittable::quadric::{y_cone, y_cylinder};
 use crate::hittable::{RotateY, Translate, create_rotate_y, create_translation};
 use crate::hittable::parallelogram::{create_box, parallelogram};
 use crate::perlin::create_perlin_noise;
@@ -494,8 +494,10 @@ fn cornell_quadric() {
     world.add(parallelogram(point_from_array([0.0, 0.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
     world.add(parallelogram(point_from_array([0.0, 0.0, 555.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 555.0, 0.0]), white.clone()));
 
-    world.add(y_cylinder(Point3 { x: 555.0/2.0, y: 555.0/2.0, z: 555.0/2.0 }, 100.0, white.clone()));
+    world.add(y_cylinder(Point3 { x: 100.0, y: 555.0/2.0, z: 555.0/2.0 }, 50.0, white.clone()));
+    // world.add(quadric_sphere(Point3 { x: 555.0/2.0, y: 555.0/2.0, z: 555.0/2.0 }, 100.0, white.clone()));
     // world.add(sphere(Point3 { x: 555.0/2.0, y: 555.0/2.0, z: 555.0/2.0 }, 100.0, white.clone()));
+    world.add(y_cone(Point3 { x: 300.0, y: 100.0, z: 555.0 }, Point3 { x: 50.0, y: 50.0, z: 50.0 }, white.clone()));
 
     let aspect_ratio: f64 = 1.0;
     let image_width: u32 = 300;
