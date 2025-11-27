@@ -174,3 +174,4 @@ pub mod hittable_list;
 pub mod parallelogram;
 pub mod sphere;
 pub mod quadric;
+pub mod triangle;

@@ -15,7 +15,8 @@ use std::rc::Rc;
 use crate::bvh::{BVHNode, bvh_node_from_hittable_list};
 use crate::camera::{Camera, CameraPosition, ImageQuality, ThinLens, create_camera};
 use crate::constant_medium::{constant_medium_from_color};
-use crate::hittable::quadric::{y_cone, y_cylinder};
+use crate::hittable::quadric::{y_cylinder};
+use crate::hittable::triangle::triangle;
 use crate::hittable::{RotateY, Translate, create_rotate_y, create_translation};
 use crate::hittable::parallelogram::{create_box, parallelogram};
 use crate::perlin::create_perlin_noise;
@@ -494,16 +495,17 @@ fn cornell_quadric() {
     world.add(parallelogram(point_from_array([0.0, 0.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
     world.add(parallelogram(point_from_array([0.0, 0.0, 555.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 555.0, 0.0]), white.clone()));
 
-    world.add(y_cylinder(Point3 { x: 100.0, y: 555.0/2.0, z: 555.0/2.0 }, 50.0, white.clone()));
+    world.add(y_cylinder(Point3 { x: 150.0, y: 555.0/2.0, z: 175.0 }, 50.0, white.clone()));
+    world.add(y_cylinder(Point3 { x: 400.0, y: 555.0/2.0, z: 555.0/2.0 + 50.0 }, 80.0, white.clone()));
     // world.add(quadric_sphere(Point3 { x: 555.0/2.0, y: 555.0/2.0, z: 555.0/2.0 }, 100.0, white.clone()));
     // world.add(sphere(Point3 { x: 555.0/2.0, y: 555.0/2.0, z: 555.0/2.0 }, 100.0, white.clone()));
-    world.add(y_cone(Point3 { x: 300.0, y: 100.0, z: 555.0 }, Point3 { x: 50.0, y: 50.0, z: 50.0 }, white.clone()));
+    // world.add(y_cone(Point3 { x: 200.0, y: 555.0, z: 200.0 }, Point3 { x: 50.0, y: 50.0, z: 50.0 }, white.clone()));
 
     let aspect_ratio: f64 = 1.0;
-    let image_width: u32 = 300;
-    let samples_per_pixel: u32 = 20;
-    let max_depth: u32 = 4;
-    let image_quality: ImageQuality = ImageQuality {samples_per_pixel, max_depth};
+    // let image_width: u32 = 300;
+    // let image_quality: ImageQuality = ImageQuality::low_quality();
+    let image_width: u32 = 600;
+    let image_quality: ImageQuality = ImageQuality::medium_quality();
 
     let background_color: Point3 = Point3 { x: 0.0, y: 0.0, z: 0.0 };
 
@@ -561,8 +563,51 @@ fn debug_quadric() {
     cam.render(&world);
 }
 
+fn cornell_triangle() {
+    let mut world: HittableList = HittableList::default();
+
+    let red: Rc<Lambertian> = Rc::new(Lambertian{ texture: create_solid_color(Point3 { x: 0.65, y: 0.05, z: 0.05 }) });
+    let white: Rc<Lambertian> = Rc::new(Lambertian{ texture: create_solid_color(Point3 { x: 0.73, y: 0.73, z: 0.73 }) });
+    let green: Rc<Lambertian> = Rc::new(Lambertian{ texture: create_solid_color(Point3 { x: 0.12, y: 0.45, z: 0.15 }) });
+    let diffuse_light: Rc<DiffuseLight> = diffuse_light_from_color(Point3 { x: 15.0, y: 15.0, z: 15.0 });
+
+    world.add(parallelogram(Point3{x: 555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z:0.0}, Point3{x: 0.0, y:0.0, z:555.0}, green));
+    world.add(parallelogram(Point3{x: 0.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:555.0}, red));
+    world.add(parallelogram(Point3{x:  113.0, y: 554.0, z: 127.0}, Point3{x: 330.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:305.0}, diffuse_light));
+    world.add(parallelogram(point_from_array([0.0, 555.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
+    world.add(parallelogram(point_from_array([0.0, 0.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
+    world.add(parallelogram(point_from_array([0.0, 0.0, 555.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 555.0, 0.0]), white.clone()));
+
+    let anchor: Point3 = Point3 { x: 0.0, y: 0.0, z: 0.0 };
+    world.add(triangle(anchor, anchor + Point3 { x: 200.0, y: 200.0, z: 200.0 }, anchor + Point3 { x: 100.0, y: 0.0, z: 100.0 }, white.clone()));
+
+    let aspect_ratio: f64 = 1.0;
+    let image_width: u32 = 300;
+    let image_quality: ImageQuality = ImageQuality::low_quality();
+    // let image_width: u32 = 600;
+    // let image_quality: ImageQuality = ImageQuality::medium_quality();
+
+    let background_color: Point3 = Point3 { x: 0.0, y: 0.0, z: 0.0 };
+
+    let vfov: f64 = 40.0;
+    let defocus_angle:f64 = 0.0;
+    let focus_distance: f64 = 10.0;
+
+    let lens: ThinLens = ThinLens { defocus_angle, focus_distance };
+
+    let look_from: Point3 = Point3{x: 278.0, y: 278.0, z: -800.0};
+    let look_at: Point3 = Point3{x: 278.0, y: 278.0, z: 0.0};
+    let view_up: Point3 = Point3{x: 0.0, y: 1.0, z: 0.0};
+
+    let camera_position: CameraPosition = CameraPosition { look_from, look_at, view_up };
+
+    let cam: Camera = create_camera(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
+
+    cam.render(&world);
+}
+
 fn main() {
-    let scene_number: u32 = 9;
+    let scene_number: u32 = 11;
 
     match scene_number {
         0 => many_spheres(),
@@ -576,6 +621,7 @@ fn main() {
         8 => final_scene(800, 10_000, 40),
         9 => cornell_quadric(),
         10 => debug_quadric(),
+        11 => cornell_triangle(),
         _ => final_scene(400, 20, 4),
     }
 }

@@ -41,6 +41,17 @@ pub struct ImageQuality {
     pub max_depth: u32,
 }
 
+impl ImageQuality {
+    /// A low quality preset for debuging and prototyping. It has 20 samples per pixel and rays stop after 4 bounces
+    pub fn low_quality() -> ImageQuality {
+        ImageQuality { samples_per_pixel: 20, max_depth: 4 }
+    }
+    /// A medium quality preset. It has 20 samples per pixel and rays stop after 50 bounces
+    pub fn medium_quality() -> ImageQuality {
+        ImageQuality { samples_per_pixel: 200, max_depth: 50 }
+    }
+}
+
 // To do: function has to many arguments
 pub fn create_camera(aspect_ratio: f64, image_width: u32, image_quality: ImageQuality, vfov: f64, thin_lens: ThinLens, camera_position: CameraPosition, background_color: Point3) -> Camera {
     // Calculate the image height, and ensure that it's at least 1.
