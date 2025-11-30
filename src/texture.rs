@@ -2,14 +2,14 @@ use std::rc::Rc;
 
 use image::{ImageBuffer, Rgb, open};
 
-use crate::{hittable::SurfaceCoordinate, perlin::PerlinNoise, point3::Point3};
+use crate::{hittable::SurfaceCoordinate, perlin::PerlinNoise, point3::{Point3, color::Color}};
 
 pub trait Texture {
-    fn value(&self, surface_coords: SurfaceCoordinate, p: &Point3) -> Point3;
+    fn value(&self, surface_coords: SurfaceCoordinate, p: &Point3) -> Color;
 }
 
 pub struct SolidColor {
-    albedo: Point3
+    albedo: Color
 }
 
 pub fn create_solid_color(color: Point3) -> Rc<SolidColor> {

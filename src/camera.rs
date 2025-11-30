@@ -2,7 +2,7 @@ use std::{cmp, fs::File, io::{BufWriter, Write}};
 
 use rand;
 
-use crate::material::ScatterResult;
+use crate::{material::ScatterResult, point3::color::Color};
 use crate::point3::{Point3, Vector3, cross, random_in_unit_disk, unit_vector};
 use crate::point3::color::write_color;
 use crate::ray::Ray;
@@ -127,20 +127,20 @@ impl Camera {
 
 // Private
 
-fn ray_color(given_ray: &Ray, depth: u32, world: &dyn Hittable, background_color: Point3) -> Point3 {
+fn ray_color(given_ray: &Ray, depth: u32, world: &dyn Hittable, background_color: Color) -> Color {
     if depth == 0 {
-        return Point3{x: 0.0, y: 0.0, z: 0.0};
+        return Color{x: 0.0, y: 0.0, z: 0.0};
     }
 
     match world.hit(given_ray, 0.001..f64::INFINITY) {
         // If the ray hits nothing return the background color
         HitResult::DidNotHit => {background_color},
         HitResult::HitRecord(hit_record) => {
-            let color_from_emission: Point3 = hit_record.material.emitted(hit_record.surface_coords, &hit_record.p);
+            let color_from_emission: Color = hit_record.material.emitted(hit_record.surface_coords, &hit_record.p);
             match hit_record.material.scatter(given_ray, &hit_record) {
                 ScatterResult::DidNotScatter => color_from_emission,
                 ScatterResult::DidScatter(sca_att) => {
-                    let color_from_scatter: Point3 = sca_att.attenuation * ray_color(&sca_att.scattered_ray, depth-1, world, background_color);
+                    let color_from_scatter: Color = sca_att.attenuation * ray_color(&sca_att.scattered_ray, depth-1, world, background_color);
                     color_from_emission + color_from_scatter
                 }
             }

@@ -11,7 +11,7 @@ use crate::unit_vector;
 // multiple objects could use the same material, which means that the material pointer needs to outlive everything else
 pub struct ScatteredRayAndAttenuation { // think of a better name?
     pub scattered_ray: Ray,
-    pub attenuation: Point3
+    pub attenuation: Color
 }
 
 pub enum ScatterResult {
@@ -25,8 +25,8 @@ pub trait Material {
         ScatterResult::DidNotScatter
     }
 
-    fn emitted(&self, _surface_coords: SurfaceCoordinate, _p: &Point3) -> Point3{
-        Point3 { x: 0.0, y: 0.0, z: 0.0 }
+    fn emitted(&self, _surface_coords: SurfaceCoordinate, _p: &Point3) -> Color {
+        Color { x: 0.0, y: 0.0, z: 0.0 }
     }
 }
 
@@ -56,7 +56,7 @@ impl Material for Lambertian {
             }
         };
 
-        let attenuation: Point3 = self.texture.value(record.surface_coords, &record.p);
+        let attenuation: Color = self.texture.value(record.surface_coords, &record.p);
         let scattered_ray: Ray = Ray{origin: record.p, direction: scatter_direction};
         let sca_att: ScatteredRayAndAttenuation = ScatteredRayAndAttenuation{scattered_ray, attenuation};
 
@@ -125,7 +125,7 @@ impl Material for Dielectric {
             }
         };
         
-        let attenuation: Point3 = Point3 { x: 1.0, y: 1.0, z: 1.0 };
+        let attenuation: Color = Color { x: 1.0, y: 1.0, z: 1.0 };
         let scattered_ray: Ray = Ray { origin: record.p, direction };
 
         let sca_att: ScatteredRayAndAttenuation = ScatteredRayAndAttenuation{scattered_ray, attenuation};
@@ -155,7 +155,7 @@ pub fn diffuse_light_from_color(color: Point3) -> Rc<DiffuseLight> {
 }
 
 impl Material for DiffuseLight {
-    fn emitted(&self, surface_coords: SurfaceCoordinate, p: &Point3) -> Point3 {
+    fn emitted(&self, surface_coords: SurfaceCoordinate, p: &Point3) -> Color {
         self.texture.value(surface_coords, p)
     }
 }
@@ -169,7 +169,7 @@ impl Material for Isotropic {
     fn scatter(&self, _ray_in: &Ray, record: &HitRecord) -> ScatterResult {
         // Scatter in a uniform random direction
         let scattered_ray: Ray = Ray { origin: record.p, direction: random_unit_vector() };
-        let attenuation: Point3 = self.texture.value(record.surface_coords, &record.p);
+        let attenuation: Color = self.texture.value(record.surface_coords, &record.p);
 
         ScatterResult::DidScatter(ScatteredRayAndAttenuation { scattered_ray, attenuation })
     }

@@ -67,7 +67,7 @@ impl Hittable for Quadric {
         // If the ray originates inside of the surface, reverse the normal
         let outward_normal: Point3 = if dot(&d, &p) > 0.0 { -unit_vector(normal) } else { unit_vector(normal) };
 
-        // To do: ☠☠ find equations for coordinates in a general quadric and implement them ☠☠
+        // To do: Since there is no general closed form coordinates, find some other way to get surface coordinates. Use differential geomety?
         let surface_coords: SurfaceCoordinate = SurfaceCoordinate {u: 0.0, v: 0.0};
 
         // To do: ☠☠ once you have those coordinates, you can reverse based on them, like in Parallelogram ☠☠

@@ -6,6 +6,7 @@ use std::{fs::File, io::{BufWriter, Write}};
 //const RED = rgb(243, 27, 11);
 
 // To do: Make colors physical. Transfrom colors to frequencies for calculations and then transform them back to rgb for printing
+// Not easy to do since the sum of two waves does not have a singular frequency 
 
 // Define this alias
 pub type Color = Point3;
