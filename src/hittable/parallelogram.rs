@@ -8,7 +8,12 @@ use crate::point3::{Point3, Vector3, cross, dot, unit_vector};
 use crate::ray::Ray;
 
 /// A parallelogram object hittable. Constructed with parallelogram
+// Hottest data first
 pub struct Parallelogram {
+    /// Normal defined by cross(u, v)
+    normal: Vector3,
+    /// The constant of the plane defined by the vectors
+    d: f64,
     /// Starting corner
     q: Point3,
     /// Vector representing the first side
@@ -21,10 +26,6 @@ pub struct Parallelogram {
     material: Rc<dyn Material>,
     /// Bounding box of the parallelogram
     bounding_box: AABB,
-    /// Normal defined by cross(u, v)
-    normal: Vector3,
-    /// The constant of the plane defined by the vectors
-    d: f64,
 }
 
 fn create_aabb_para(q: Point3, u: Point3, v: Point3) -> AABB {
@@ -43,7 +44,7 @@ pub fn parallelogram(q: Point3, u: Vector3, v: Vector3, material: Rc<dyn Materia
     let d: f64 = dot(&normal, &q);
     let w: Vector3 = n / dot(&n, &n);
 
-    Parallelogram { q, u, v, w, material, bounding_box, normal, d }
+    Parallelogram { normal, d, q, u, v, w, material, bounding_box}
 }
 
 // To do: extend parallelogram to any polygon. How to do it efficiently and with little code?
@@ -55,17 +56,20 @@ impl Hittable for Parallelogram {
     ///     3. Determining if the hit point lies inside the parallelogram.
     fn hit(&'_ self, ray: &Ray, ray_t: Range<f64>) -> HitResult<'_> {
         let denominator: f64 = dot(&self.normal, &ray.direction);
+        // let denominator: f64 = self.normal.dot(ray.direction);
+
+        // Return false if the hit point parameter t is outside the ray interval.
+        let t: f64 = (self.d - dot(&self.normal, &ray.origin))/denominator;
+        // if !ray_t.contains(&t) {
+        if t < ray_t.start || ray_t.end < t {
+            return HitResult::DidNotHit;
+        }
 
         // No hit if the ray is parallel to the plane
         if denominator.abs() < 1e-8 {
             return HitResult::DidNotHit;
         }
 
-        // Return false if the hit point parameter t is outside the ray interval.
-        let t: f64 = (self.d - dot(&self.normal, &ray.origin))/denominator;
-        if !ray_t.contains(&t) {
-            return HitResult::DidNotHit;
-        }
         // Determine if the hit point lies within the planar shape using its plane coordinates.
         let planar_hitpoint_vector: Vector3  = ray.at(t) - self.q;
         let alpha: f64 = dot(&self.w, &cross(&planar_hitpoint_vector, &self.v));

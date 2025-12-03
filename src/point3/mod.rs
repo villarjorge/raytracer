@@ -25,6 +25,13 @@ pub fn point_from_array(array: [f64; 3]) -> Point3 {
     Point3 { x: array[0], y: array[1], z: array[2] }
 }
 
+// To do: implement new for all hittables, materials and textures
+impl Point3 {
+    pub fn new(x: f64, y: f64, z: f64) -> Point3 {
+        Point3 { x, y, z }
+    }
+}
+
 impl Default for Point3 {
     /// The default is {0.0, 0.0, 0.0}
     fn default() -> Self {

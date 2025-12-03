@@ -79,7 +79,7 @@ pub fn create_bvh_node(mut objects: Vec<Rc<dyn Hittable>>) -> BVHNode {
         bounding_box = join_aabbs(&bounding_box, object.bounding_box())
     }
 
-    let axis = bounding_box.longest_axis();
+    let axis: u8 = bounding_box.longest_axis();
 
     // To do: This threshold controls how many objects there are in the leaf nodes. Optimize for performance
     const THRESHOLD: usize = 4;

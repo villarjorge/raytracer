@@ -108,12 +108,14 @@ impl AABB {
 
         for axis_index in 0_u8..3 {
             let axis: &Range<f64> = &self[axis_index];
+            // To do: improve AABB by caching the inverse of the direction. Extend ray to store the inverse of direction
             let inverse_coord: f64 = 1.0/ray_direction[axis_index];
             // let origin_coord: f64 = ray_origin[axis_index];
 
             let t0: f64 = (axis.start - ray_origin[axis_index])*inverse_coord;
             let t1: f64 = (axis.end - ray_origin[axis_index])*inverse_coord;
 
+            // To do: Remove this comparison https://tavianator.com/2011/ray_box.html 
             if t0 < t1 {
                 if t0 > ray_t.start { ray_t.start = t0; }
                 if t1 < ray_t.end { ray_t.end = t1; }

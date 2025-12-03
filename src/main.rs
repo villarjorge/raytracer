@@ -15,17 +15,20 @@ use std::rc::Rc;
 use crate::bvh::{BVHNode, bvh_node_from_hittable_list};
 use crate::camera::{Camera, CameraPosition, ImageQuality, ThinLens, create_camera};
 use crate::constant_medium::{constant_medium_from_color};
-use crate::hittable::quadric::{y_cylinder};
-use crate::hittable::triangle::triangle;
-use crate::hittable::{RotateY, Translate, create_rotate_y, create_translation};
-use crate::hittable::parallelogram::{create_box, parallelogram};
 use crate::perlin::create_perlin_noise;
-use crate::point3::{point_from_array, random_vector};
-use crate::point3::{Point3, unit_vector};
+use crate::point3::{Point3, unit_vector, point_from_array, random_vector};
 use crate::material::{Dielectric, DiffuseLight, Lambertian, Metal, dielectric, diffuse_light_from_color, lambertian, metal};
-use crate::hittable::sphere::{Sphere, sphere};
-use crate::hittable::hittable_list::HittableList;
+use crate::hittable::{
+    sphere::{Sphere, sphere},
+    hittable_list::HittableList,
+    quadric::{y_cylinder},
+    triangle::triangle,
+    {RotateY, Translate, create_rotate_y, create_translation},
+    parallelogram::{create_box, parallelogram},
+};
 use crate::texture::{CheckerTexture, PerlinNoiseTexture, Texture, checker_texture_from_colors, create_image_texture, create_solid_color};
+
+// To do: once new() is implemented for hittables, materials and textures standarize the creation of objects in main
 
 fn many_spheres() {
     // World
@@ -385,6 +388,7 @@ fn final_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
     let mut boxes1: HittableList = HittableList::default();
     let ground: Rc<Lambertian> = lambertian(point_from_array([0.48, 0.83, 0.53]));
 
+    // In total 400 boxes, 2400 parallelograms
     let boxes_per_side: u32 = 20;
     for i in 0..boxes_per_side {
         for j in 0..boxes_per_side {
@@ -440,8 +444,8 @@ fn final_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
     let mut spheres: HittableList = HittableList::default();
     let white: Rc<Lambertian> = lambertian(point_from_array([0.73, 0.73, 0.73]));
 
-    let ns: u32 = 1000;
-    for _ in 0..ns {
+    let number_of_spheres: u32 = 1000;
+    for _ in 0..number_of_spheres {
         spheres.add(sphere(random_vector(0.0, 165.0), 10.0, white.clone()));
     }
     // Translate and rotate them at the same time
@@ -452,7 +456,8 @@ fn final_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
                     15.0)
             ),
             point_from_array([-100.0, 270.0, 395.0])
-            ))
+            )
+        )
     );
 
     let aspect_ratio: f64 = 1.0;
@@ -608,7 +613,7 @@ fn cornell_triangle() {
 }
 
 fn main() {
-    let scene_number: u32 = 11;
+    let scene_number: u32 = 12;
 
     match scene_number {
         0 => many_spheres(),

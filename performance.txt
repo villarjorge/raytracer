@@ -24,3 +24,16 @@
 25/11/2025
     16:17
         Final scene, 250 samples per pixel, 4 max depth: 480.984s
+
+03/12/2025
+    11:11
+        Final scene, 400 width, 20 samples per pixel, 4 max depth: 10.61s + 23.273s
+    12:36
+        Final scene, 400 width, 20 samples per pixel, 4 max depth: 5.09s + 33s
+    12.43
+        Final scene, 400 width, 20 samples per pixel, 4 max depth: 33.250s
+        Final scene, 400 width, 20 samples per pixel, 4 max depth, with expanded ray_t.contains: 32.284s
+        Final scene, 400 width, 20 samples per pixel, 4 max depth, with check denominator later: 32.174s
+        Final scene, 400 width, 20 samples per pixel, 4 max depth past two things together: 31.165s
+        From now on descrive incremental changes
+        Reordering the Parallelogram struct: 32.334s
