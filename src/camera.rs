@@ -157,7 +157,7 @@ impl Camera {
         let ray_origin: Point3 = if self.defocus_angle <= 0.0 { self.camera_center } else { self.defocus_disk_sample() };
         let ray_direction: Point3 = pixel_sample - ray_origin;
 
-        Ray{origin:ray_origin, direction:ray_direction}
+        Ray::new(ray_origin, ray_direction)
     }
     
     fn defocus_disk_sample(&self) -> Vector3 {

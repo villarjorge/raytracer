@@ -75,7 +75,7 @@ pub struct Translate {
 impl Hittable for Translate {
     fn hit(&'_ self, ray: &Ray, ray_t: Range<f64>) -> HitResult<'_> {
         // Move the ray backwards by the offset
-        let offset_ray: Ray = Ray { origin: ray.origin - self.offset, direction: ray.direction };
+        let offset_ray: Ray = Ray::new(ray.origin - self.offset, ray.direction);
         // Check for intersection with the new ray
         match self.object.hit(&offset_ray, ray_t) {
             HitResult::DidNotHit => HitResult::DidNotHit,
@@ -109,7 +109,7 @@ impl Hittable for RotateY {
         let origin: Point3 = rotate_y(&ray.origin, self.cos_theta, self.sin_theta);
         let direction: Point3 = rotate_y(&ray.direction, self.cos_theta, self.sin_theta);
 
-        let rotated_ray: Ray = Ray { origin, direction };
+        let rotated_ray: Ray = Ray::new(origin, direction);
 
         match self.object.hit(&rotated_ray, ray_t) {
             HitResult::DidNotHit => HitResult::DidNotHit,

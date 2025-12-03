@@ -57,7 +57,7 @@ impl Material for Lambertian {
         };
 
         let attenuation: Color = self.texture.value(record.surface_coords, &record.p);
-        let scattered_ray: Ray = Ray{origin: record.p, direction: scatter_direction};
+        let scattered_ray: Ray = Ray::new(record.p, scatter_direction);
         let sca_att: ScatteredRayAndAttenuation = ScatteredRayAndAttenuation{scattered_ray, attenuation};
 
         ScatterResult::DidScatter(sca_att)
@@ -82,7 +82,7 @@ impl Material for Metal {
     fn scatter(&self, ray_in: &Ray, record: &HitRecord) -> ScatterResult {
         let reflected: Vector3 = reflect(ray_in.direction, record.normal);
         let reflected_with_fuzz: Vector3 = unit_vector(reflected) + (self.fuzz * random_unit_vector());
-        let scattered_ray: Ray = Ray{origin: record.p, direction: reflected_with_fuzz};
+        let scattered_ray: Ray = Ray::new(record.p, reflected_with_fuzz);
 
         let sca_att: ScatteredRayAndAttenuation = ScatteredRayAndAttenuation{scattered_ray, attenuation: self.albedo};
 
@@ -126,7 +126,7 @@ impl Material for Dielectric {
         };
         
         let attenuation: Color = Color { x: 1.0, y: 1.0, z: 1.0 };
-        let scattered_ray: Ray = Ray { origin: record.p, direction };
+        let scattered_ray: Ray = Ray::new(record.p, direction);
 
         let sca_att: ScatteredRayAndAttenuation = ScatteredRayAndAttenuation{scattered_ray, attenuation};
 
@@ -168,7 +168,7 @@ pub struct Isotropic {
 impl Material for Isotropic {
     fn scatter(&self, _ray_in: &Ray, record: &HitRecord) -> ScatterResult {
         // Scatter in a uniform random direction
-        let scattered_ray: Ray = Ray { origin: record.p, direction: random_unit_vector() };
+        let scattered_ray: Ray = Ray::new(record.p, random_unit_vector());
         let attenuation: Color = self.texture.value(record.surface_coords, &record.p);
 
         ScatterResult::DidScatter(ScatteredRayAndAttenuation { scattered_ray, attenuation })

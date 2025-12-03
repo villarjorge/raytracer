@@ -38,4 +38,5 @@
         From now on descrive incremental changes
         Reordering the Parallelogram struct: 32.334s
     I have coded a scene with less randomness. Now to test it 
-        profiler_scene: 
+        profiler_scene: 24.877s, 24.987s, 24.736s
+        With cached inverse direction in ray: 24.838s, 24.854s, 25.001s
