@@ -37,3 +37,5 @@
         Final scene, 400 width, 20 samples per pixel, 4 max depth past two things together: 31.165s
         From now on descrive incremental changes
         Reordering the Parallelogram struct: 32.334s
+    I have coded a scene with less randomness. Now to test it 
+        profiler_scene: 

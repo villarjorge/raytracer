@@ -8,12 +8,11 @@ use crate::point3::{Point3, Vector3, cross, dot, unit_vector};
 use crate::ray::Ray;
 
 /// A parallelogram object hittable. Constructed with parallelogram
-// Hottest data first
 pub struct Parallelogram {
-    /// Normal defined by cross(u, v)
-    normal: Vector3,
     /// The constant of the plane defined by the vectors
     d: f64,
+    /// Normal defined by cross(u, v)
+    normal: Vector3,
     /// Starting corner
     q: Point3,
     /// Vector representing the first side
