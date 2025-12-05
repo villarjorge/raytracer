@@ -100,14 +100,17 @@ pub fn join_aabbs(bounding_box0: &AABB, bounding_box1: &AABB) -> AABB {
 // }
 
 impl AABB {
-    pub fn hit(&self, ray: &Ray, ray_t: &mut Range<f64>) -> bool {
+    pub fn _hit(&self, ray: &Ray, ray_t: &mut Range<f64>) -> bool {
+        // The hit function as descrived by the book, useful for understanding what it does
         // A bounding box is simpler than an object, we only care if the bounding box is hit or not
         // This 2nd hottest part of the code, taking 31.6% of CPU time
         let ray_origin: Point3 = ray.origin;
+        // let ray_direction: Point3 = ray.direction;
         let inverse_direction: Point3 = ray.inverse_direction;
 
         for axis_index in 0_u8..3 {
             let axis: &Range<f64> = &self[axis_index];
+            // let inverse_coord: f64 = 1.0/ray_direction[axis_index];
             let inverse_coord: f64 = inverse_direction[axis_index];
             // let origin_coord: f64 = ray_origin[axis_index];
 
@@ -126,6 +129,82 @@ impl AABB {
         }
 
         true
+    }
+
+    pub fn hit(&self, ray: &Ray, ray_t: &mut Range<f64>) -> bool {
+        // A bounding box is simpler than an object, we only care if the bounding box is hit or not
+        // This 2nd hottest part of the code, taking 31.6% of CPU time
+        let ray_origin: Point3 = ray.origin;
+        // let ray_direction: Point3 = ray.direction;
+        let inverse_direction: Point3 = ray.inverse_direction;
+
+        for axis_index in 0_u8..3 {
+            let axis: &Range<f64> = &self[axis_index];
+            // let inverse_coord: f64 = 1.0/ray_direction[axis_index];
+            let inverse_coord: f64 = inverse_direction[axis_index];
+            // let origin_coord: f64 = ray_origin[axis_index];
+
+            let t0: f64 = (axis.start - ray_origin[axis_index])*inverse_coord;
+            let t1: f64 = (axis.end - ray_origin[axis_index])*inverse_coord;
+
+            // This website helped me optimize this a little: https://tavianator.com/2011/ray_box.html 
+            if t0 < t1 {
+                ray_t.start = ray_t.start.max(t0);
+                ray_t.end = ray_t.end.min(t1);
+            } else {
+                ray_t.start = ray_t.start.max(t1);
+                ray_t.end = ray_t.end.min(t0);
+            }
+            // To do: This is slower and I don't know why
+            // t0.min(t1) should be read as the smallest between t0 and t1
+            // t0.max(t1) should be read as the biggest between t0 and t1
+            // minmax is the function that would allow me to reduce the comparisons even further but it's nightly only
+
+            // ray_t.start = ray_t.start.max(t0.min(t1));
+            // ray_t.end = ray_t.end.min(t0.max(t1));
+
+            if ray_t.end <= ray_t.start { return false; }
+            // if ray_t.is_empty() { return false; }
+        }
+
+        true
+    }
+
+    pub fn __hit(&self, ray: &Ray, ray_t: &mut Range<f64>) -> bool {
+        // A bounding box is simpler than an object, we only care if the bounding box is hit or not
+        // Implementation without branches or divisions. Code adapted from here: https://tavianator.com/2011/ray_box.html
+        let origin: Point3 = ray.origin;
+        let inverse_direction: Point3 = ray.inverse_direction;
+
+        let tx1: f64 = (self.x.start - origin.x)*inverse_direction.x;
+        let tx2: f64 = (self.x.end - origin.x)*inverse_direction.x;
+
+        // let mut tmin: f64 = tx1.min(tx2);
+        // let mut tmax: f64 = tx1.max(tx2);
+
+        let mut tmin: f64 = f64::min(tx1, tx2);
+        let mut tmax: f64 = f64::max(tx1, tx2);
+
+        let ty1: f64 = (self.y.start - origin.y)*inverse_direction.y;
+        let ty2: f64 = (self.y.end - origin.y)*inverse_direction.y;
+
+        // tmin = tmin.max(ty1.min(ty2));
+        // tmax = tmax.min(ty1.max(ty2));
+        tmin = f64::max(tmin, f64::min(ty1, ty2));
+        tmax = f64::min(tmax, f64::max(ty1, ty2));
+
+        let tz1: f64 = (self.z.start - origin.z)*inverse_direction.z;
+        let tz2: f64 = (self.z.end - origin.z)*inverse_direction.z;
+
+        // tmin = tmax.max(tz1.min(tz2));
+        // tmax = tmax.min(tz1.max(tz2));
+        tmin = f64::max(tmin, f64::min(tz1, tz2));
+        tmax = f64::min(tmax, f64::max(tz1, tz2));
+
+        ray_t.start = tmin;
+        ray_t.end = tmax;
+
+        tmax >= tmin
     }
 
     // Axis interval and taking an index of an AABB are very similar, but one produces a reference while the other does not

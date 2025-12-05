@@ -13,5 +13,6 @@ impl Ray {
     }
     pub fn new(origin: Point3, direction: Vector3) -> Ray {
         Ray { origin, direction, inverse_direction: Point3::new(1.0/direction.x, 1.0/direction.y, 1.0/direction.z) }
+        // Ray { origin, direction }
     }
 }
