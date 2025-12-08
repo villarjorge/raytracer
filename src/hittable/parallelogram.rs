@@ -35,15 +35,17 @@ fn create_aabb_para(q: Point3, u: Point3, v: Point3) -> AABB {
     join_aabbs(&bounding_box0, &bounding_box1)
 }
 
-pub fn parallelogram(q: Point3, u: Vector3, v: Vector3, material: Rc<dyn Material>) -> Parallelogram {
-    let bounding_box: AABB = create_aabb_para(q, u, v);
+impl Parallelogram {
+    pub fn new(q: Point3, u: Vector3, v: Vector3, material: Rc<dyn Material>) -> Parallelogram {
+        let bounding_box: AABB = create_aabb_para(q, u, v);
 
-    let n: Vector3 = cross(&u, &v);
-    let normal: Vector3 = unit_vector(n);
-    let d: f64 = dot(&normal, &q);
-    let w: Vector3 = n / dot(&n, &n);
+        let n: Vector3 = cross(&u, &v);
+        let normal: Vector3 = unit_vector(n);
+        let d: f64 = dot(&normal, &q);
+        let w: Vector3 = n / dot(&n, &n);
 
-    Parallelogram { normal, d, q, u, v, w, material, bounding_box}
+        Parallelogram { normal, d, q, u, v, w, material, bounding_box}
+    }
 }
 
 // To do: extend parallelogram to any polygon. How to do it efficiently and with little code?
@@ -107,12 +109,12 @@ pub fn create_box(a: Point3, b: Point3, material: Rc<dyn Material>) -> HittableL
     let dz: Point3 = Point3 { x: 0.0, y: 0.0, z: vertex_max.z - vertex_min.z };
 
     // To do: think of a better way to do this with a loop and an indicator
-    sides.add(parallelogram(Point3 { x: vertex_min.x, y: vertex_min.y, z: vertex_max.z }, dx, dy, material.clone()));
-    sides.add(parallelogram(Point3 { x: vertex_max.x, y: vertex_min.y, z: vertex_max.z }, -dz, dy, material.clone()));
-    sides.add(parallelogram(Point3 { x: vertex_max.x, y: vertex_min.y, z: vertex_min.z }, -dx, dy, material.clone()));
-    sides.add(parallelogram(Point3 { x: vertex_min.x, y: vertex_min.y, z: vertex_min.z }, dz, dy, material.clone()));
-    sides.add(parallelogram(Point3 { x: vertex_min.x, y: vertex_max.y, z: vertex_max.z }, dx, -dz, material.clone()));
-    sides.add(parallelogram(Point3 { x: vertex_min.x, y: vertex_min.y, z: vertex_min.z }, dx, dz, material.clone()));
+    sides.add(Parallelogram::new(Point3 { x: vertex_min.x, y: vertex_min.y, z: vertex_max.z }, dx, dy, material.clone()));
+    sides.add(Parallelogram::new(Point3 { x: vertex_max.x, y: vertex_min.y, z: vertex_max.z }, -dz, dy, material.clone()));
+    sides.add(Parallelogram::new(Point3 { x: vertex_max.x, y: vertex_min.y, z: vertex_min.z }, -dx, dy, material.clone()));
+    sides.add(Parallelogram::new(Point3 { x: vertex_min.x, y: vertex_min.y, z: vertex_min.z }, dz, dy, material.clone()));
+    sides.add(Parallelogram::new(Point3 { x: vertex_min.x, y: vertex_max.y, z: vertex_max.z }, dx, -dz, material.clone()));
+    sides.add(Parallelogram::new(Point3 { x: vertex_min.x, y: vertex_min.y, z: vertex_min.z }, dx, dz, material.clone()));
 
     sides
 }
