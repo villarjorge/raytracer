@@ -160,25 +160,25 @@ impl Camera {
     pub fn thrender(&self, world: &dyn Hittable) {
         let mut image_buffer: ImageBuffer<image::Rgb<u8>, Vec<u8>> = RgbImage::new(self.image_width, self.image_height);
 
-        for (i, j, pixel) in image_buffer.enumerate_pixels_mut() {
-            let pixel_color: Color = (0..self.samples_per_pixel).into_par_iter().map(|_| {
-                let r: Ray = self.get_ray(i, j);
-                ray_color(&r, self.max_depth, world, self.background_color)
-            }).sum();
+        // for (i, j, pixel) in image_buffer.enumerate_pixels_mut() {
+        //     let pixel_color: Color = (0..self.samples_per_pixel).into_par_iter().map(|_| {
+        //         let r: Ray = self.get_ray(i, j);
+        //         ray_color(&r, self.max_depth, world, self.background_color)
+        //     }).sum();
 
-            *pixel = image::Rgb(proccess_color(pixel_color/(self.samples_per_pixel as f64)));
-        }
-        // (0..self.image_height).into_par_iter().for_each(|j| {
-        //     (0..self.image_width).into_par_iter().for_each(|i| {
-        //         let pixel_color: Color = (0..self.samples_per_pixel).map(|_| {
-        //             let r: Ray = self.get_ray(i, j);
-        //             ray_color(&r, self.max_depth, world, self.background_color)
-        //         }).sum();
+        //     *pixel = image::Rgb(proccess_color(pixel_color/(self.samples_per_pixel as f64)));
+        // }
+        (0..self.image_height).into_par_iter().for_each(|j| {
+            (0..self.image_width).into_par_iter().for_each(|i| {
+                let pixel_color: Color = (0..self.samples_per_pixel).map(|_| {
+                    let r: Ray = self.get_ray(i, j);
+                    ray_color(&r, self.max_depth, world, self.background_color)
+                }).sum();
 
-        //         let pixel: &mut image::Rgb<u8> = image_buffer.get_pixel_mut(i, j);
-        //         *pixel = image::Rgb(proccess_color(pixel_color/(self.samples_per_pixel as f64)));
-        //     });
-        // });
+                let pixel: &mut image::Rgb<u8> = image_buffer.get_pixel_mut(i, j);
+                *pixel = image::Rgb(proccess_color(pixel_color/(self.samples_per_pixel as f64)));
+            });
+        });
 
         image_buffer.save("images/image.png").unwrap();
     }
@@ -191,7 +191,7 @@ fn ray_color(given_ray: &Ray, depth: u32, world: &dyn Hittable, background_color
         return Color{x: 0.0, y: 0.0, z: 0.0};
     }
 
-    match world.hit(given_ray, 0.001..f64::INFINITY) {
+    match world.hit(given_ray, &(0.001..f64::INFINITY)) {
         // If the ray hits nothing return the background color
         HitResult::DidNotHit => {background_color},
         HitResult::HitRecord(hit_record) => {

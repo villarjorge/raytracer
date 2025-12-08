@@ -26,7 +26,7 @@ pub fn sphere(center: Point3, radius: f64, material: Arc<dyn Material>) -> Spher
 }
 
 impl Hittable for Sphere {
-    fn hit(&'_ self, ray: &Ray, ray_t: Range<f64>) -> HitResult<'_> {
+    fn hit(&'_ self, ray: &Ray, ray_t: &Range<f64>) -> HitResult<'_> {
         // This is the 1st hottest part of the code
         // Thanks to the BVH node, this part only takes 35% of cpu time, down from 86%
         let oc: Point3 = self.center - ray.origin;

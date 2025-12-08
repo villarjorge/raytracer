@@ -53,7 +53,7 @@ impl Hittable for Triangle {
     ///     1. Finding the plane Ax + By + Cz = d that contains that triangle,
     ///     2. Solving for the intersection of a ray and the triangle-containing plane,
     ///     3. Determining if the hit point lies inside the triangle.
-    fn hit(&'_ self, ray: &Ray, ray_t: Range<f64>) -> HitResult<'_> {
+    fn hit(&'_ self, ray: &Ray, ray_t: &Range<f64>) -> HitResult<'_> {
         let denominator: f64 = dot(&self.normal, &ray.direction);
 
         // No hit if the ray is parallel to the plane

@@ -26,7 +26,7 @@ pub struct Quadric {
 // Plan: instead of making some complex function to determine bounds of the quadric, let the bounding box define its extent
 
 impl Hittable for Quadric {
-    fn hit(&'_ self, ray: &Ray, ray_t: Range<f64>) -> HitResult<'_> {
+    fn hit(&'_ self, ray: &Ray, ray_t: &Range<f64>) -> HitResult<'_> {
         // Calculate coeficients of quadratic equation: at^2 + bt + c = 0
         let o: Point3 = ray.origin;
         let d: Point3 = ray.direction;

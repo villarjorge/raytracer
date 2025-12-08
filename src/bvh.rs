@@ -25,7 +25,7 @@ pub enum BVHNode {
 }
 
 impl Hittable for BVHNode {
-    fn hit(&'_  self, ray: &Ray, ray_t: Range<f64>) -> HitResult<'_> {
+    fn hit(&'_  self, ray: &Ray, ray_t: &Range<f64>) -> HitResult<'_> {
         // This is the 3rd hottest part of the code, taking 25.5% of CPU time
         let mut reduced_ray_t: Range<f64> = ray_t.clone();
 
@@ -38,17 +38,17 @@ impl Hittable for BVHNode {
         // The right interval needs to be narrowed to prevent problems with occlusion
         // To do: refactor to remove nested match structure (add aditional function?)
         match self {
-            BVHNode::Leaf { objects, bounding_box: _ } => { objects.hit(ray, ray_t.clone()) },
+            BVHNode::Leaf { objects, bounding_box: _ } => { objects.hit(ray, &ray_t) },
             BVHNode::Internal { left, right, bounding_box: _ } => {
-                match left.hit(ray, ray_t.clone()) {
+                match left.hit(ray, &ray_t) {
                     HitResult::DidNotHit => { 
-                        match right.hit(ray, ray_t) {
+                        match right.hit(ray, &ray_t) {
                             HitResult::DidNotHit => {HitResult::DidNotHit},
                             HitResult::HitRecord(hit_record) => {HitResult::HitRecord(hit_record)}
                         }
                      },
                     HitResult::HitRecord(hit_record) => {
-                        match right.hit(ray, ray_t.start..hit_record.t) {
+                        match right.hit(ray, &(ray_t.start..hit_record.t)) {
                             HitResult::DidNotHit => {HitResult::HitRecord(hit_record)},
                             HitResult::HitRecord(hit_record) => {HitResult::HitRecord(hit_record)}
                         }
@@ -97,7 +97,7 @@ pub fn create_bvh_node(mut objects: Vec<Arc<dyn Hittable>>) -> BVHNode {
         BVHNode::Leaf { objects: hittable_list, bounding_box}
     } else {
         // Use a clousure here: more idiomatic and much shorter
-        // When I changed HittableList from Vec<Box<dyn Hittable>> to Vec<Arc<dyn Hittable> clippy stopped raising this as a borrowed box issue
+        // When I changed HittableList from Vec<Box<dyn Hittable>> to Vec<Rc<dyn Hittable> clippy stopped raising this as a borrowed box issue
         objects.sort_by(|a: &Arc<dyn Hittable + 'static>, b: &Arc<dyn Hittable + 'static>| {
             let a_axis_interval: &Range<f64> = a.bounding_box().axis_interval(axis);
             let b_axis_interval: &Range<f64> = b.bounding_box().axis_interval(axis);

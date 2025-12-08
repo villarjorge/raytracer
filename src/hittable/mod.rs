@@ -61,7 +61,7 @@ pub enum HitResult<'a> {
 // Having every object be a variant of Hittable could allow to have a 
 // more complex hittable list with vectors for each object. The problem would be having too many variants that need to be handeled
 pub trait Hittable {
-    fn hit(&'_ self, ray: &Ray, ray_t: Range<f64>) -> HitResult<'_>;
+    fn hit(&'_ self, ray: &Ray, ray_t: &Range<f64>) -> HitResult<'_>;
     fn bounding_box(&self) -> &AABB; // Needed since hittables will be behind pointers that will be dereferenced
 }
 
@@ -73,7 +73,7 @@ pub struct Translate {
 }
 
 impl Hittable for Translate {
-    fn hit(&'_ self, ray: &Ray, ray_t: Range<f64>) -> HitResult<'_> {
+    fn hit(&'_ self, ray: &Ray, ray_t: &Range<f64>) -> HitResult<'_> {
         // Move the ray backwards by the offset
         let offset_ray: Ray = Ray::new(ray.origin - self.offset, ray.direction);
         // Check for intersection with the new ray
@@ -112,7 +112,7 @@ pub struct RotateY {
 }
 
 impl Hittable for RotateY {
-    fn hit(&'_ self, ray: &Ray, ray_t: Range<f64>) -> HitResult<'_> {
+    fn hit(&'_ self, ray: &Ray, ray_t: &Range<f64>) -> HitResult<'_> {
         // To do: compare for performance: using rotate_y or copy pasting the same block of code four times to rotate
         let origin: Point3 = rotate_y(&ray.origin, self.cos_theta, self.sin_theta);
         let direction: Point3 = rotate_y(&ray.direction, self.cos_theta, self.sin_theta);
