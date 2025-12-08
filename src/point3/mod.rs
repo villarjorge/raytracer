@@ -1,4 +1,4 @@
-use std::ops::{Add, Div, Index, Mul, Neg, Sub};
+use std::{iter::Sum, ops::{Add, Div, Index, Mul, Neg, Sub}};
 use rand;
 
 // Lots of boiler plate here
@@ -76,6 +76,17 @@ impl Add for Point3 {
             y: self.y + other.y,
             z: self.z + other.z,
         }
+    }
+}
+
+impl Sum for Point3 {
+    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+        // To understand this code check the macros in: https://doc.rust-lang.org/src/core/iter/traits/accum.rs.html#206
+        // the closes one is float_sum_product
+        iter.fold(
+            Point3 { x: -0.0, y: -0.0, z: -0.0 }, // in the macro's source code it also uses -0.0
+            |a, b| a + b
+        )
     }
 }
 

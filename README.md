@@ -4,11 +4,11 @@ A CPU raytracer written in Rust based on the one descrived in [_Ray Tracing in O
 
 ## Images
 
-![Three big spheres surraunded by many smaller ones.](images\success2.png)
+![Three big spheres surraunded by many smaller ones.](images/success2.png)
 
-![Two cylinders, one thick and the other thin in the classic cornell box](images\cornell_box_two_cylinders_medium_quality.png)
+![Two cylinders, one thick and the other thin in the classic cornell box](images/cornell_box_two_cylinders_medium_quality.png)
 
-![A busy scene showcasing: Arbitrary textures in spheres, Perlin noise textures, a glass sphere creating a caustic, a sphere with subsurface scattering, a floor made of boxes with random hights and a cube composed of small white spheres. The scene is iluminated by a square from above and the whole scene is suffused by a slight fog.](images\final_image_low_quality2.png)
+![A busy scene showcasing: Arbitrary textures in spheres, Perlin noise textures, a glass sphere creating a caustic, a sphere with subsurface scattering, a floor made of boxes with random hights and a cube composed of small white spheres. The scene is iluminated by a square from above and the whole scene is suffused by a slight fog.](images/final_image_low_quality2.png)
 
 ## Primitives
 

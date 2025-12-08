@@ -11,6 +11,7 @@ pub mod constant_medium;
 pub mod tests;
 
 use std::rc::Rc;
+use std::time::Instant;
 
 use rand::{Rng, SeedableRng};
 use rand::rngs::SmallRng;
@@ -465,8 +466,6 @@ fn final_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
 
     let aspect_ratio: f64 = 1.0;
     let image_width: u32 = image_width;
-    let samples_per_pixel: u32 = samples_per_pixel;
-    let max_depth: u32 = max_depth;
     let image_quality: ImageQuality = ImageQuality {samples_per_pixel, max_depth};
 
     let background_color: Point3 = Point3 { x: 0.0, y: 0.0, z: 0.0 };
@@ -708,11 +707,12 @@ fn profiler_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
 
     let cam: Camera = create_camera(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
 
-    cam.render(&world);
+    cam.render_iterators(&world);
 }
 
 fn main() {
-    let scene_number: u32 = 12;
+    let now: Instant = Instant::now();
+    let scene_number: u32 = 0;
 
     match scene_number {
         0 => many_spheres(),
@@ -730,4 +730,6 @@ fn main() {
         12 => profiler_scene(400, 20, 4),
         _ => final_scene(400, 20, 4),
     }
+
+    println!("Time: {:.2?}", now.elapsed())
 }

@@ -18,24 +18,34 @@ fn linear_to_gamma(linear_component: f64) -> f64 {
     0.0
 }
 
-pub fn write_color(out_buffer: &mut BufWriter<File>, pixel_color: Color) {
+/// Process the color from linear space rgb to u8 rgb by tranforming from linear to gamma, clamping it to the 0..1 range and mutipling it by 256. 
+pub fn proccess_color(pixel_color: Point3) -> [u8; 3] {
     let r: f64 = pixel_color.x;
     let g: f64 = pixel_color.y;
     let b: f64 = pixel_color.z;
-
+    
     // Apply a linear to gamma transform for gamma 2
     let g: f64 = linear_to_gamma(g);
     let b: f64 = linear_to_gamma(b);
     let r: f64 = linear_to_gamma(r);
-
+    
     // Translate the [0,1] component values to the byte range [0,255].
-
+    
     let min: f64 = 0.000;
     let max: f64 = 0.999;
     let rbyte: u8 = (256.00 * r.clamp(min, max)) as u8;
     let gbyte: u8 = (256.00 * g.clamp(min, max)) as u8;
     let bbyte: u8 = (256.00 * b.clamp(min, max)) as u8;
+    [rbyte, gbyte, bbyte]
+}
+
+pub fn write_color(out_buffer: &mut BufWriter<File>, pixel_color: Color) {
+    let arr: [u8; 3] = proccess_color(pixel_color);
+    let rbyte: u8 = arr[0];
+    let gbyte: u8 = arr[1]; 
+    let bbyte: u8 = arr[2]; 
 
     // Write out the pixel color components.
     out_buffer.write_all(format!("{rbyte} {gbyte} {bbyte}\n").as_bytes()).unwrap();
 }
+

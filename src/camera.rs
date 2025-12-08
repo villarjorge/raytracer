@@ -1,8 +1,13 @@
-use std::{cmp, fs::File, io::{BufWriter, Write}};
+use std::{
+    cmp, 
+    fs::File, 
+    io::{BufWriter, Write},
+};
 
+use image::{ImageBuffer, RgbImage};
 use rand;
 
-use crate::{material::ScatterResult, point3::color::Color};
+use crate::{material::ScatterResult, point3::color::{Color, proccess_color}};
 use crate::point3::{Point3, Vector3, cross, random_in_unit_disk, unit_vector};
 use crate::point3::color::write_color;
 use crate::ray::Ray;
@@ -96,19 +101,24 @@ pub fn create_camera(aspect_ratio: f64, image_width: u32, image_quality: ImageQu
 // Public
 
 impl Camera {
+    fn create_image_and_buffer(&self, path: &str) -> BufWriter<File> {
+        let image: File = File::create(path).unwrap();
+        let mut image_buffer: BufWriter<File> = BufWriter::new(image);
+    
+        image_buffer.write_all(format!("P3\n{} {}\n255\n", self.image_width, self.image_height).as_bytes()).unwrap();
+        image_buffer
+    }   
+
     pub fn render(&self, world: &dyn Hittable) {
         // Render
-        let image: File = File::create("images/image.ppm").unwrap();
-        let mut image_buffer: BufWriter<File> = BufWriter::new(image);
-
-        image_buffer.write_all(format!("P3\n{} {}\n255\n", self.image_width, self.image_height).as_bytes()).unwrap();
+        let mut image_buffer: BufWriter<File> = self.create_image_and_buffer("images/image.ppm");
 
         for j in 0..self.image_height {
             // https://stackoverflow.com/questions/59890270/how-do-i-overwrite-console-output
             // To do: better progress bar
             eprint!("\r----Scanlines remaining: {}/{}----", self.image_height - j, self.image_height); // eprint since this is the progress of the program
             for i in 0..self.image_width {
-                let mut pixel_color: Point3 = Point3::default(); // To do: Accumulating step by step could lead to decreased accuracy
+                let mut pixel_color: Color = Color::default(); // To do: Accumulating step by step could lead to decreased accuracy
                 for _ in 0..self.samples_per_pixel {
                     let r: Ray = self.get_ray(i, j);
                     // Instead of making ray color a method of Camera, do it like this. 
@@ -121,7 +131,43 @@ impl Camera {
         println!("\nRender done!");
 
         image_buffer.flush().unwrap();
+    }
 
+    pub fn render_iterators(&self, world: &dyn Hittable) {
+        // The same render function but with iterators instead of loops
+        let mut image_buffer: BufWriter<File> = self.create_image_and_buffer("images/image.ppm");
+
+        // To use rayon: Import its prelude, transform range -> (range).into_par_iter()
+        // The problem is that writting to disk will become non secuential
+        // Maybe switch from .ppm to other format and handle it with image crate. See creating a fractal: https://github.com/image-rs/image/blob/main/README.md
+        for j in 0..self.image_height {
+            eprint!("\r----Scanlines remaining: {}/{}----", self.image_height - j, self.image_height); // eprint since this is the progress of the program
+            for i in 0..self.image_width {
+                let pixel_color: Color = (0..self.samples_per_pixel).map(|_| {
+                    let r: Ray = self.get_ray(i, j);
+                    ray_color(&r, self.max_depth, world, self.background_color)
+                }).sum();
+                
+                write_color(&mut image_buffer, pixel_color/(self.samples_per_pixel as f64));
+            }
+        }
+
+        println!("\nRender done!");
+
+        image_buffer.flush().unwrap();
+    }
+    
+    pub fn thrender(&self, world: &dyn Hittable) {
+        let mut image_buffer: ImageBuffer<image::Rgb<u8>, Vec<u8>> = RgbImage::new(self.image_width, self.image_height);
+
+        for (i, j, pixel) in image_buffer.enumerate_pixels_mut() {
+            let pixel_color: Color = (0..self.samples_per_pixel).map(|_| {
+                let r: Ray = self.get_ray(i, j);
+                ray_color(&r, self.max_depth, world, self.background_color)
+            }).sum();
+
+            *pixel = image::Rgb(proccess_color(pixel_color/(self.samples_per_pixel as f64)));
+        }
     }
 }
 
