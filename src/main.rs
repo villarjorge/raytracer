@@ -7,7 +7,6 @@ pub mod aabb;
 pub mod bvh;
 pub mod texture;
 pub mod perlin;
-pub mod constant_medium;
 pub mod tests;
 
 use std::rc::Rc;
@@ -18,17 +17,17 @@ use rand::rngs::SmallRng;
 
 use crate::bvh::{BVHNode, bvh_node_from_hittable_list};
 use crate::camera::{Camera, CameraPosition, ImageQuality, ThinLens, create_camera};
-use crate::constant_medium::{constant_medium_from_color};
 use crate::perlin::create_perlin_noise;
 use crate::point3::{Point3, unit_vector, point_from_array, random_vector};
 use crate::material::{Dielectric, DiffuseLight, Lambertian, Metal, dielectric, diffuse_light_from_color, lambertian, metal};
 use crate::hittable::{
+    {RotateY, Translate, create_rotate_y, create_translation},
     sphere::{Sphere, sphere},
     hittable_list::HittableList,
-    quadric::{y_cylinder},
-    triangle::triangle,
-    {RotateY, Translate, create_rotate_y, create_translation},
+    quadric::y_cylinder,
     parallelogram::{create_box, parallelogram},
+    triangle::triangle,
+    constant_medium::constant_medium_from_color
 };
 use crate::texture::{CheckerTexture, PerlinNoiseTexture, Texture, checker_texture_from_colors, create_image_texture, create_solid_color};
 

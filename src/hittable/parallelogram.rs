@@ -53,7 +53,7 @@ impl Hittable for Parallelogram {
     ///     1. Finding the plane Ax + By + Cz = d that contains that parallelogram,
     ///     2. Solving for the intersection of a ray and the parallelogram-containing plane,
     ///     3. Determining if the hit point lies inside the parallelogram.
-    fn hit(&'_ self, ray: &Ray, ray_t: Range<f64>) -> HitResult<'_> {
+    fn hit(&'_ self, ray: &Ray, ray_t: &Range<f64>) -> HitResult<'_> {
         let denominator: f64 = dot(&self.normal, &ray.direction);
         // let denominator: f64 = self.normal.dot(ray.direction);
 

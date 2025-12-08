@@ -39,12 +39,12 @@ impl HittableList {
 
 impl Hittable for HittableList {
     /// Go through the objects on the vector and compute their hit functions. Keep track of the closest and return that
-    fn hit(&'_ self, ray: &Ray, ray_t: Range<f64>) -> HitResult<'_> {
+    fn hit(&'_ self, ray: &Ray, ray_t: &Range<f64>) -> HitResult<'_> {
         let mut current_result: HitResult = HitResult::DidNotHit;
         let mut closest_so_far: f64 = ray_t.end; // max
 
         for object in &self.objects {
-            match (*object).hit(ray, ray_t.start..closest_so_far) {
+            match (*object).hit(ray, &(ray_t.start..closest_so_far)) {
                 HitResult::DidNotHit => {},
                 HitResult::HitRecord(hit_record) => {
                     closest_so_far = hit_record.t;

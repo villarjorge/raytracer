@@ -31,12 +31,12 @@ pub fn constant_medium_from_color(boundary: Rc<dyn Hittable>, density: f64, colo
 }
 
 impl Hittable for ConstantMedium {
-    fn hit(&'_ self, ray: &Ray, ray_t: Range<f64>) -> HitResult<'_> {
+    fn hit(&'_ self, ray: &Ray, ray_t: &Range<f64>) -> HitResult<'_> {
         // To do: improve this nested structure
-        match self.boundary.hit(ray, -f64::INFINITY..f64::INFINITY) {
+        match self.boundary.hit(ray, &(-f64::INFINITY..f64::INFINITY)) {
             HitResult::DidNotHit => HitResult::DidNotHit,
             HitResult::HitRecord(hit_record1) => {
-                match self.boundary.hit(ray, hit_record1.t+0.0001..f64::INFINITY) {
+                match self.boundary.hit(ray, &(hit_record1.t+0.0001..f64::INFINITY)) {
                     HitResult::DidNotHit => HitResult::DidNotHit,
                     HitResult::HitRecord(hit_record2) => {
                         let record1_t: f64 = hit_record1.t.max(ray_t.start);
