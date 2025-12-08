@@ -662,7 +662,7 @@ fn profiler_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
 
     // Group of spheres
     let mut spheres: HittableList = HittableList::default();
-    let white: Rc<Lambertian> = lambertian(point_from_array([0.73, 0.73, 0.73]));
+    let white: Rc<Lambertian> = lambertian(Point3::new(0.73, 0.73, 0.73));
 
     let number_of_spheres: u32 = 1000;
     for _ in 0..number_of_spheres {

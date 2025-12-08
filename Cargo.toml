@@ -7,6 +7,7 @@ edition = "2024"
 rand = "0.9"
 image = "0.25.9"
 rayon = "1.11.0"
+indicatif = "0.18.3"
 
 [profile.release]
 debug = 1

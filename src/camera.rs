@@ -6,6 +6,7 @@ use std::{
 
 use image::{ImageBuffer, RgbImage};
 use rand;
+use indicatif::ProgressIterator;
 // use rayon::prelude::*;
 
 use crate::{material::ScatterResult, point3::color::{Color, proccess_color}};
@@ -115,10 +116,9 @@ impl Camera {
         // Render
         let mut image_buffer: BufWriter<File> = self.create_image_and_buffer("images/image.ppm");
 
-        for j in 0..self.image_height {
+        for j in (0..self.image_height).progress() {
             // https://stackoverflow.com/questions/59890270/how-do-i-overwrite-console-output
-            // To do: better progress bar
-            eprint!("\r----Scanlines remaining: {}/{}----", self.image_height - j, self.image_height); // eprint since this is the progress of the program
+            // eprint!("\r----Scanlines remaining: {}/{}----", self.image_height - j, self.image_height); // eprint since this is the progress of the program
             for i in 0..self.image_width {
                 let mut pixel_color: Color = Color::default(); // To do: Accumulating step by step could lead to decreased accuracy
                 for _ in 0..self.samples_per_pixel {
@@ -142,7 +142,7 @@ impl Camera {
         // To use rayon: Import its prelude, transform range -> (range).into_par_iter()
         // A problem is that writting to disk will become non secuential
         // Maybe switch from .ppm to other format and handle it with image crate. See creating a fractal: https://github.com/image-rs/image/blob/main/README.md
-        for j in 0..self.image_height {
+        for j in (0..self.image_height).progress() {
             for i in 0..self.image_width {
                 let pixel_color: Color = (0..self.samples_per_pixel).map(|_| {
                     let r: Ray = self.get_ray(i, j);
@@ -161,7 +161,7 @@ impl Camera {
     pub fn thrender(&self, world: &dyn Hittable) {
         let mut image_buffer: ImageBuffer<image::Rgb<u8>, Vec<u8>> = RgbImage::new(self.image_width, self.image_height);
 
-        for (i, j, pixel) in image_buffer.enumerate_pixels_mut() {
+        for (i, j, pixel) in image_buffer.enumerate_pixels_mut().progress() {
             let pixel_color: Color = (0..self.samples_per_pixel).map(|_| {
                 let r: Ray = self.get_ray(i, j);
                 ray_color(&r, self.max_depth, world, self.background_color)
@@ -169,7 +169,7 @@ impl Camera {
 
             *pixel = image::Rgb(proccess_color(pixel_color/(self.samples_per_pixel as f64)));
         }
-
+        println!("\nRender done!");
         image_buffer.save("images/image.png").unwrap();
     }
 }
