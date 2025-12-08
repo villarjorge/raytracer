@@ -10,7 +10,7 @@ use crate::{
     hittable::{HitRecord, HitResult, Hittable, SurfaceCoordinate}, 
     material::{Isotropic, Material}, 
     point3::{Vector3, color::Color}, 
-    ray::Ray, texture::{self, Texture, create_solid_color}
+    ray::Ray, texture::{self, SolidColor, Texture}
 };
 
 pub struct ConstantMedium {
@@ -26,7 +26,7 @@ pub fn constant_medium(boundary: Rc<dyn Hittable>, density: f64, texture: Rc<dyn
 }
 
 pub fn constant_medium_from_color(boundary: Rc<dyn Hittable>, density: f64, color: Color) -> ConstantMedium {
-    let texture: Rc<texture::SolidColor> = create_solid_color(color);
+    let texture: Rc<texture::SolidColor> = SolidColor::new(color);
     ConstantMedium { boundary, neg_inv_density: -1.0/density, phase_function: Rc::new(Isotropic{texture}) }
 }
 

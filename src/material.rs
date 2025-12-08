@@ -4,7 +4,7 @@ use crate::point3::color::Color;
 use crate::point3::{Point3, Vector3, dot, random_unit_vector, reflect, refract};
 use crate::ray::Ray;
 use crate::hittable::{HitRecord, SurfaceCoordinate};
-use crate::texture::{Texture, create_solid_color};
+use crate::texture::{Texture, SolidColor};
 use crate::unit_vector;
 
 // If you are confused about the lifetimes, think about it this way: 
@@ -65,7 +65,7 @@ impl Material for Lambertian {
 }
 
 pub fn lambertian(color: Color) -> Rc<Lambertian> {
-    Rc::new(Lambertian{ texture: create_solid_color(color) })
+    Rc::new(Lambertian{ texture: SolidColor::new(color) })
 }
 
 // pub fn lambertian(texture: Rc<dyn Texture>) -> Rc<Lambertian> {
@@ -151,7 +151,7 @@ pub struct DiffuseLight {
 }
 
 pub fn diffuse_light_from_color(color: Point3) -> Rc<DiffuseLight> {
-    Rc::new(DiffuseLight { texture: create_solid_color(color) })
+    Rc::new(DiffuseLight { texture: SolidColor::new(color) })
 }
 
 impl Material for DiffuseLight {
