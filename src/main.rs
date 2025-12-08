@@ -15,7 +15,7 @@ use std::time::Instant;
 use rand::{Rng, SeedableRng};
 use rand::rngs::SmallRng;
 
-use crate::bvh::{BVHNode, bvh_node_from_hittable_list};
+use crate::bvh::{BVHNode};
 use crate::camera::{Camera, CameraPosition, ImageQuality, ThinLens};
 use crate::perlin::create_perlin_noise;
 use crate::point3::{Point3, point_from_array, random_vector};
@@ -103,7 +103,7 @@ fn many_spheres() {
     // If you want to compare without the bvh
     // cam.render(&world);
 
-    let bvh_world: BVHNode = bvh_node_from_hittable_list(world);
+    let bvh_world: BVHNode = BVHNode::from_hittable_list(world);
     cam.thrender(&bvh_world);
 }
 
@@ -405,7 +405,7 @@ fn final_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
 
     let mut world: HittableList = HittableList::default();
 
-    world.add(bvh_node_from_hittable_list(boxes1));
+    world.add(BVHNode::from_hittable_list(boxes1));
 
     let light: Rc<DiffuseLight> = diffuse_light_from_color(point_from_array([7.0, 7.0, 7.0]));
     world.add(Parallelogram::new(point_from_array([123.0,554.0,147.0]), point_from_array([300.0, 0.0, 0.0]), point_from_array([0.0,0.0,265.0]), light));
@@ -451,7 +451,7 @@ fn final_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
     world.add_pointer(Rc::new(Translate::new(
             Rc::new(
                 RotateY::new(
-                    Rc::new(bvh_node_from_hittable_list(spheres)),
+                    Rc::new(BVHNode::from_hittable_list(spheres)),
                     15.0)
             ),
             point_from_array([-100.0, 270.0, 395.0])
@@ -634,7 +634,7 @@ fn profiler_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
 
     let mut world: HittableList = HittableList::default();
 
-    world.add(bvh_node_from_hittable_list(boxes1));
+    world.add(BVHNode::from_hittable_list(boxes1));
 
     let light: Rc<DiffuseLight> = diffuse_light_from_color(point_from_array([7.0, 7.0, 7.0]));
     world.add(Parallelogram::new(point_from_array([123.0,554.0,147.0]), point_from_array([300.0, 0.0, 0.0]), point_from_array([0.0,0.0,265.0]), light));
@@ -672,7 +672,7 @@ fn profiler_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
     world.add_pointer(Rc::new(Translate::new(
             Rc::new(
                 RotateY::new(
-                    Rc::new(bvh_node_from_hittable_list(spheres)),
+                    Rc::new(BVHNode::from_hittable_list(spheres)),
                     15.0)
             ),
             point_from_array([-100.0, 270.0, 395.0])

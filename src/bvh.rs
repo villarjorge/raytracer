@@ -66,50 +66,51 @@ impl Hittable for BVHNode {
     }
 }
 
-pub fn bvh_node_from_hittable_list(list: HittableList) -> BVHNode {
-    create_bvh_node(list.objects)
-}
-
-// To do: Is there a way to derive comparisons for bounding boxes?
-
-pub fn create_bvh_node(mut objects: Vec<Rc<dyn Hittable>>) -> BVHNode {
-    let mut bounding_box: AABB = AABB::default();
-
-    for object in &objects {
-        bounding_box = join_aabbs(&bounding_box, object.bounding_box())
+impl BVHNode {
+    pub fn from_hittable_list(list: HittableList) -> BVHNode {
+        BVHNode::new(list.objects)
     }
 
-    let axis: u8 = bounding_box.longest_axis();
+    // To do: Is there a way to derive comparisons for bounding boxes?
+    pub fn new(mut objects: Vec<Rc<dyn Hittable>>) -> BVHNode {
+        let mut bounding_box: AABB = AABB::default();
 
-    // To do: This threshold controls how many objects there are in the leaf nodes. Optimize for performance
-    const THRESHOLD: usize = 4;
-    
-    // To do: consider using a double end queue instead of a vector
-    if objects.len() <= THRESHOLD {
-        let mut hittable_list: HittableList = HittableList::default();
-
-        for element in objects.drain(0..THRESHOLD.min(objects.len())) {
-            hittable_list.add_pointer(element);
+        for object in &objects {
+            bounding_box = join_aabbs(&bounding_box, object.bounding_box())
         }
 
-        bounding_box = hittable_list.bounding_box().clone();
+        let axis: u8 = bounding_box.longest_axis();
 
-        BVHNode::Leaf { objects: hittable_list, bounding_box}
-    } else {
-        // Use a clousure here: more idiomatic and much shorter
-        // When I changed HittableList from Vec<Box<dyn Hittable>> to Vec<Rc<dyn Hittable> clippy stopped raising this as a borrowed box issue
-        objects.sort_by(|a: &Rc<dyn Hittable + 'static>, b: &Rc<dyn Hittable + 'static>| {
-            let a_axis_interval: &Range<f64> = a.bounding_box().axis_interval(axis);
-            let b_axis_interval: &Range<f64> = b.bounding_box().axis_interval(axis);
+        // To do: This threshold controls how many objects there are in the leaf nodes. Optimize for performance
+        const THRESHOLD: usize = 4;
+        
+        // To do: consider using a double end queue instead of a vector
+        if objects.len() <= THRESHOLD {
+            let mut hittable_list: HittableList = HittableList::default();
 
-            a_axis_interval.start.total_cmp(&b_axis_interval.start)
-        });
+            for element in objects.drain(0..THRESHOLD.min(objects.len())) {
+                hittable_list.add_pointer(element);
+            }
 
-        let mid: usize = objects.len()/2;
+            bounding_box = hittable_list.bounding_box().clone();
 
-        let left: Box<dyn Hittable> = Box::new(create_bvh_node(objects.split_off(mid)));
-        let right: Box<dyn Hittable> = Box::new(create_bvh_node(objects));
+            BVHNode::Leaf { objects: hittable_list, bounding_box}
+        } else {
+            // Use a clousure here: more idiomatic and much shorter
+            // When I changed HittableList from Vec<Box<dyn Hittable>> to Vec<Rc<dyn Hittable> clippy stopped raising this as a borrowed box issue
+            objects.sort_by(|a: &Rc<dyn Hittable + 'static>, b: &Rc<dyn Hittable + 'static>| {
+                let a_axis_interval: &Range<f64> = a.bounding_box().axis_interval(axis);
+                let b_axis_interval: &Range<f64> = b.bounding_box().axis_interval(axis);
 
-        BVHNode::Internal { left, right, bounding_box }
-    }    
+                a_axis_interval.start.total_cmp(&b_axis_interval.start)
+            });
+
+            let mid: usize = objects.len()/2;
+
+            let left: Box<dyn Hittable> = Box::new(BVHNode::new(objects.split_off(mid)));
+            let right: Box<dyn Hittable> = Box::new(BVHNode::new(objects));
+
+            BVHNode::Internal { left, right, bounding_box }
+        }    
+    }
 }
