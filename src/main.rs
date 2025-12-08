@@ -22,7 +22,7 @@ use crate::point3::{Point3, unit_vector, point_from_array, random_vector};
 use crate::material::{Dielectric, DiffuseLight, Lambertian, Metal, dielectric, diffuse_light_from_color, lambertian, metal};
 use crate::hittable::{
     {RotateY, Translate, create_rotate_y, create_translation},
-    sphere::{Sphere, sphere},
+    sphere::Sphere,
     hittable_list::HittableList,
     quadric::y_cylinder,
     parallelogram::{create_box, parallelogram},
@@ -41,7 +41,7 @@ fn many_spheres() {
     let checker: Rc<CheckerTexture> = checker_texture_from_colors(3.1, Point3 {x: 0.2, y: 0.3, z: 0.1}, Point3 {x: 0.9, y: 0.9, z: 0.9});
     // let ground_material = Lambertian{texture: create_solid_color(Point3 { x: 0.5, y: 0.5, z: 0.5 })};
     let ground_material: Lambertian = Lambertian{texture: checker};
-    world.add(sphere(Point3{x: 0.0, y: -1000.0, z: -1.0}, 1000.0, Rc::new(ground_material)));
+    world.add(Sphere::new(Point3{x: 0.0, y: -1000.0, z: -1.0}, 1000.0, Rc::new(ground_material)));
 
     const N: i32 = 11;
 
@@ -55,30 +55,30 @@ fn many_spheres() {
                     // Diffuse
                     let albedo: Point3 = random_vector(0.0, 1.0)*random_vector(0.0, 1.0);
                     let sphere_material: Lambertian = Lambertian{texture: create_solid_color(albedo)};
-                    world.add(sphere(center, 0.2, Rc::new(sphere_material)));
+                    world.add(Sphere::new(center, 0.2, Rc::new(sphere_material)));
                 } else if choose_mat < 0.95 {
                     // Metal
                     let albedo: Point3 = random_vector(0.0, 1.0)*random_vector(0.0, 1.0);
                     let fuzz: f64 = rand::random_range(0.0..0.5);
                     let sphere_material: Metal = Metal{albedo, fuzz};
-                    world.add(sphere(center, 0.2, Rc::new(sphere_material)));
+                    world.add(Sphere::new(center, 0.2, Rc::new(sphere_material)));
                 } else {
                     // Glass
                     let sphere_material: Dielectric = Dielectric { refraction_index: 1.5 };
-                    world.add(sphere(center, 0.2, Rc::new(sphere_material)));
+                    world.add(Sphere::new(center, 0.2, Rc::new(sphere_material)));
                 }
             }
         }
     }
 
     let material1: Dielectric = Dielectric { refraction_index: 1.5 };
-    world.add(sphere(Point3 { x: 0.0, y: 1.0, z: 0.0 }, 1.0, Rc::new(material1)));
+    world.add(Sphere::new(Point3 { x: 0.0, y: 1.0, z: 0.0 }, 1.0, Rc::new(material1)));
 
     let material2: Lambertian = Lambertian { texture: create_solid_color(Point3 { x: 0.4, y: 0.2, z: 0.1 }) };
-    world.add(sphere(Point3 { x: -4.0, y: 1.0, z: 0.0 }, 1.0, Rc::new(material2)));
+    world.add(Sphere::new(Point3 { x: -4.0, y: 1.0, z: 0.0 }, 1.0, Rc::new(material2)));
 
     let material3: Metal = Metal { albedo: Point3 { x: 0.7, y: 0.6, z: 0.5 }, fuzz: 0.0 };
-    world.add(sphere(Point3 { x: 4.0, y: 1.0, z: 0.0 },  1.0,  Rc::new(material3)));
+    world.add(Sphere::new(Point3 { x: 4.0, y: 1.0, z: 0.0 },  1.0,  Rc::new(material3)));
 
     // let material3: BlackBody = BlackBody {  };
     // world.add(Sphere{center: Point3 { x: 4.0, y: 1.0, z: 0.0 }, radius: 1.0, material: Rc::new(material3)});
@@ -117,8 +117,8 @@ fn checkered_spheres() {
     let checker: Rc<CheckerTexture> = checker_texture_from_colors(0.10, Point3 {x: 0.2, y: 0.3, z: 0.1}, Point3 {x: 0.9, y: 0.9, z: 0.9});
     let material: Rc<Lambertian> = Rc::new(Lambertian{texture: checker});
 
-    world.add(sphere(Point3{x: 0.0, y: -10.0, z: 0.0}, 10.0, material.clone()));
-    world.add(sphere(Point3{x: 0.0, y: 10.0, z: 0.0}, 10.0, material));
+    world.add(Sphere::new(Point3{x: 0.0, y: -10.0, z: 0.0}, 10.0, material.clone()));
+    world.add(Sphere::new(Point3{x: 0.0, y: 10.0, z: 0.0}, 10.0, material));
 
     let aspect_ratio: f64 = 16.0/9.0;
     let image_width: u32 = 400;
@@ -149,7 +149,7 @@ fn earth() {
     let earth_texture: Rc<dyn Texture> = create_image_texture("textures/earthmap.jpg");
     let earth_material: Rc<Lambertian> = Rc::new(Lambertian{texture: earth_texture});
 
-    world.add(sphere(Point3{x: 0.0, y: 0.0, z: 0.0}, 2.0, earth_material));
+    world.add(Sphere::new(Point3{x: 0.0, y: 0.0, z: 0.0}, 2.0, earth_material));
 
     let aspect_ratio: f64 = 16.0/9.0;
     let image_width: u32 = 400;
@@ -180,8 +180,8 @@ fn perlin_spheres() {
     let perlin_texture: Rc<PerlinNoiseTexture>  = Rc::new(PerlinNoiseTexture { perlin_noise: create_perlin_noise(), scale: 2.0});
     let perlin_material: Rc<Lambertian> = Rc::new(Lambertian{ texture: perlin_texture });
 
-    world.add(sphere(Point3{x: 0.0, y: -1000.0, z: 0.0}, 1000.0, perlin_material.clone()));
-    world.add(sphere(Point3{x: 0.0, y: 2.0, z: 0.0}, 2.0, perlin_material));
+    world.add(Sphere::new(Point3{x: 0.0, y: -1000.0, z: 0.0}, 1000.0, perlin_material.clone()));
+    world.add(Sphere::new(Point3{x: 0.0, y: 2.0, z: 0.0}, 2.0, perlin_material));
 
     let aspect_ratio: f64 = 16.0/9.0;
     let image_width: u32 = 400;
@@ -252,8 +252,8 @@ fn simple_light() {
     let perlin_texture: Rc<PerlinNoiseTexture>  = Rc::new(PerlinNoiseTexture { perlin_noise: create_perlin_noise(), scale: 2.0});
     let perlin_material: Rc<Lambertian> = Rc::new(Lambertian{ texture: perlin_texture });
 
-    world.add(sphere(Point3{x: 0.0, y: -1000.0, z: 0.0}, 1000.0, perlin_material.clone()));
-    world.add(sphere(Point3{x: 0.0, y: 2.0, z: 0.0}, 2.0, perlin_material));
+    world.add(Sphere::new(Point3{x: 0.0, y: -1000.0, z: 0.0}, 1000.0, perlin_material.clone()));
+    world.add(Sphere::new(Point3{x: 0.0, y: 2.0, z: 0.0}, 2.0, perlin_material));
 
     let diffuse_light: Rc<DiffuseLight> = diffuse_light_from_color(Point3 { x: 4.0, y: 4.0, z: 4.0 });
     world.add(parallelogram(Point3{x: 3.0, y: 1.0, z:-2.0}, Point3{x: 2.0, y: 0.0, z:0.0}, Point3{x: 0.0, y:2.0, z:0.0}, diffuse_light));
@@ -417,31 +417,31 @@ fn final_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
     // Moving sphere that does not move
     let center: Point3 = point_from_array([400.0, 400.0, 200.0]);
     let sphere_material: Rc<Lambertian> = lambertian(point_from_array([0.7, 0.3, 0.1]));
-    world.add(sphere(center, 50.0, sphere_material));
+    world.add(Sphere::new(center, 50.0, sphere_material));
 
     // Fuzzy metal and glass spheres
-    world.add(sphere(point_from_array([260.0, 150.0, 45.0]), 50.0, dielectric(1.5)));
-    world.add(sphere(
+    world.add(Sphere::new(point_from_array([260.0, 150.0, 45.0]), 50.0, dielectric(1.5)));
+    world.add(Sphere::new(
         point_from_array([0.0, 150.0, 145.0]), 50.0, metal(point_from_array([0.8, 0.8, 0.9]), 1.0)
     ));
 
     // Blue sphere with subsurface scattering (volume inside a dielectric)
-    let boundary: Rc<Sphere> = Rc::new(sphere(point_from_array([360.0, 150.0, 145.0]), 70.0, dielectric(1.5)));
+    let boundary: Rc<Sphere> = Rc::new(Sphere::new(point_from_array([360.0, 150.0, 145.0]), 70.0, dielectric(1.5)));
     world.add_pointer(boundary.clone());
     world.add(constant_medium_from_color(boundary.clone(), 0.2, point_from_array([0.2, 0.4, 0.9])));
 
     // Big mist covering everything
-    let boundary2: Rc<Sphere> = Rc::new(sphere(point_from_array([0.0, 0.0, 0.0]), 5000.0, dielectric(1.5)));
+    let boundary2: Rc<Sphere> = Rc::new(Sphere::new(point_from_array([0.0, 0.0, 0.0]), 5000.0, dielectric(1.5)));
     world.add(constant_medium_from_color(boundary2, 0.0001, point_from_array([1.0, 1.0, 1.0])));
 
     // Earth texture
     let emat: Rc<Lambertian> = Rc::new(Lambertian{texture: create_image_texture("textures/earthmap.jpg")});
-    world.add(sphere(point_from_array([400.0, 200.0, 400.0]), 100.0, emat));
+    world.add(Sphere::new(point_from_array([400.0, 200.0, 400.0]), 100.0, emat));
 
     // Perlin sphere
     let perlin_texture: Rc<PerlinNoiseTexture>  = Rc::new(PerlinNoiseTexture { perlin_noise: create_perlin_noise(), scale: 0.2});
     let perlin_material: Rc<Lambertian> = Rc::new(Lambertian{ texture: perlin_texture });
-    world.add(sphere(point_from_array([220.0, 280.0, 300.0]), 80.0, perlin_material));
+    world.add(Sphere::new(point_from_array([220.0, 280.0, 300.0]), 80.0, perlin_material));
 
     // Group of spheres
     let mut spheres: HittableList = HittableList::default();
@@ -449,7 +449,7 @@ fn final_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
 
     let number_of_spheres: u32 = 1000;
     for _ in 0..number_of_spheres {
-        spheres.add(sphere(random_vector(0.0, 165.0), 10.0, white.clone()));
+        spheres.add(Sphere::new(random_vector(0.0, 165.0), 10.0, white.clone()));
     }
     // Translate and rotate them at the same time
     world.add_pointer(Rc::new(create_translation(
@@ -503,8 +503,8 @@ fn cornell_quadric() {
 
     world.add(y_cylinder(Point3 { x: 150.0, y: 555.0/2.0, z: 175.0 }, 50.0, white.clone()));
     world.add(y_cylinder(Point3 { x: 400.0, y: 555.0/2.0, z: 555.0/2.0 + 50.0 }, 80.0, white.clone()));
-    // world.add(quadric_sphere(Point3 { x: 555.0/2.0, y: 555.0/2.0, z: 555.0/2.0 }, 100.0, white.clone()));
-    // world.add(sphere(Point3 { x: 555.0/2.0, y: 555.0/2.0, z: 555.0/2.0 }, 100.0, white.clone()));
+    // world.add(quadric_Sphere::new(Point3 { x: 555.0/2.0, y: 555.0/2.0, z: 555.0/2.0 }, 100.0, white.clone()));
+    // world.add(Sphere::new(Point3 { x: 555.0/2.0, y: 555.0/2.0, z: 555.0/2.0 }, 100.0, white.clone()));
     // world.add(y_cone(Point3 { x: 200.0, y: 555.0, z: 200.0 }, Point3 { x: 50.0, y: 50.0, z: 50.0 }, white.clone()));
 
     let aspect_ratio: f64 = 1.0;
@@ -541,7 +541,7 @@ fn debug_quadric() {
 
     let white: Rc<Lambertian> = Rc::new(Lambertian{ texture: create_solid_color(Point3 { x: 0.73, y: 0.73, z: 0.73 }) });
 
-    world.add(sphere(Point3 { x: 3.0, y: 0.0, z: 0.0 }, 1.0, white.clone()));
+    world.add(Sphere::new(Point3 { x: 3.0, y: 0.0, z: 0.0 }, 1.0, white.clone()));
     world.add(y_cylinder(Point3 { x: 0.0, y: 0.0, z: 0.0 },1.0, white.clone()));
 
     let aspect_ratio: f64 = 1.0;
@@ -646,22 +646,22 @@ fn profiler_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
     // Moving sphere that does not move
     let center: Point3 = point_from_array([400.0, 400.0, 200.0]);
     let sphere_material: Rc<Lambertian> = lambertian(point_from_array([0.7, 0.3, 0.1]));
-    world.add(sphere(center, 50.0, sphere_material));
+    world.add(Sphere::new(center, 50.0, sphere_material));
 
     // Fuzzy metal and glass spheres
-    world.add(sphere(point_from_array([260.0, 150.0, 45.0]), 50.0, dielectric(1.5)));
-    world.add(sphere(
+    world.add(Sphere::new(point_from_array([260.0, 150.0, 45.0]), 50.0, dielectric(1.5)));
+    world.add(Sphere::new(
         point_from_array([0.0, 150.0, 145.0]), 50.0, metal(point_from_array([0.8, 0.8, 0.9]), 1.0)
     ));
 
     // Blue sphere with subsurface scattering (volume inside a dielectric)
-    let boundary: Rc<Sphere> = Rc::new(sphere(point_from_array([360.0, 150.0, 145.0]), 70.0, dielectric(1.5)));
+    let boundary: Rc<Sphere> = Rc::new(Sphere::new(point_from_array([360.0, 150.0, 145.0]), 70.0, dielectric(1.5)));
     world.add_pointer(boundary.clone());
     world.add(constant_medium_from_color(boundary.clone(), 0.2, point_from_array([0.2, 0.4, 0.9])));
 
     // Earth texture
     let emat: Rc<Lambertian> = Rc::new(Lambertian{texture: create_image_texture("textures/earthmap.jpg")});
-    world.add(sphere(point_from_array([400.0, 200.0, 400.0]), 100.0, emat));
+    world.add(Sphere::new(point_from_array([400.0, 200.0, 400.0]), 100.0, emat));
 
 
     // Group of spheres
@@ -670,7 +670,7 @@ fn profiler_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
 
     let number_of_spheres: u32 = 1000;
     for _ in 0..number_of_spheres {
-        spheres.add(sphere(random_vector(0.0, 165.0), 10.0, white.clone()));
+        spheres.add(Sphere::new(random_vector(0.0, 165.0), 10.0, white.clone()));
     }
     // Translate and rotate them at the same time
     world.add_pointer(Rc::new(create_translation(

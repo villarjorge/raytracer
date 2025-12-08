@@ -19,10 +19,12 @@ pub struct Sphere {
     bounding_box: AABB
 }
 
-pub fn sphere(center: Point3, radius: f64, material: Rc<dyn Material>) -> Sphere {
-    let radius_vector: Point3 = Point3 { x: radius, y: radius, z: radius };
-    let bounding_box: AABB = aabb_from_points(center - radius_vector, center + radius_vector);
-    Sphere { center, radius: radius.max(0.0), material, bounding_box}
+impl Sphere {
+    pub fn new(center: Point3, radius: f64, material: Rc<dyn Material>) -> Sphere {
+        let radius_vector: Point3 = Point3 { x: radius, y: radius, z: radius };
+        let bounding_box: AABB = aabb_from_points(center - radius_vector, center + radius_vector);
+        Sphere { center, radius: radius.max(0.0), material, bounding_box}
+}
 }
 
 impl Hittable for Sphere {
