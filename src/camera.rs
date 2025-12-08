@@ -6,6 +6,7 @@ use std::{
 
 use image::{ImageBuffer, RgbImage};
 use rand;
+// use rayon::prelude::*;
 
 use crate::{material::ScatterResult, point3::color::{Color, proccess_color}};
 use crate::point3::{Point3, Vector3, cross, random_in_unit_disk, unit_vector};
@@ -141,7 +142,6 @@ impl Camera {
         // The problem is that writting to disk will become non secuential
         // Maybe switch from .ppm to other format and handle it with image crate. See creating a fractal: https://github.com/image-rs/image/blob/main/README.md
         for j in 0..self.image_height {
-            eprint!("\r----Scanlines remaining: {}/{}----", self.image_height - j, self.image_height); // eprint since this is the progress of the program
             for i in 0..self.image_width {
                 let pixel_color: Color = (0..self.samples_per_pixel).map(|_| {
                     let r: Ray = self.get_ray(i, j);
@@ -168,6 +168,19 @@ impl Camera {
 
             *pixel = image::Rgb(proccess_color(pixel_color/(self.samples_per_pixel as f64)));
         }
+        // (0..self.image_height).into_par_iter().for_each(|j| {
+        //     (0..self.image_width).into_par_iter().for_each(|i| {
+        //         let pixel_color: Color = (0..self.samples_per_pixel).map(|_| {
+        //             let r: Ray = self.get_ray(i, j);
+        //             ray_color(&r, self.max_depth, world, self.background_color)
+        //         }).sum();
+
+        //         let pixel: &mut image::Rgb<u8> = image_buffer.get_pixel_mut(i, j);
+        //         *pixel = image::Rgb(proccess_color(pixel_color/(self.samples_per_pixel as f64)));
+        //     });
+        // });
+
+        image_buffer.save("images/image.png").unwrap();
     }
 }
 

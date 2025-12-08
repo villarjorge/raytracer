@@ -81,10 +81,18 @@ impl Hittable for Translate {
             HitResult::DidNotHit => HitResult::DidNotHit,
             HitResult::HitRecord(hr) => {
                 // Move the intersection point forwards by the offset
-                HitResult::HitRecord(HitRecord { p: hr.p + self.offset, normal: hr.normal, material: hr.material, t: hr.t, surface_coords: hr.surface_coords, front_face: hr.front_face })
+                HitResult::HitRecord(HitRecord { 
+                    p: hr.p + self.offset, 
+                    normal: hr.normal, 
+                    material: hr.material, 
+                    t: hr.t, 
+                    surface_coords: hr.surface_coords, 
+                    front_face: hr.front_face
+                 })
             }
         }
     }
+
     fn bounding_box(&self) -> &AABB {
         &self.bounding_box
     }
@@ -122,7 +130,7 @@ impl Hittable for RotateY {
                     surface_coords: object_space_hit_record.surface_coords, 
                     front_face: object_space_hit_record.front_face
                  };
-                 HitResult::HitRecord(world_space_hit_record)
+                HitResult::HitRecord(world_space_hit_record)
             }
         }
     }
