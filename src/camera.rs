@@ -58,45 +58,46 @@ impl ImageQuality {
     }
 }
 
-// To do: function has to many arguments
-pub fn create_camera(aspect_ratio: f64, image_width: u32, image_quality: ImageQuality, vfov: f64, thin_lens: ThinLens, camera_position: CameraPosition, background_color: Point3) -> Camera {
-    // Calculate the image height, and ensure that it's at least 1.
-    let image_height: u32 = cmp::max(1, (image_width as f64 / aspect_ratio) as u32);
+impl Camera {
+    pub fn new(aspect_ratio: f64, image_width: u32, image_quality: ImageQuality, vfov: f64, thin_lens: ThinLens, camera_position: CameraPosition, background_color: Point3) -> Camera {
+        // Calculate the image height, and ensure that it's at least 1.
+        let image_height: u32 = cmp::max(1, (image_width as f64 / aspect_ratio) as u32);
 
-    let camera_center: Point3 = camera_position.look_from;
+        let camera_center: Point3 = camera_position.look_from;
 
-    // Determine viewport dimensions
-    let theta: f64 = vfov.to_radians();
-    let h: f64 = (theta*0.5).tan();
-    let viewport_height: f64  = 2.0*h*thin_lens.focus_distance;
-    let viewport_width: f64 = viewport_height * (image_width as f64/image_height as f64);
-    
-    // Calculate the basis vectors for the camera coordinate frame
-    let w: Vector3 = unit_vector(camera_position.look_from - camera_position.look_at);
-    let u: Vector3 = unit_vector(cross(&camera_position.view_up, &w));
-    let v: Vector3 = unit_vector(cross(&w, &u));
+        // Determine viewport dimensions
+        let theta: f64 = vfov.to_radians();
+        let h: f64 = (theta*0.5).tan();
+        let viewport_height: f64  = 2.0*h*thin_lens.focus_distance;
+        let viewport_width: f64 = viewport_height * (image_width as f64/image_height as f64);
+        
+        // Calculate the basis vectors for the camera coordinate frame
+        let w: Vector3 = unit_vector(camera_position.look_from - camera_position.look_at);
+        let u: Vector3 = unit_vector(cross(&camera_position.view_up, &w));
+        let v: Vector3 = unit_vector(cross(&w, &u));
 
-    // Calcualte the vectors across the horizontal and down the vertical viewport edges
-    let viewport_u: Vector3 = u*viewport_width;
-    let viewport_v: Vector3 = v*(-viewport_height);
+        // Calcualte the vectors across the horizontal and down the vertical viewport edges
+        let viewport_u: Vector3 = u*viewport_width;
+        let viewport_v: Vector3 = v*(-viewport_height);
 
-    // Calculate the horizontal and vertical delta vectors from pixel to pixel.
-    let pixel_delta_u: Point3 = viewport_u / image_width as f64;
-    let pixel_delta_v: Point3 = viewport_v / image_height as f64;
+        // Calculate the horizontal and vertical delta vectors from pixel to pixel.
+        let pixel_delta_u: Point3 = viewport_u / image_width as f64;
+        let pixel_delta_v: Point3 = viewport_v / image_height as f64;
 
-    // Calculate the location of the upper left pixel (the 0, 0 pixel).
-    let viewport_upper_left: Point3 = camera_center - w*thin_lens.focus_distance - viewport_u*0.5f64 - viewport_v*0.5f64;
-    let pixel00_loc: Point3 = viewport_upper_left + (pixel_delta_u + pixel_delta_v)*0.5f64;
+        // Calculate the location of the upper left pixel (the 0, 0 pixel).
+        let viewport_upper_left: Point3 = camera_center - w*thin_lens.focus_distance - viewport_u*0.5f64 - viewport_v*0.5f64;
+        let pixel00_loc: Point3 = viewport_upper_left + (pixel_delta_u + pixel_delta_v)*0.5f64;
 
-    // Calculate the camera defocus disk basis vectors
-    let defocus_radius: f64 = thin_lens.focus_distance*( (thin_lens.defocus_angle*0.5).to_radians().tan() );
-    let defocus_disk_u: Point3 = u * defocus_radius;
-    let defocus_disk_v: Point3 = v * defocus_radius;
+        // Calculate the camera defocus disk basis vectors
+        let defocus_radius: f64 = thin_lens.focus_distance*( (thin_lens.defocus_angle*0.5).to_radians().tan() );
+        let defocus_disk_u: Point3 = u * defocus_radius;
+        let defocus_disk_v: Point3 = v * defocus_radius;
 
-    // To do: I don't like to have this many parameters here. Maybe use ray to encapsulate two points? 
-    let samples_per_pixel: u32 = image_quality.samples_per_pixel;
-    let max_depth: u32 = image_quality.max_depth;
-    Camera { image_width, image_height, samples_per_pixel, max_depth, pixel00_loc, pixel_delta_u, pixel_delta_v, camera_center, defocus_angle: thin_lens.defocus_angle, defocus_disk_u, defocus_disk_v, background_color}
+        // To do: I don't like to have this many parameters here. Maybe use ray to encapsulate two points? 
+        let samples_per_pixel: u32 = image_quality.samples_per_pixel;
+        let max_depth: u32 = image_quality.max_depth;
+        Camera { image_width, image_height, samples_per_pixel, max_depth, pixel00_loc, pixel_delta_u, pixel_delta_v, camera_center, defocus_angle: thin_lens.defocus_angle, defocus_disk_u, defocus_disk_v, background_color}
+    }
 }
 
 // Public

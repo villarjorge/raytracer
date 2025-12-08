@@ -1,11 +1,10 @@
 use std::rc::Rc;
 
 use crate::point3::color::Color;
-use crate::point3::{Point3, Vector3, dot, random_unit_vector, reflect, refract};
+use crate::point3::{Point3, Vector3, dot, random_unit_vector, reflect, refract, unit_vector};
 use crate::ray::Ray;
 use crate::hittable::{HitRecord, SurfaceCoordinate};
 use crate::texture::{Texture, SolidColor};
-use crate::unit_vector;
 
 // If you are confused about the lifetimes, think about it this way: 
 // multiple objects could use the same material, which means that the material pointer needs to outlive everything else

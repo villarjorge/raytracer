@@ -1,6 +1,6 @@
 use std::{ops::Range, rc::Rc};
 
-use crate::aabb::{AABB, aabb_from_points, join_aabbs};
+use crate::aabb::{AABB, join_aabbs};
 use crate::hittable::hittable_list::HittableList;
 use crate::hittable::{HitRecord, HitResult, Hittable, SurfaceCoordinate};
 use crate::material::Material;
@@ -29,8 +29,8 @@ pub struct Parallelogram {
 
 fn create_aabb_para(q: Point3, u: Point3, v: Point3) -> AABB {
     // Create the bounding boxes for each diagonal and then join them
-    let bounding_box0: AABB = aabb_from_points(q, q + u + v);
-    let bounding_box1: AABB = aabb_from_points(q + u, q + v);
+    let bounding_box0: AABB = AABB::from_points(q, q + u + v);
+    let bounding_box1: AABB = AABB::from_points(q + u, q + v);
 
     join_aabbs(&bounding_box0, &bounding_box1)
 }

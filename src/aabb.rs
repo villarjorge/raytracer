@@ -11,9 +11,20 @@ pub struct AABB {
     z: Range<f64>, 
 }
 
+/// Create an AABB from two corner points
+impl AABB {
+    pub fn from_points(a: Point3, b: Point3) -> AABB {
+        let x: Range<f64> = if a.x <= b.x {a.x..b.x} else {b.x..a.x};
+        let y: Range<f64> = if a.y <= b.y {a.y..b.y} else {b.y..a.y};
+        let z: Range<f64> = if a.z <= b.z {a.z..b.z} else {b.z..a.z};
+
+        AABB {x: pad_to_minimums(x), y: pad_to_minimums(y), z: pad_to_minimums(z)}
+    }
+}
+
 impl Default for AABB {
     fn default() -> Self {
-        aabb_from_points(Point3::default(), Point3::default())
+        AABB::from_points(Point3::default(), Point3::default())
     }
 }
 
@@ -57,15 +68,6 @@ fn pad_to_minimums(x: Range<f64>) -> Range<f64> {
     };
 
     x_expanded
-}
-
-/// Create an AABB from two corner points
-pub fn aabb_from_points(a: Point3, b: Point3) -> AABB {
-    let x: Range<f64> = if a.x <= b.x {a.x..b.x} else {b.x..a.x};
-    let y: Range<f64> = if a.y <= b.y {a.y..b.y} else {b.y..a.y};
-    let z: Range<f64> = if a.z <= b.z {a.z..b.z} else {b.z..a.z};
-
-    AABB {x: pad_to_minimums(x), y: pad_to_minimums(y), z: pad_to_minimums(z)}
 }
 
 /// Unite two ranges, creating one that encompases the two

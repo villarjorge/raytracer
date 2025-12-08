@@ -16,9 +16,9 @@ use rand::{Rng, SeedableRng};
 use rand::rngs::SmallRng;
 
 use crate::bvh::{BVHNode, bvh_node_from_hittable_list};
-use crate::camera::{Camera, CameraPosition, ImageQuality, ThinLens, create_camera};
+use crate::camera::{Camera, CameraPosition, ImageQuality, ThinLens};
 use crate::perlin::create_perlin_noise;
-use crate::point3::{Point3, unit_vector, point_from_array, random_vector};
+use crate::point3::{Point3, point_from_array, random_vector};
 use crate::material::{Dielectric, DiffuseLight, Lambertian, Metal, dielectric, diffuse_light_from_color, lambertian, metal};
 use crate::hittable::{
     {RotateY, Translate},
@@ -79,9 +79,6 @@ fn many_spheres() {
     let material3: Metal = Metal { albedo: Point3 { x: 0.7, y: 0.6, z: 0.5 }, fuzz: 0.0 };
     world.add(Sphere::new(Point3 { x: 4.0, y: 1.0, z: 0.0 },  1.0,  Rc::new(material3)));
 
-    // let material3: BlackBody = BlackBody {  };
-    // world.add(Sphere{center: Point3 { x: 4.0, y: 1.0, z: 0.0 }, radius: 1.0, material: Rc::new(material3)});
-
     let aspect_ratio: f64 = 16.0/9.0;
     let image_width: u32 = 1200; // 1200
     let samples_per_pixel: u32 = 10; // 500
@@ -100,14 +97,14 @@ fn many_spheres() {
 
     let camera_position: CameraPosition = CameraPosition{look_from, look_at, view_up};
 
-    let cam: Camera = create_camera(aspect_ratio, image_width, image_quality, vfov, thin_lens, camera_position, Point3 { x: 0.7, y: 0.8, z: 1.0 });
+    let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, thin_lens, camera_position, Point3 { x: 0.7, y: 0.8, z: 1.0 });
 
     // To do: Make this a parameter that can be passed in the console
     // If you want to compare without the bvh
     // cam.render(&world);
 
     let bvh_world: BVHNode = bvh_node_from_hittable_list(world);
-    cam.render(&bvh_world);
+    cam.thrender(&bvh_world);
 }
 
 fn checkered_spheres() {
@@ -137,7 +134,7 @@ fn checkered_spheres() {
 
     let camera_position: CameraPosition = CameraPosition { look_from, look_at, view_up };
 
-    let cam: Camera = create_camera(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, Point3 { x: 0.7, y: 0.8, z: 1.0 });
+    let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, Point3 { x: 0.7, y: 0.8, z: 1.0 });
 
     cam.render(&world);
 }
@@ -168,7 +165,7 @@ fn earth() {
 
     let camera_position: CameraPosition = CameraPosition { look_from, look_at, view_up };
 
-    let cam: Camera = create_camera(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, Point3 { x: 0.7, y: 0.8, z: 1.0 });
+    let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, Point3 { x: 0.7, y: 0.8, z: 1.0 });
 
     cam.render(&world);
 }
@@ -200,7 +197,7 @@ fn perlin_spheres() {
 
     let camera_position: CameraPosition = CameraPosition { look_from, look_at, view_up };
 
-    let cam: Camera = create_camera(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, Point3 { x: 0.7, y: 0.8, z: 1.0 });
+    let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, Point3 { x: 0.7, y: 0.8, z: 1.0 });
 
     cam.render(&world);
 }
@@ -239,7 +236,7 @@ fn para() {
 
     let camera_position: CameraPosition = CameraPosition { look_from, look_at, view_up };
 
-    let cam: Camera = create_camera(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, Point3 { x: 0.7, y: 0.8, z: 1.0 });
+    let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, Point3 { x: 0.7, y: 0.8, z: 1.0 });
 
     cam.render(&world);
 }
@@ -277,7 +274,7 @@ fn simple_light() {
 
     let camera_position: CameraPosition = CameraPosition { look_from, look_at, view_up };
 
-    let cam: Camera = create_camera(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
+    let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
 
     cam.render(&world);
 }
@@ -329,7 +326,7 @@ fn cornell_box() {
 
     let camera_position: CameraPosition = CameraPosition { look_from, look_at, view_up };
 
-    let cam: Camera = create_camera(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
+    let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
 
     cam.render(&world);
 }
@@ -380,7 +377,7 @@ fn cornell_smoke() {
 
     let camera_position: CameraPosition = CameraPosition { look_from, look_at, view_up };
 
-    let cam: Camera = create_camera(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
+    let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
 
     cam.render(&world);
 }
@@ -480,7 +477,7 @@ fn final_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
 
     let camera_position: CameraPosition = CameraPosition { look_from, look_at, view_up };
 
-    let cam: Camera = create_camera(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
+    let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
 
     cam.render(&world);
 }
@@ -526,7 +523,7 @@ fn cornell_quadric() {
 
     let camera_position: CameraPosition = CameraPosition { look_from, look_at, view_up };
 
-    let cam: Camera = create_camera(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
+    let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
 
     cam.render(&world);
 }
@@ -563,7 +560,7 @@ fn debug_quadric() {
 
     let camera_position: CameraPosition = CameraPosition { look_from, look_at, view_up };
 
-    let cam: Camera = create_camera(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
+    let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
 
     cam.render(&world);
 }
@@ -607,7 +604,7 @@ fn cornell_triangle() {
 
     let camera_position: CameraPosition = CameraPosition { look_from, look_at, view_up };
 
-    let cam: Camera = create_camera(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
+    let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
 
     cam.render(&world);
 }
@@ -703,7 +700,7 @@ fn profiler_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
 
     let camera_position: CameraPosition = CameraPosition { look_from, look_at, view_up };
 
-    let cam: Camera = create_camera(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
+    let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
 
     cam.render_iterators(&world);
 }

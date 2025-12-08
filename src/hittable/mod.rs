@@ -1,7 +1,7 @@
 use std::ops::Range;
 use std::rc::Rc;
 
-use crate::aabb::{AABB, aabb_from_points};
+use crate::aabb::{AABB};
 use crate::point3::{Point3, Vector3, point_from_array, rotate_y};
 use crate::ray::Ray;
 use crate::material::Material;
@@ -179,7 +179,7 @@ impl RotateY {
             }
         }
 
-        RotateY { object, sin_theta, cos_theta, bounding_box:aabb_from_points(point_from_array(minimum), point_from_array(maximum)) }
+        RotateY { object, sin_theta, cos_theta, bounding_box: AABB::from_points(point_from_array(minimum), point_from_array(maximum)) }
     }
 }
 
