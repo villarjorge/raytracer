@@ -122,7 +122,7 @@ impl Hittable for RotateY {
 
         let rotated_ray: Ray = Ray::new(origin, direction);
 
-        match self.object.hit(&rotated_ray, &ray_t) {
+        match self.object.hit(&rotated_ray, ray_t) {
             HitResult::DidNotHit => HitResult::DidNotHit,
             HitResult::HitRecord(object_space_hit_record) => {
                 let world_space_hit_record: HitRecord = HitRecord { 
