@@ -7,7 +7,7 @@ use rand::random_range;
 
 use crate::{
     aabb::AABB, 
-    hittable::{HitResult, Hittable, SurfaceCoordinate, create_hit_record}, 
+    hittable::{HitRecord, HitResult, Hittable, SurfaceCoordinate}, 
     material::{Isotropic, Material}, 
     point3::{Vector3, color::Color}, 
     ray::Ray, texture::{self, Texture, create_solid_color}
@@ -71,7 +71,7 @@ impl Hittable for ConstantMedium {
 
                         // To do: more dereference pointer to take reference of underlying
                         HitResult::HitRecord(
-                            create_hit_record(ray, record1_t_nonzero + hit_distance/ray_length, outward_normal, &*self.phase_function, surface_coords)
+                            HitRecord::new(ray, record1_t_nonzero + hit_distance/ray_length, outward_normal, &*self.phase_function, surface_coords)
                         )
                     }
                 }

@@ -3,7 +3,7 @@ use std::ops::Range;
 use std::rc::Rc;
 
 use crate::point3::Point3;
-use crate::hittable::{HitRecord, HitResult, Hittable, SurfaceCoordinate, create_hit_record};
+use crate::hittable::{HitRecord, HitResult, Hittable, SurfaceCoordinate};
 use crate::ray::Ray;
 use crate::material::Material;
 use crate::aabb::{AABB, aabb_from_points};
@@ -54,7 +54,7 @@ impl Hittable for Sphere {
         let outward_normal: Point3 = (ray.at(root) - self.center)/self.radius;
         let surface_coords: SurfaceCoordinate = get_sphere_uv(&outward_normal);
         // To do: To deal with the material, dereference the pointer, then create a reference. Change this so you don't
-        let record: HitRecord = create_hit_record(ray, root, outward_normal, &*self.material, surface_coords);
+        let record: HitRecord = HitRecord::new(ray, root, outward_normal, &*self.material, surface_coords);
 
         HitResult::HitRecord(record)
     }

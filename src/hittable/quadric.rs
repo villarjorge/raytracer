@@ -8,7 +8,7 @@ use std::{
 
 use crate::{
     aabb::{AABB, aabb_from_points}, 
-    hittable::{HitRecord, HitResult, Hittable, SurfaceCoordinate, create_hit_record}, 
+    hittable::{HitRecord, HitResult, Hittable, SurfaceCoordinate}, 
     material::Material, 
     point3::{Point3, Vector3, dot, unit_vector}, 
     ray::Ray
@@ -73,7 +73,7 @@ impl Hittable for Quadric {
         // To do: ☠☠ once you have those coordinates, you can reverse based on them, like in Parallelogram ☠☠
 
         // To do: To deal with the material, dereference the pointer, then create a reference. Change this so you don't
-        let record: HitRecord = create_hit_record(ray, root, outward_normal, &*self.material, surface_coords);
+        let record: HitRecord = HitRecord::new(ray, root, outward_normal, &*self.material, surface_coords);
 
         HitResult::HitRecord(record)
     }

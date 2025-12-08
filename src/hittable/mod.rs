@@ -36,15 +36,17 @@ pub struct HitRecord<'a> {
 ///     - outward_normal: normal of the surface, assumed to be unit lenght
 ///     - material
 ///     - surface_coords
-pub fn create_hit_record<'a>(ray: &Ray, t: f64, outward_normal: Vector3, material: &'a dyn Material, surface_coords: SurfaceCoordinate) -> HitRecord<'a> {
-    let p: Point3 = ray.at(t);
+impl HitRecord<'_> {
+    pub fn new<'a>(ray: &Ray, t: f64, outward_normal: Vector3, material: &'a dyn Material, surface_coords: SurfaceCoordinate) -> HitRecord<'a> {
+        let p: Point3 = ray.at(t);
 
-    // let unit_outward_normal: Point3 = unit_vector(outward_normal);
+        // let unit_outward_normal: Point3 = unit_vector(outward_normal);
 
-    let front_face: bool = outward_normal.dot(ray.direction) < 0.0;
-    let normal: Vector3 = if front_face {outward_normal} else {-outward_normal};
+        let front_face: bool = outward_normal.dot(ray.direction) < 0.0;
+        let normal: Vector3 = if front_face {outward_normal} else {-outward_normal};
 
-    HitRecord {p, normal, material, t, surface_coords, front_face }
+        HitRecord {p, normal, material, t, surface_coords, front_face}
+    }
 }
 
 /// Encapsulates the two possible results of the ray-object intersection: 
