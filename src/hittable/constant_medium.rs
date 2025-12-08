@@ -21,13 +21,15 @@ pub struct ConstantMedium {
     pub phase_function: Rc<dyn Material> 
 }
 
-pub fn constant_medium(boundary: Rc<dyn Hittable>, density: f64, texture: Rc<dyn Texture>) -> ConstantMedium {
-    ConstantMedium { boundary, neg_inv_density: -1.0/density, phase_function: Rc::new(Isotropic{texture}) }
-}
+impl ConstantMedium {
+    pub fn new(boundary: Rc<dyn Hittable>, density: f64, texture: Rc<dyn Texture>) -> ConstantMedium {
+        ConstantMedium { boundary, neg_inv_density: -1.0/density, phase_function: Rc::new(Isotropic{texture}) }
+    }
 
-pub fn constant_medium_from_color(boundary: Rc<dyn Hittable>, density: f64, color: Color) -> ConstantMedium {
-    let texture: Rc<texture::SolidColor> = SolidColor::new(color);
-    ConstantMedium { boundary, neg_inv_density: -1.0/density, phase_function: Rc::new(Isotropic{texture}) }
+    pub fn from_color(boundary: Rc<dyn Hittable>, density: f64, color: Color) -> ConstantMedium {
+        let texture: Rc<texture::SolidColor> = SolidColor::new(color);
+        ConstantMedium { boundary, neg_inv_density: -1.0/density, phase_function: Rc::new(Isotropic{texture}) }
+    }
 }
 
 impl Hittable for ConstantMedium {

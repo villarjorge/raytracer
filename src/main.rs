@@ -27,7 +27,7 @@ use crate::hittable::{
     quadric::y_cylinder,
     parallelogram::{create_box, Parallelogram},
     triangle::triangle,
-    constant_medium::constant_medium_from_color
+    constant_medium::ConstantMedium
 };
 use crate::texture::{CheckerTexture, ImageTexture, PerlinNoiseTexture, SolidColor, Texture};
 
@@ -354,8 +354,8 @@ fn cornell_smoke() {
     let box2_rotated: Rc<RotateY>  = Rc::new(RotateY::new(box2, -18.0));
     let box2_trans: Translate = Translate::new(box2_rotated, point_from_array([130.0, 0.0, 65.0]));
 
-    world.add(constant_medium_from_color(Rc::new(box1_trans), 0.01, point_from_array([0.0, 0.0, 0.0])));
-    world.add(constant_medium_from_color(Rc::new(box2_trans), 0.01, point_from_array([1.0, 1.0, 1.0])));
+    world.add(ConstantMedium::from_color(Rc::new(box1_trans), 0.01, point_from_array([0.0, 0.0, 0.0])));
+    world.add(ConstantMedium::from_color(Rc::new(box2_trans), 0.01, point_from_array([1.0, 1.0, 1.0])));
 
     let aspect_ratio: f64 = 1.0;
     let image_width: u32 = 600;
@@ -424,11 +424,11 @@ fn final_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
     // Blue sphere with subsurface scattering (volume inside a dielectric)
     let boundary: Rc<Sphere> = Rc::new(Sphere::new(point_from_array([360.0, 150.0, 145.0]), 70.0, dielectric(1.5)));
     world.add_pointer(boundary.clone());
-    world.add(constant_medium_from_color(boundary.clone(), 0.2, point_from_array([0.2, 0.4, 0.9])));
+    world.add(ConstantMedium::from_color(boundary.clone(), 0.2, point_from_array([0.2, 0.4, 0.9])));
 
     // Big mist covering everything
     let boundary2: Rc<Sphere> = Rc::new(Sphere::new(point_from_array([0.0, 0.0, 0.0]), 5000.0, dielectric(1.5)));
-    world.add(constant_medium_from_color(boundary2, 0.0001, point_from_array([1.0, 1.0, 1.0])));
+    world.add(ConstantMedium::from_color(boundary2, 0.0001, point_from_array([1.0, 1.0, 1.0])));
 
     // Earth texture
     let emat: Rc<Lambertian> = Rc::new(Lambertian{texture: ImageTexture::new("textures/earthmap.jpg")});
@@ -653,7 +653,7 @@ fn profiler_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
     // Blue sphere with subsurface scattering (volume inside a dielectric)
     let boundary: Rc<Sphere> = Rc::new(Sphere::new(point_from_array([360.0, 150.0, 145.0]), 70.0, dielectric(1.5)));
     world.add_pointer(boundary.clone());
-    world.add(constant_medium_from_color(boundary.clone(), 0.2, point_from_array([0.2, 0.4, 0.9])));
+    world.add(ConstantMedium::from_color(boundary.clone(), 0.2, point_from_array([0.2, 0.4, 0.9])));
 
     // Earth texture
     let emat: Rc<Lambertian> = Rc::new(Lambertian{texture: ImageTexture::new("textures/earthmap.jpg")});
