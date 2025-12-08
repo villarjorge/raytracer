@@ -3,8 +3,8 @@
 
 use std::{
     ops::Range, 
-    rc::Rc
 };
+use std::sync::Arc;
 
 use crate::{
     aabb::{AABB, aabb_from_points}, 
@@ -19,7 +19,7 @@ pub struct Quadric {
     p2: Point3,
     p3: Point3,
     j: f64,
-    material: Rc<dyn Material>,
+    material: Arc<dyn Material>,
     bounding_box: AABB
 }
 
@@ -97,7 +97,7 @@ fn anticross(u: &Point3, v: &Point3) -> Point3 {
 // p1 is basically and "indicator": cylinders in xyz correspond to (011), (101), (110); sphere is (111); Perhaps you can generalize?
 /// An infinite cylinder made from a general quadric. The cylinder is perpendicular to the y axis. The bounding box of the cylinder is 
 /// a cube of side equal to the diameter of the cylinder, and as such it can "shorten" it.
-pub fn y_cylinder(center: Point3, radius: f64, material: Rc<dyn Material>) -> Quadric {
+pub fn y_cylinder(center: Point3, radius: f64, material: Arc<dyn Material>) -> Quadric {
     let radius_vector: Point3 = Point3 { x: radius, y: radius, z: radius };
     let bounding_box: AABB = aabb_from_points(center - radius_vector, center + radius_vector);
 
@@ -112,7 +112,7 @@ pub fn y_cylinder(center: Point3, radius: f64, material: Rc<dyn Material>) -> Qu
 }
 
 /// Quadric sphere for testing purposes. The other sphere has proper surface coordinates
-pub fn quadric_sphere(center: Point3, radius: f64, material: Rc<dyn Material>) -> Quadric {
+pub fn quadric_sphere(center: Point3, radius: f64, material: Arc<dyn Material>) -> Quadric {
     let radius_vector: Point3 = Point3 { x: radius, y: radius, z: radius };
     let bounding_box: AABB = aabb_from_points(center - radius_vector, center + radius_vector);
 
@@ -127,7 +127,7 @@ pub fn quadric_sphere(center: Point3, radius: f64, material: Rc<dyn Material>) -
 }
 
 /// A cone parallel to the y axis. Internaly represented as a general quadric
-pub fn y_cone(center: Point3, offset: Point3, material: Rc<dyn Material>) -> Quadric {
+pub fn y_cone(center: Point3, offset: Point3, material: Arc<dyn Material>) -> Quadric {
     let bounding_box: AABB = aabb_from_points(center - offset, center + offset);
 
     let indicator: Point3 = Point3 { x: 1.0, y: -1.0, z: 1.0 };

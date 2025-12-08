@@ -1,5 +1,5 @@
 use std::ops::Range;
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::aabb::{AABB, aabb_from_points};
 use crate::point3::{Point3, Vector3, point_from_array, rotate_y};
@@ -20,7 +20,7 @@ pub struct HitRecord<'a> {
     /// Normal at that point
     pub normal: Vector3,
     /// Material at the given intersection
-    // To do: change this to a Rc<dyn Material>
+    // To do: change this to a Arc<dyn Material>
     pub material: &'a dyn Material,  // &'a Box<dyn Material>
     /// Parameter of the ray at the intersection
     pub t: f64,
@@ -67,7 +67,7 @@ pub trait Hittable {
 
 /// An instance of translation
 pub struct Translate {
-    object: Rc<dyn Hittable>,
+    object: Arc<dyn Hittable>,
     offset: Vector3,
     bounding_box: AABB
 }
@@ -98,14 +98,14 @@ impl Hittable for Translate {
     }
 }
 
-pub fn create_translation(object: Rc<dyn Hittable>, offset: Vector3) -> Translate {
+pub fn create_translation(object: Arc<dyn Hittable>, offset: Vector3) -> Translate {
     let bounding_box: AABB = (*object.bounding_box()).clone();
     Translate { object, offset, bounding_box: bounding_box + offset }
 }
 
 /// An instance of rotation on the y axis
 pub struct RotateY {
-    object: Rc<dyn Hittable>,
+    object: Arc<dyn Hittable>,
     sin_theta: f64,
     cos_theta: f64,
     bounding_box: AABB
@@ -140,7 +140,7 @@ impl Hittable for RotateY {
     }
 }
 
-pub fn create_rotate_y(object: Rc<dyn Hittable>, angle_in_degrees: f64) -> RotateY {
+pub fn create_rotate_y(object: Arc<dyn Hittable>, angle_in_degrees: f64) -> RotateY {
     let radians: f64 = angle_in_degrees.to_radians();
     let sin_theta: f64 = radians.sin();
     let cos_theta: f64 = radians.cos();

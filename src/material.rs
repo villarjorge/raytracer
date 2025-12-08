@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::point3::color::Color;
 use crate::point3::{Point3, Vector3, dot, random_unit_vector, reflect, refract};
@@ -40,7 +40,7 @@ pub struct BlackBody {}
 
 /// A Lambertian or ideal diffuse material.  
 pub struct Lambertian {
-    pub texture: Rc<dyn Texture>
+    pub texture: Arc<dyn Texture>
 }
 
 impl Material for Lambertian {
@@ -64,12 +64,12 @@ impl Material for Lambertian {
     }
 }
 
-pub fn lambertian(color: Color) -> Rc<Lambertian> {
-    Rc::new(Lambertian{ texture: create_solid_color(color) })
+pub fn lambertian(color: Color) -> Arc<Lambertian> {
+    Arc::new(Lambertian{ texture: create_solid_color(color) })
 }
 
-// pub fn lambertian(texture: Rc<dyn Texture>) -> Rc<Lambertian> {
-//     Rc::new(Lambertian{ texture })
+// pub fn lambertian(texture: Arc<dyn Texture>) -> Arc<Lambertian> {
+//     Arc::new(Lambertian{ texture })
 // }
 
 /// A metal material: it reflects according to Snell's law, with some randomness added, controled by the fuzz parameter
@@ -90,8 +90,8 @@ impl Material for Metal {
     }
 }
 
-pub fn metal(albedo: Color, fuzz: f64) -> Rc<Metal> {
-    Rc::new(Metal { albedo, fuzz })
+pub fn metal(albedo: Color, fuzz: f64) -> Arc<Metal> {
+    Arc::new(Metal { albedo, fuzz })
 }
 
 /// A dielectric material: it reflets or refracts depending on the angle:
@@ -141,17 +141,17 @@ fn reflectance(cosine: f64, refraction_index: f64) -> f64 {
         r0_squared + (1.0 - r0_squared)*((1.0 - cosine).powf(5.0))
 }
 
-pub fn dielectric(refraction_index: f64) -> Rc<Dielectric> {
-    Rc::new(Dielectric { refraction_index })
+pub fn dielectric(refraction_index: f64) -> Arc<Dielectric> {
+    Arc::new(Dielectric { refraction_index })
 }
 
 // A diffuse light: always emmits some texture, does not scatter
 pub struct DiffuseLight {
-    texture: Rc<dyn Texture>
+    texture: Arc<dyn Texture>
 }
 
-pub fn diffuse_light_from_color(color: Point3) -> Rc<DiffuseLight> {
-    Rc::new(DiffuseLight { texture: create_solid_color(color) })
+pub fn diffuse_light_from_color(color: Point3) -> Arc<DiffuseLight> {
+    Arc::new(DiffuseLight { texture: create_solid_color(color) })
 }
 
 impl Material for DiffuseLight {
@@ -162,7 +162,7 @@ impl Material for DiffuseLight {
 
 /// An isotropic material: Scatters light in a uniform random direction
 pub struct Isotropic {
-    pub texture: Rc<dyn Texture>
+    pub texture: Arc<dyn Texture>
 }
 
 impl Material for Isotropic {

@@ -1,6 +1,6 @@
 use std::f64::consts::PI;
 use std::ops::Range;
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::point3::Point3;
 use crate::hittable::{HitRecord, HitResult, Hittable, SurfaceCoordinate, create_hit_record};
@@ -14,12 +14,12 @@ pub struct Sphere {
     radius: f64,
     // I couldn't change this pointer to a reference, because if I did, then the materials in main do not live long enough
     // Perhaps clone materials into hittables?
-    material: Rc<dyn Material>,
+    material: Arc<dyn Material>,
     //material: &'a dyn Material,
     bounding_box: AABB
 }
 
-pub fn sphere(center: Point3, radius: f64, material: Rc<dyn Material>) -> Sphere {
+pub fn sphere(center: Point3, radius: f64, material: Arc<dyn Material>) -> Sphere {
     let radius_vector: Point3 = Point3 { x: radius, y: radius, z: radius };
     let bounding_box: AABB = aabb_from_points(center - radius_vector, center + radius_vector);
     Sphere { center, radius: radius.max(0.0), material, bounding_box}

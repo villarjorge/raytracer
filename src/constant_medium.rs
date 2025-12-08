@@ -1,6 +1,6 @@
 use std::{
     ops::Range,
-    rc::Rc,
+    sync::Arc,
 };
 
 use rand::random_range;
@@ -14,20 +14,20 @@ use crate::{
 };
 
 pub struct ConstantMedium {
-    pub boundary: Rc<dyn Hittable>,
+    pub boundary: Arc<dyn Hittable>,
     pub neg_inv_density: f64,
     // In the book phase function is typed as a shared pointer to a material, but when creating the object the material is always casted into an isotropic material
     // Needs to be typed this way to make it easier to shove it into a hit record
-    pub phase_function: Rc<dyn Material> 
+    pub phase_function: Arc<dyn Material> 
 }
 
-pub fn constant_medium(boundary: Rc<dyn Hittable>, density: f64, texture: Rc<dyn Texture>) -> ConstantMedium {
-    ConstantMedium { boundary, neg_inv_density: -1.0/density, phase_function: Rc::new(Isotropic{texture}) }
+pub fn constant_medium(boundary: Arc<dyn Hittable>, density: f64, texture: Arc<dyn Texture>) -> ConstantMedium {
+    ConstantMedium { boundary, neg_inv_density: -1.0/density, phase_function: Arc::new(Isotropic{texture}) }
 }
 
-pub fn constant_medium_from_color(boundary: Rc<dyn Hittable>, density: f64, color: Color) -> ConstantMedium {
-    let texture: Rc<texture::SolidColor> = create_solid_color(color);
-    ConstantMedium { boundary, neg_inv_density: -1.0/density, phase_function: Rc::new(Isotropic{texture}) }
+pub fn constant_medium_from_color(boundary: Arc<dyn Hittable>, density: f64, color: Color) -> ConstantMedium {
+    let texture: Arc<texture::SolidColor> = create_solid_color(color);
+    ConstantMedium { boundary, neg_inv_density: -1.0/density, phase_function: Arc::new(Isotropic{texture}) }
 }
 
 impl Hittable for ConstantMedium {

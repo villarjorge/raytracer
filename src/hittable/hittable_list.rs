@@ -1,5 +1,5 @@
 use std::ops::Range;
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::aabb::{AABB, join_aabbs};
 use crate::hittable::{HitResult, Hittable};
@@ -17,7 +17,7 @@ pub struct HittableList {
     // Idealy all objects would be stored contiguously on the heap to make performance better. One way to do this would be to 
     // have vectors for each primitive, and then passing references to hittable list. 
     // this does not need to be a vector, it is just like this to make initialization easier
-    pub objects: Vec<Rc<dyn Hittable>>,
+    pub objects: Vec<Arc<dyn Hittable>>,
     pub bounding_box: AABB
 }
 
@@ -28,10 +28,10 @@ impl HittableList {
     /// Extend the list's bounding box by the object's and add the object, creating a pointer first 
     pub fn add<T: Hittable + 'static>(&mut self, to_add: T) {
         self.bounding_box = join_aabbs(&self.bounding_box, to_add.bounding_box());
-        self.objects.push(Rc::new(to_add));
+        self.objects.push(Arc::new(to_add));
     }
     /// Extend the list's bounding box by the object's and add the pointer to the object
-    pub fn add_pointer(&mut self, to_add: Rc<dyn Hittable>) {
+    pub fn add_pointer(&mut self, to_add: Arc<dyn Hittable>) {
         self.bounding_box = join_aabbs(&self.bounding_box, to_add.bounding_box());
         self.objects.push(to_add);
     }

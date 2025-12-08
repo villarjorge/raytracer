@@ -1,6 +1,6 @@
 // use std::cmp::Ordering;
 use std::ops::Range;
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::aabb::join_aabbs;
 use crate::hittable::hittable_list::{HittableList};
@@ -17,9 +17,9 @@ pub enum BVHNode {
     },
     Internal {
         // When multithreading is implemented, these Boxes will have to become Arc
-        // Or will they? I don't think I need to modify data nor clone pointers on the fly, just access data, so Rc and box should be fine
-        left: Box<dyn Hittable>,
-        right: Box<dyn Hittable>,
+        // Or will they? I don't think I need to modify data nor clone pointers on the fly, just access data, so Arc and box should be fine
+        left: Arc<dyn Hittable>,
+        right: Arc<dyn Hittable>,
         bounding_box: AABB
     }
 }
@@ -72,7 +72,7 @@ pub fn bvh_node_from_hittable_list(list: HittableList) -> BVHNode {
 
 // To do: Is there a way to derive comparisons for bounding boxes?
 
-pub fn create_bvh_node(mut objects: Vec<Rc<dyn Hittable>>) -> BVHNode {
+pub fn create_bvh_node(mut objects: Vec<Arc<dyn Hittable>>) -> BVHNode {
     let mut bounding_box: AABB = AABB::default();
 
     for object in &objects {
@@ -97,8 +97,8 @@ pub fn create_bvh_node(mut objects: Vec<Rc<dyn Hittable>>) -> BVHNode {
         BVHNode::Leaf { objects: hittable_list, bounding_box}
     } else {
         // Use a clousure here: more idiomatic and much shorter
-        // When I changed HittableList from Vec<Box<dyn Hittable>> to Vec<Rc<dyn Hittable> clippy stopped raising this as a borrowed box issue
-        objects.sort_by(|a: &Rc<dyn Hittable + 'static>, b: &Rc<dyn Hittable + 'static>| {
+        // When I changed HittableList from Vec<Box<dyn Hittable>> to Vec<Arc<dyn Hittable> clippy stopped raising this as a borrowed box issue
+        objects.sort_by(|a: &Arc<dyn Hittable + 'static>, b: &Arc<dyn Hittable + 'static>| {
             let a_axis_interval: &Range<f64> = a.bounding_box().axis_interval(axis);
             let b_axis_interval: &Range<f64> = b.bounding_box().axis_interval(axis);
 
@@ -107,8 +107,8 @@ pub fn create_bvh_node(mut objects: Vec<Rc<dyn Hittable>>) -> BVHNode {
 
         let mid: usize = objects.len()/2;
 
-        let left: Box<dyn Hittable> = Box::new(create_bvh_node(objects.split_off(mid)));
-        let right: Box<dyn Hittable> = Box::new(create_bvh_node(objects));
+        let left: Arc<dyn Hittable> = Arc::new(create_bvh_node(objects.split_off(mid)));
+        let right: Arc<dyn Hittable> = Arc::new(create_bvh_node(objects));
 
         BVHNode::Internal { left, right, bounding_box }
     }    

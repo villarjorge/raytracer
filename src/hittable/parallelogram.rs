@@ -1,4 +1,5 @@
-use std::{ops::Range, rc::Rc};
+use std::{ops::Range};
+use std::sync::Arc;
 
 use crate::aabb::{AABB, aabb_from_points, join_aabbs};
 use crate::hittable::hittable_list::HittableList;
@@ -22,7 +23,7 @@ pub struct Parallelogram {
     /// A vector normal to the plane defined by u and v, scaled a certain way
     w: Vector3,
     /// Material of the parallelogram
-    material: Rc<dyn Material>,
+    material: Arc<dyn Material>,
     /// Bounding box of the parallelogram
     bounding_box: AABB,
 }
@@ -35,7 +36,7 @@ fn create_aabb_para(q: Point3, u: Point3, v: Point3) -> AABB {
     join_aabbs(&bounding_box0, &bounding_box1)
 }
 
-pub fn parallelogram(q: Point3, u: Vector3, v: Vector3, material: Rc<dyn Material>) -> Parallelogram {
+pub fn parallelogram(q: Point3, u: Vector3, v: Vector3, material: Arc<dyn Material>) -> Parallelogram {
     let bounding_box: AABB = create_aabb_para(q, u, v);
 
     let n: Vector3 = cross(&u, &v);
@@ -96,7 +97,7 @@ fn is_interior(alpha: f64, beta: f64) -> bool {
 }
 
 /// Create a box consisting of six parallelograms
-pub fn create_box(a: Point3, b: Point3, material: Rc<dyn Material>) -> HittableList {
+pub fn create_box(a: Point3, b: Point3, material: Arc<dyn Material>) -> HittableList {
     let mut sides: HittableList = HittableList::default();
 
     let vertex_min: Point3 = Point3 { x: a.x.min(b.x), y: a.y.min(b.y), z: a.z.min(b.z) };

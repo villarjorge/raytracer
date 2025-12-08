@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use image::{ImageBuffer, Rgb, open};
 
@@ -12,8 +12,8 @@ pub struct SolidColor {
     albedo: Color
 }
 
-pub fn create_solid_color(color: Point3) -> Rc<SolidColor> {
-    Rc::new(SolidColor { albedo: color })
+pub fn create_solid_color(color: Point3) -> Arc<SolidColor> {
+    Arc::new(SolidColor { albedo: color })
 }
 
 impl Texture for SolidColor {
@@ -24,16 +24,16 @@ impl Texture for SolidColor {
 
 pub struct CheckerTexture {
     pub inverse_scale: f64,
-    pub even: Rc<dyn Texture>,
-    pub odd: Rc<dyn Texture>
+    pub even: Arc<dyn Texture>,
+    pub odd: Arc<dyn Texture>
 }
 
-pub fn create_checker_texture_from_pointers(scale: f64, even: Rc<dyn Texture>, odd: Rc<dyn Texture>) -> Rc<CheckerTexture> {
-    Rc::new(CheckerTexture { inverse_scale: 1.0/scale, even, odd })
+pub fn create_checker_texture_from_pointers(scale: f64, even: Arc<dyn Texture>, odd: Arc<dyn Texture>) -> Arc<CheckerTexture> {
+    Arc::new(CheckerTexture { inverse_scale: 1.0/scale, even, odd })
 }
 
-pub fn checker_texture_from_colors(scale: f64, even: Point3, odd: Point3) -> Rc<CheckerTexture> {
-    Rc::new(CheckerTexture { inverse_scale: 1.0/scale, even: create_solid_color(even), odd: create_solid_color(odd) })
+pub fn checker_texture_from_colors(scale: f64, even: Point3, odd: Point3) -> Arc<CheckerTexture> {
+    Arc::new(CheckerTexture { inverse_scale: 1.0/scale, even: create_solid_color(even), odd: create_solid_color(odd) })
 }
 
 impl Texture for CheckerTexture {
@@ -65,9 +65,9 @@ pub struct ImageTexture {
     image: ImageBuffer<Rgb<u8>, Vec<u8>>
 }
 
-pub fn create_image_texture(path: &str) -> Rc<dyn Texture> {
+pub fn create_image_texture(path: &str) -> Arc<dyn Texture> {
     match open(path) {
-        Ok(image) => Rc::new(ImageTexture { image: image.into_rgb8() }),
+        Ok(image) => Arc::new(ImageTexture { image: image.into_rgb8() }),
         Err(image_error) => {
             eprintln!("Could not load the image texture. Falling back to default. Error:");
             eprintln!("{}", image_error);

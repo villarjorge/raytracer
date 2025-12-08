@@ -1,4 +1,5 @@
-use std::{ops::Range, rc::Rc};
+use std::{ops::Range};
+use std::sync::Arc;
 
 use crate::aabb::{AABB, aabb_from_points, join_aabbs};
 use crate::hittable::{HitResult, Hittable, SurfaceCoordinate, create_hit_record};
@@ -17,7 +18,7 @@ pub struct Triangle {
     /// A vector normal to the plane defined by u and v, scaled a certain way
     w: Vector3,
     /// Material of the triangle
-    material: Rc<dyn Material>,
+    material: Arc<dyn Material>,
     /// Bounding box of the triangle
     bounding_box: AABB,
     /// Normal defined by cross(u, v)
@@ -34,7 +35,7 @@ fn create_aabb_para(q: Point3, u: Point3, v: Point3) -> AABB {
     join_aabbs(&bounding_box0, &bounding_box1)
 }
 
-pub fn triangle(q: Point3, u: Vector3, v: Vector3, material: Rc<dyn Material>) -> Triangle {
+pub fn triangle(q: Point3, u: Vector3, v: Vector3, material: Arc<dyn Material>) -> Triangle {
     let bounding_box: AABB = create_aabb_para(q, u, v);
 
     let n: Vector3 = cross(&u, &v);
