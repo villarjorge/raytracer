@@ -21,7 +21,7 @@ use crate::perlin::create_perlin_noise;
 use crate::point3::{Point3, unit_vector, point_from_array, random_vector};
 use crate::material::{Dielectric, DiffuseLight, Lambertian, Metal, dielectric, diffuse_light_from_color, lambertian, metal};
 use crate::hittable::{
-    {RotateY, Translate, create_rotate_y, create_translation},
+    {RotateY, Translate},
     sphere::Sphere,
     hittable_list::HittableList,
     quadric::y_cylinder,
@@ -298,14 +298,14 @@ fn cornell_box() {
     world.add(Parallelogram::new(point_from_array([0.0, 0.0, 555.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 555.0, 0.0]), white.clone()));
 
     let box1: Rc<HittableList> = Rc::new(create_box(point_from_array([0.0, 0.0, 0.0]), point_from_array([165.0, 330.0, 165.0]), white.clone()));
-    let box1_rotated: Rc<RotateY>  = Rc::new(create_rotate_y(box1, 15.0));
-    let box1_trans: Translate = create_translation(box1_rotated, point_from_array([265.0, 0.0, 295.0]));
+    let box1_rotated: Rc<RotateY>  = Rc::new(RotateY::new(box1, 15.0));
+    let box1_trans: Translate = Translate::new(box1_rotated, point_from_array([265.0, 0.0, 295.0]));
 
     world.add(box1_trans);
 
     let box2: Rc<HittableList> = Rc::new(create_box(point_from_array([0.0, 0.0, 0.0]), point_from_array([165.0, 165.0, 165.0]), white));
-    let box2_rotated: Rc<RotateY>  = Rc::new(create_rotate_y(box2, -18.0));
-    let box2_trans: Translate = create_translation(box2_rotated, point_from_array([130.0, 0.0, 65.0]));
+    let box2_rotated: Rc<RotateY>  = Rc::new(RotateY::new(box2, -18.0));
+    let box2_trans: Translate = Translate::new(box2_rotated, point_from_array([130.0, 0.0, 65.0]));
 
     world.add(box2_trans);
 
@@ -350,12 +350,12 @@ fn cornell_smoke() {
     world.add(Parallelogram::new(point_from_array([0.0, 0.0, 555.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 555.0, 0.0]), white.clone()));
 
     let box1: Rc<HittableList> = Rc::new(create_box(point_from_array([0.0, 0.0, 0.0]), point_from_array([165.0, 330.0, 165.0]), white.clone()));
-    let box1_rotated: Rc<RotateY>  = Rc::new(create_rotate_y(box1, 15.0));
-    let box1_trans: Translate = create_translation(box1_rotated, point_from_array([265.0, 0.0, 295.0]));
+    let box1_rotated: Rc<RotateY>  = Rc::new(RotateY::new(box1, 15.0));
+    let box1_trans: Translate = Translate::new(box1_rotated, point_from_array([265.0, 0.0, 295.0]));
 
     let box2: Rc<HittableList> = Rc::new(create_box(point_from_array([0.0, 0.0, 0.0]), point_from_array([165.0, 165.0, 165.0]), white));
-    let box2_rotated: Rc<RotateY>  = Rc::new(create_rotate_y(box2, -18.0));
-    let box2_trans: Translate = create_translation(box2_rotated, point_from_array([130.0, 0.0, 65.0]));
+    let box2_rotated: Rc<RotateY>  = Rc::new(RotateY::new(box2, -18.0));
+    let box2_trans: Translate = Translate::new(box2_rotated, point_from_array([130.0, 0.0, 65.0]));
 
     world.add(constant_medium_from_color(Rc::new(box1_trans), 0.01, point_from_array([0.0, 0.0, 0.0])));
     world.add(constant_medium_from_color(Rc::new(box2_trans), 0.01, point_from_array([1.0, 1.0, 1.0])));
@@ -451,9 +451,9 @@ fn final_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
         spheres.add(Sphere::new(random_vector(0.0, 165.0), 10.0, white.clone()));
     }
     // Translate and rotate them at the same time
-    world.add_pointer(Rc::new(create_translation(
+    world.add_pointer(Rc::new(Translate::new(
             Rc::new(
-                create_rotate_y(
+                RotateY::new(
                     Rc::new(bvh_node_from_hittable_list(spheres)),
                     15.0)
             ),
@@ -672,9 +672,9 @@ fn profiler_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
         spheres.add(Sphere::new(random_vector(0.0, 165.0), 10.0, white.clone()));
     }
     // Translate and rotate them at the same time
-    world.add_pointer(Rc::new(create_translation(
+    world.add_pointer(Rc::new(Translate::new(
             Rc::new(
-                create_rotate_y(
+                RotateY::new(
                     Rc::new(bvh_node_from_hittable_list(spheres)),
                     15.0)
             ),

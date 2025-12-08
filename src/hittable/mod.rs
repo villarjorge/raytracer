@@ -100,10 +100,11 @@ impl Hittable for Translate {
     }
 }
 
-pub fn create_translation(object: Rc<dyn Hittable>, offset: Vector3) -> Translate {
-    let bounding_box: AABB = (*object.bounding_box()).clone();
-    Translate { object, offset, bounding_box: bounding_box + offset }
-}
+impl Translate {
+    pub fn new(object: Rc<dyn Hittable>, offset: Vector3) -> Translate {
+        let bounding_box: AABB = (*object.bounding_box()).clone();
+        Translate { object, offset, bounding_box: bounding_box + offset }
+    }}
 
 /// An instance of rotation on the y axis
 pub struct RotateY {
@@ -142,42 +143,44 @@ impl Hittable for RotateY {
     }
 }
 
-pub fn create_rotate_y(object: Rc<dyn Hittable>, angle_in_degrees: f64) -> RotateY {
-    let radians: f64 = angle_in_degrees.to_radians();
-    let sin_theta: f64 = radians.sin();
-    let cos_theta: f64 = radians.cos();
-    let bounding_box: AABB = object.bounding_box().clone();
+impl RotateY {
+    pub fn new(object: Rc<dyn Hittable>, angle_in_degrees: f64) -> RotateY {
+        let radians: f64 = angle_in_degrees.to_radians();
+        let sin_theta: f64 = radians.sin();
+        let cos_theta: f64 = radians.cos();
+        let bounding_box: AABB = object.bounding_box().clone();
 
-    let mut minimum: [f64; 3] = [ f64::INFINITY, f64::INFINITY, f64::INFINITY ];
-    let mut maximum: [f64; 3] = [ -f64::INFINITY, -f64::INFINITY, -f64::INFINITY ];
+        let mut minimum: [f64; 3] = [ f64::INFINITY, f64::INFINITY, f64::INFINITY ];
+        let mut maximum: [f64; 3] = [ -f64::INFINITY, -f64::INFINITY, -f64::INFINITY ];
 
-    for i_int in 0..2 {
-        for j_int in 0..2 {
-            for k_int in 0..2 {
-                let i: f64 = i_int as f64;
-                let j: f64 = j_int as f64;
-                let k: f64 = k_int as f64;
+        for i_int in 0..2 {
+            for j_int in 0..2 {
+                for k_int in 0..2 {
+                    let i: f64 = i_int as f64;
+                    let j: f64 = j_int as f64;
+                    let k: f64 = k_int as f64;
 
-                // To do: make the fields of bounding box public to not index them like this
-                // To do: possible opportunity to use arrays here for better performance (the compiler will paralelize?)
-                let x: f64 = i*bounding_box[0].end + (1.0 - i)*bounding_box[0].start;
-                let y: f64 = j*bounding_box[1].end + (1.0 - j)*bounding_box[1].start;
-                let z: f64 = k*bounding_box[2].end + (1.0 - k)*bounding_box[2].start;
+                    // To do: make the fields of bounding box public to not index them like this
+                    // To do: possible opportunity to use arrays here for better performance (the compiler will paralelize?)
+                    let x: f64 = i*bounding_box[0].end + (1.0 - i)*bounding_box[0].start;
+                    let y: f64 = j*bounding_box[1].end + (1.0 - j)*bounding_box[1].start;
+                    let z: f64 = k*bounding_box[2].end + (1.0 - k)*bounding_box[2].start;
 
-                let x_new =  cos_theta*x + sin_theta*z;
-                let z_new: f64 = -sin_theta*x + cos_theta*z;
+                    let x_new =  cos_theta*x + sin_theta*z;
+                    let z_new: f64 = -sin_theta*x + cos_theta*z;
 
-                let tester: Vector3 = Vector3 { x:x_new, y, z:z_new };
+                    let tester: Vector3 = Vector3 { x:x_new, y, z:z_new };
 
-                for c in 0..2 {
-                    minimum[c] = minimum[c].min(tester[c as u8]);
-                    maximum[c] = maximum[c].min(tester[c as u8]);
+                    for c in 0..2 {
+                        minimum[c] = minimum[c].min(tester[c as u8]);
+                        maximum[c] = maximum[c].min(tester[c as u8]);
+                    }
                 }
             }
         }
-    }
 
-    RotateY { object, sin_theta, cos_theta, bounding_box:aabb_from_points(point_from_array(minimum), point_from_array(maximum)) }
+        RotateY { object, sin_theta, cos_theta, bounding_box:aabb_from_points(point_from_array(minimum), point_from_array(maximum)) }
+    }
 }
 
 pub mod hittable_list;
