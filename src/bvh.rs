@@ -43,7 +43,7 @@ impl Hittable for BVHNode {
                 let hit_left: bool = left.hit(ray, &ray_t, hit_record);
                 let hit_right: bool = right.hit(ray, &(ray_t.start..{if hit_left { hit_record.t } else { ray_t.end }}), hit_record);
 
-                return hit_left || hit_right;
+                hit_left || hit_right
             }
         }
     }

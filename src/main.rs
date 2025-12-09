@@ -143,7 +143,7 @@ fn checkered_spheres() {
 fn earth() {
     let mut world: HittableList = HittableList::default();
 
-    let earth_texture: Rc<dyn Texture> = ImageTexture::new("textures/earthmap.jpg");
+    let earth_texture: Rc<dyn Texture> = ImageTexture::new_or_fallback("textures/earthmap.jpg");
     let earth_material: Rc<Lambertian> = Lambertian::from_texture(earth_texture);
 
     world.add(Sphere::new(Point3{x: 0.0, y: 0.0, z: 0.0}, 2.0, earth_material));
@@ -432,7 +432,7 @@ fn final_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
     world.add(ConstantMedium::from_color(boundary2, 0.0001, point_from_array([1.0, 1.0, 1.0])));
 
     // Earth texture
-    let emat: Rc<Lambertian> = Lambertian::from_texture(ImageTexture::new("textures/earthmap.jpg"));
+    let emat: Rc<Lambertian> = Lambertian::from_texture(ImageTexture::new_or_fallback("textures/earthmap.jpg"));
     world.add(Sphere::new(point_from_array([400.0, 200.0, 400.0]), 100.0, emat));
 
     // Perlin sphere
@@ -657,7 +657,7 @@ fn profiler_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
     world.add(ConstantMedium::from_color(boundary.clone(), 0.2, point_from_array([0.2, 0.4, 0.9])));
 
     // Earth texture
-    let emat: Rc<Lambertian> = Lambertian::from_texture(ImageTexture::new("textures/earthmap.jpg"));
+    let emat: Rc<Lambertian> = Lambertian::from_texture(ImageTexture::new_or_fallback("textures/earthmap.jpg"));
     world.add(Sphere::new(point_from_array([400.0, 200.0, 400.0]), 100.0, emat));
 
 
@@ -708,7 +708,7 @@ fn profiler_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
 
 fn main() {
     let now: Instant = Instant::now();
-    let scene_number: u32 = 0;
+    let scene_number: u32 = 20;
 
     match scene_number {
         0 => many_spheres(),

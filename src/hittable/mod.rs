@@ -122,7 +122,7 @@ impl Hittable for RotateY {
         hit_record.p = rotate_y(&hit_record.p, self.cos_theta, -self.sin_theta);
         hit_record.normal =  rotate_y(&hit_record.normal, self.cos_theta, -self.sin_theta);
 
-        return true;
+        true
     }
 
     fn bounding_box(&self) -> &AABB {
