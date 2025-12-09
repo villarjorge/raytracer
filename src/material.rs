@@ -63,8 +63,14 @@ impl Material for Lambertian {
     }
 }
 
-pub fn lambertian(color: Color) -> Rc<Lambertian> {
-    Rc::new(Lambertian{ texture: SolidColor::new(color) })
+impl Lambertian {
+    pub fn from_color(color: Color) -> Rc<Lambertian> {
+        Rc::new(Lambertian{ texture: SolidColor::new(color) })
+    }
+
+    pub fn from_texture(texture: Rc<dyn Texture>) -> Rc<Lambertian> {
+        Rc::new(Lambertian { texture })
+    }
 }
 
 // pub fn lambertian(texture: Rc<dyn Texture>) -> Rc<Lambertian> {
@@ -149,8 +155,10 @@ pub struct DiffuseLight {
     texture: Rc<dyn Texture>
 }
 
-pub fn diffuse_light_from_color(color: Point3) -> Rc<DiffuseLight> {
-    Rc::new(DiffuseLight { texture: SolidColor::new(color) })
+impl DiffuseLight {    
+    pub fn from_color(color: Point3) -> Rc<DiffuseLight> {
+        Rc::new(DiffuseLight { texture: SolidColor::new(color) })
+    }
 }
 
 impl Material for DiffuseLight {

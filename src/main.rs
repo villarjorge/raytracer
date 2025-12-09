@@ -18,8 +18,9 @@ use rand::rngs::SmallRng;
 use crate::bvh::{BVHNode};
 use crate::camera::{Camera, CameraPosition, ImageQuality, ThinLens};
 use crate::perlin::create_perlin_noise;
+use crate::point3::color::Color;
 use crate::point3::{Point3, point_from_array, random_vector};
-use crate::material::{Dielectric, DiffuseLight, Lambertian, Metal, dielectric, diffuse_light_from_color, lambertian, metal};
+use crate::material::{Dielectric, DiffuseLight, Lambertian, Metal, dielectric, metal};
 use crate::hittable::{
     {RotateY, Translate},
     sphere::Sphere,
@@ -37,7 +38,7 @@ fn many_spheres() {
     // World
     let mut world: HittableList = HittableList::default();
 
-    let checker: Rc<CheckerTexture> = CheckerTexture::from_colors(3.1, Point3 {x: 0.2, y: 0.3, z: 0.1}, Point3 {x: 0.9, y: 0.9, z: 0.9});
+    let checker: Rc<CheckerTexture> = CheckerTexture::from_colors(3.1, Color {x: 0.2, y: 0.3, z: 0.1}, Color {x: 0.9, y: 0.9, z: 0.9});
     // let ground_material = Lambertian{texture: SolidColor::new(Point3 { x: 0.5, y: 0.5, z: 0.5 })};
     let ground_material: Lambertian = Lambertian{texture: checker};
     world.add(Sphere::new(Point3{x: 0.0, y: -1000.0, z: -1.0}, 1000.0, Rc::new(ground_material)));
@@ -111,7 +112,7 @@ fn checkered_spheres() {
     let mut world: HittableList = HittableList::default();
 
     let checker: Rc<CheckerTexture> = CheckerTexture::from_colors(0.10, Point3 {x: 0.2, y: 0.3, z: 0.1}, Point3 {x: 0.9, y: 0.9, z: 0.9});
-    let material: Rc<Lambertian> = Rc::new(Lambertian{texture: checker});
+    let material: Rc<Lambertian> = Lambertian::from_texture(checker);
 
     world.add(Sphere::new(Point3{x: 0.0, y: -10.0, z: 0.0}, 10.0, material.clone()));
     world.add(Sphere::new(Point3{x: 0.0, y: 10.0, z: 0.0}, 10.0, material));
@@ -143,7 +144,7 @@ fn earth() {
     let mut world: HittableList = HittableList::default();
 
     let earth_texture: Rc<dyn Texture> = ImageTexture::new("textures/earthmap.jpg");
-    let earth_material: Rc<Lambertian> = Rc::new(Lambertian{texture: earth_texture});
+    let earth_material: Rc<Lambertian> = Lambertian::from_texture(earth_texture);
 
     world.add(Sphere::new(Point3{x: 0.0, y: 0.0, z: 0.0}, 2.0, earth_material));
 
@@ -174,7 +175,7 @@ fn perlin_spheres() {
     let mut world: HittableList = HittableList::default();
 
     let perlin_texture: Rc<PerlinNoiseTexture>  = Rc::new(PerlinNoiseTexture { perlin_noise: create_perlin_noise(), scale: 2.0});
-    let perlin_material: Rc<Lambertian> = Rc::new(Lambertian{ texture: perlin_texture });
+    let perlin_material: Rc<Lambertian> = Lambertian::from_texture(perlin_texture);
 
     world.add(Sphere::new(Point3{x: 0.0, y: -1000.0, z: 0.0}, 1000.0, perlin_material.clone()));
     world.add(Sphere::new(Point3{x: 0.0, y: 2.0, z: 0.0}, 2.0, perlin_material));
@@ -206,11 +207,11 @@ fn para() {
     let mut world: HittableList = HittableList::default();
 
     // Materials
-    let left_red: Rc<Lambertian> = Rc::new(Lambertian{texture: SolidColor::new(Point3 { x: 1.0, y: 0.2, z: 0.2 })});
-    let back_green: Rc<Lambertian> = Rc::new(Lambertian{texture: SolidColor::new(Point3 { x: 0.2, y: 1.0, z: 0.2 })});
-    let right_blue: Rc<Lambertian> = Rc::new(Lambertian{texture: SolidColor::new(Point3 { x: 0.2, y: 0.2, z: 1.0 })});
-    let upper_orange: Rc<Lambertian> = Rc::new(Lambertian{texture: SolidColor::new(Point3 { x: 1.0, y: 0.5, z: 0.0 })});
-    let lower_teal: Rc<Lambertian> = Rc::new(Lambertian{texture: SolidColor::new(Point3 { x: 0.2, y: 0.8, z: 0.8})});
+    let left_red: Rc<Lambertian> = Lambertian::from_color(Color { x: 1.0, y: 0.2, z: 0.2 });
+    let back_green: Rc<Lambertian> = Lambertian::from_color(Color { x: 0.2, y: 1.0, z: 0.2 });
+    let right_blue: Rc<Lambertian> = Lambertian::from_color(Color { x: 0.2, y: 0.2, z: 1.0 });
+    let upper_orange: Rc<Lambertian> = Lambertian::from_color(Color { x: 1.0, y: 0.5, z: 0.0 });
+    let lower_teal: Rc<Lambertian> = Lambertian::from_color(Color { x: 0.2, y: 0.8, z: 0.8});
 
     world.add(Parallelogram::new(Point3{x: -3.0, y: -2.0, z:5.0}, Point3{x: 0.0, y: 0.0, z:-4.0}, Point3{x: 0.0, y:4.0, z:0.0}, left_red));
     world.add(Parallelogram::new(Point3{x: -2.0, y: -2.0, z:0.0}, Point3{x: 4.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:4.0, z:0.0}, back_green));
@@ -246,12 +247,12 @@ fn simple_light() {
 
     // Materials
     let perlin_texture: Rc<PerlinNoiseTexture>  = Rc::new(PerlinNoiseTexture { perlin_noise: create_perlin_noise(), scale: 2.0});
-    let perlin_material: Rc<Lambertian> = Rc::new(Lambertian{ texture: perlin_texture });
+    let perlin_material: Rc<Lambertian> = Lambertian::from_texture(perlin_texture);
 
     world.add(Sphere::new(Point3{x: 0.0, y: -1000.0, z: 0.0}, 1000.0, perlin_material.clone()));
     world.add(Sphere::new(Point3{x: 0.0, y: 2.0, z: 0.0}, 2.0, perlin_material));
 
-    let diffuse_light: Rc<DiffuseLight> = diffuse_light_from_color(Point3 { x: 4.0, y: 4.0, z: 4.0 });
+    let diffuse_light: Rc<DiffuseLight> = DiffuseLight::from_color(Point3 { x: 4.0, y: 4.0, z: 4.0 });
     world.add(Parallelogram::new(Point3{x: 3.0, y: 1.0, z:-2.0}, Point3{x: 2.0, y: 0.0, z:0.0}, Point3{x: 0.0, y:2.0, z:0.0}, diffuse_light));
 
     let aspect_ratio: f64 = 16.0/9.0;
@@ -282,10 +283,10 @@ fn simple_light() {
 fn cornell_box() {
     let mut world: HittableList = HittableList::default();
 
-    let red: Rc<Lambertian> = Rc::new(Lambertian{ texture: SolidColor::new(Point3 { x: 0.65, y: 0.05, z: 0.05 }) });
-    let white: Rc<Lambertian> = Rc::new(Lambertian{ texture: SolidColor::new(Point3 { x: 0.73, y: 0.73, z: 0.73 }) });
-    let green: Rc<Lambertian> = Rc::new(Lambertian{ texture: SolidColor::new(Point3 { x: 0.12, y: 0.45, z: 0.15 }) });
-    let diffuse_light: Rc<DiffuseLight> = diffuse_light_from_color(Point3 { x: 15.0, y: 15.0, z: 15.0 });
+    let red: Rc<Lambertian> = Lambertian::from_color(Point3 { x: 0.65, y: 0.05, z: 0.05 });
+    let white: Rc<Lambertian> = Lambertian::from_color(Point3 { x: 0.73, y: 0.73, z: 0.73 });
+    let green: Rc<Lambertian> = Lambertian::from_color(Point3 { x: 0.12, y: 0.45, z: 0.15 });
+    let diffuse_light: Rc<DiffuseLight> = DiffuseLight::from_color(Point3 { x: 15.0, y: 15.0, z: 15.0 });
 
     world.add(Parallelogram::new(Point3{x: 555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z:0.0}, Point3{x: 0.0, y:0.0, z:555.0}, green));
     world.add(Parallelogram::new(Point3{x: 0.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:555.0}, red));
@@ -334,10 +335,10 @@ fn cornell_box() {
 fn cornell_smoke() {
     let mut world: HittableList = HittableList::default();
 
-    let red: Rc<Lambertian> = Rc::new(Lambertian{ texture: SolidColor::new(Point3 { x: 0.65, y: 0.05, z: 0.05 }) });
-    let white: Rc<Lambertian> = Rc::new(Lambertian{ texture: SolidColor::new(Point3 { x: 0.73, y: 0.73, z: 0.73 }) });
-    let green: Rc<Lambertian> = Rc::new(Lambertian{ texture: SolidColor::new(Point3 { x: 0.12, y: 0.45, z: 0.15 }) });
-    let diffuse_light: Rc<DiffuseLight> = diffuse_light_from_color(Point3 { x: 7.0, y: 7.0, z: 7.0 });
+    let red: Rc<Lambertian> = Lambertian::from_color(Point3 { x: 0.65, y: 0.05, z: 0.05 });
+    let white: Rc<Lambertian> = Lambertian::from_color(Point3 { x: 0.73, y: 0.73, z: 0.73 });
+    let green: Rc<Lambertian> = Lambertian::from_color(Point3 { x: 0.12, y: 0.45, z: 0.15 });
+    let diffuse_light: Rc<DiffuseLight> = DiffuseLight::from_color(Point3 { x: 7.0, y: 7.0, z: 7.0 });
 
     world.add(Parallelogram::new(Point3{x: 555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z:0.0}, Point3{x: 0.0, y:0.0, z:555.0}, green));
     world.add(Parallelogram::new(Point3{x: 0.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:555.0}, red));
@@ -385,7 +386,7 @@ fn cornell_smoke() {
 fn final_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
     // Randomized boxes for the ground
     let mut boxes1: HittableList = HittableList::default();
-    let ground: Rc<Lambertian> = lambertian(point_from_array([0.48, 0.83, 0.53]));
+    let ground: Rc<Lambertian> = Lambertian::from_color(point_from_array([0.48, 0.83, 0.53]));
 
     // In total 400 boxes, 2400 parallelograms
     let boxes_per_side: u32 = 20;
@@ -407,12 +408,12 @@ fn final_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
 
     world.add(BVHNode::from_hittable_list(boxes1));
 
-    let light: Rc<DiffuseLight> = diffuse_light_from_color(point_from_array([7.0, 7.0, 7.0]));
+    let light: Rc<DiffuseLight> = DiffuseLight::from_color(point_from_array([7.0, 7.0, 7.0]));
     world.add(Parallelogram::new(point_from_array([123.0,554.0,147.0]), point_from_array([300.0, 0.0, 0.0]), point_from_array([0.0,0.0,265.0]), light));
 
     // Moving sphere that does not move
     let center: Point3 = point_from_array([400.0, 400.0, 200.0]);
-    let sphere_material: Rc<Lambertian> = lambertian(point_from_array([0.7, 0.3, 0.1]));
+    let sphere_material: Rc<Lambertian> = Lambertian::from_color(point_from_array([0.7, 0.3, 0.1]));
     world.add(Sphere::new(center, 50.0, sphere_material));
 
     // Fuzzy metal and glass spheres
@@ -431,17 +432,17 @@ fn final_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
     world.add(ConstantMedium::from_color(boundary2, 0.0001, point_from_array([1.0, 1.0, 1.0])));
 
     // Earth texture
-    let emat: Rc<Lambertian> = Rc::new(Lambertian{texture: ImageTexture::new("textures/earthmap.jpg")});
+    let emat: Rc<Lambertian> = Lambertian::from_texture(ImageTexture::new("textures/earthmap.jpg"));
     world.add(Sphere::new(point_from_array([400.0, 200.0, 400.0]), 100.0, emat));
 
     // Perlin sphere
     let perlin_texture: Rc<PerlinNoiseTexture>  = Rc::new(PerlinNoiseTexture { perlin_noise: create_perlin_noise(), scale: 0.2});
-    let perlin_material: Rc<Lambertian> = Rc::new(Lambertian{ texture: perlin_texture });
+    let perlin_material: Rc<Lambertian> = Lambertian::from_texture(perlin_texture);
     world.add(Sphere::new(point_from_array([220.0, 280.0, 300.0]), 80.0, perlin_material));
 
     // Group of spheres
     let mut spheres: HittableList = HittableList::default();
-    let white: Rc<Lambertian> = lambertian(point_from_array([0.73, 0.73, 0.73]));
+    let white: Rc<Lambertian> = Lambertian::from_color(point_from_array([0.73, 0.73, 0.73]));
 
     let number_of_spheres: u32 = 1000;
     for _ in 0..number_of_spheres {
@@ -485,10 +486,10 @@ fn final_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
 fn cornell_quadric() {
     let mut world: HittableList = HittableList::default();
 
-    let red: Rc<Lambertian> = Rc::new(Lambertian{ texture: SolidColor::new(Point3 { x: 0.65, y: 0.05, z: 0.05 }) });
-    let white: Rc<Lambertian> = Rc::new(Lambertian{ texture: SolidColor::new(Point3 { x: 0.73, y: 0.73, z: 0.73 }) });
-    let green: Rc<Lambertian> = Rc::new(Lambertian{ texture: SolidColor::new(Point3 { x: 0.12, y: 0.45, z: 0.15 }) });
-    let diffuse_light: Rc<DiffuseLight> = diffuse_light_from_color(Point3 { x: 15.0, y: 15.0, z: 15.0 });
+    let red: Rc<Lambertian> = Lambertian::from_color(Point3 { x: 0.65, y: 0.05, z: 0.05 });
+    let white: Rc<Lambertian> = Lambertian::from_color(Point3 { x: 0.73, y: 0.73, z: 0.73 });
+    let green: Rc<Lambertian> = Lambertian::from_color(Point3 { x: 0.12, y: 0.45, z: 0.15 });
+    let diffuse_light: Rc<DiffuseLight> = DiffuseLight::from_color(Point3 { x: 15.0, y: 15.0, z: 15.0 });
 
     world.add(Parallelogram::new(Point3{x: 555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z:0.0}, Point3{x: 0.0, y:0.0, z:555.0}, green));
     world.add(Parallelogram::new(Point3{x: 0.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:555.0}, red));
@@ -531,11 +532,11 @@ fn cornell_quadric() {
 fn debug_quadric() {
     let mut world: HittableList = HittableList::default();
 
-    let diffuse_light: Rc<DiffuseLight> = diffuse_light_from_color(Point3 { x: 15.0, y: 15.0, z: 15.0 });
+    let diffuse_light: Rc<DiffuseLight> = DiffuseLight::from_color(Point3 { x: 15.0, y: 15.0, z: 15.0 });
 
     world.add(Parallelogram::new(Point3{x:  10.0, y: 10.0, z: 10.0}, Point3{x: 10.0, y: 0.0, z: 10.0}, Point3{x: 0.0, y:10.0, z:10.0}, diffuse_light));
 
-    let white: Rc<Lambertian> = Rc::new(Lambertian{ texture: SolidColor::new(Point3 { x: 0.73, y: 0.73, z: 0.73 }) });
+    let white: Rc<Lambertian> = Lambertian::from_color(Point3 { x: 0.73, y: 0.73, z: 0.73 });
 
     world.add(Sphere::new(Point3 { x: 3.0, y: 0.0, z: 0.0 }, 1.0, white.clone()));
     world.add(y_cylinder(Point3 { x: 0.0, y: 0.0, z: 0.0 },1.0, white.clone()));
@@ -568,10 +569,10 @@ fn debug_quadric() {
 fn cornell_triangle() {
     let mut world: HittableList = HittableList::default();
 
-    let red: Rc<Lambertian> = Rc::new(Lambertian{ texture: SolidColor::new(Point3 { x: 0.65, y: 0.05, z: 0.05 }) });
-    let white: Rc<Lambertian> = Rc::new(Lambertian{ texture: SolidColor::new(Point3 { x: 0.73, y: 0.73, z: 0.73 }) });
-    let green: Rc<Lambertian> = Rc::new(Lambertian{ texture: SolidColor::new(Point3 { x: 0.12, y: 0.45, z: 0.15 }) });
-    let diffuse_light: Rc<DiffuseLight> = diffuse_light_from_color(Point3 { x: 15.0, y: 15.0, z: 15.0 });
+    let red: Rc<Lambertian> = Lambertian::from_color(Point3 { x: 0.65, y: 0.05, z: 0.05 });
+    let white: Rc<Lambertian> = Lambertian::from_color(Point3 { x: 0.73, y: 0.73, z: 0.73 });
+    let green: Rc<Lambertian> = Lambertian::from_color(Point3 { x: 0.12, y: 0.45, z: 0.15 });
+    let diffuse_light: Rc<DiffuseLight> = DiffuseLight::from_color(Point3 { x: 15.0, y: 15.0, z: 15.0 });
 
     world.add(Parallelogram::new(Point3{x: 555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z:0.0}, Point3{x: 0.0, y:0.0, z:555.0}, green));
     world.add(Parallelogram::new(Point3{x: 0.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:555.0}, red));
@@ -613,7 +614,7 @@ fn profiler_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
     // Similar to the final scene but with some of the random elements removed to asses performance
     // boxes for the ground
     let mut boxes1: HittableList = HittableList::default();
-    let ground: Rc<Lambertian> = lambertian(point_from_array([0.48, 0.83, 0.53]));
+    let ground: Rc<Lambertian> = Lambertian::from_color(point_from_array([0.48, 0.83, 0.53]));
 
     let mut rng: SmallRng = SmallRng::seed_from_u64(42_u64);
     // In total 400 boxes, 2400 parallelograms
@@ -636,12 +637,12 @@ fn profiler_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
 
     world.add(BVHNode::from_hittable_list(boxes1));
 
-    let light: Rc<DiffuseLight> = diffuse_light_from_color(point_from_array([7.0, 7.0, 7.0]));
+    let light: Rc<DiffuseLight> = DiffuseLight::from_color(point_from_array([7.0, 7.0, 7.0]));
     world.add(Parallelogram::new(point_from_array([123.0,554.0,147.0]), point_from_array([300.0, 0.0, 0.0]), point_from_array([0.0,0.0,265.0]), light));
 
     // Moving sphere that does not move
     let center: Point3 = point_from_array([400.0, 400.0, 200.0]);
-    let sphere_material: Rc<Lambertian> = lambertian(point_from_array([0.7, 0.3, 0.1]));
+    let sphere_material: Rc<Lambertian> = Lambertian::from_color(point_from_array([0.7, 0.3, 0.1]));
     world.add(Sphere::new(center, 50.0, sphere_material));
 
     // Fuzzy metal and glass spheres
@@ -656,13 +657,13 @@ fn profiler_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
     world.add(ConstantMedium::from_color(boundary.clone(), 0.2, point_from_array([0.2, 0.4, 0.9])));
 
     // Earth texture
-    let emat: Rc<Lambertian> = Rc::new(Lambertian{texture: ImageTexture::new("textures/earthmap.jpg")});
+    let emat: Rc<Lambertian> = Lambertian::from_texture(ImageTexture::new("textures/earthmap.jpg"));
     world.add(Sphere::new(point_from_array([400.0, 200.0, 400.0]), 100.0, emat));
 
 
     // Group of spheres
     let mut spheres: HittableList = HittableList::default();
-    let white: Rc<Lambertian> = lambertian(Point3::new(0.73, 0.73, 0.73));
+    let white: Rc<Lambertian> = Lambertian::from_color(Point3::new(0.73, 0.73, 0.73));
 
     let number_of_spheres: u32 = 1000;
     for _ in 0..number_of_spheres {
