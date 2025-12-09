@@ -7,7 +7,7 @@ use rand::random_range;
 
 use crate::{
     aabb::AABB, 
-    hittable::{HitRecord, Hittable}, 
+    hittable::{HitRecord, Hittable, SurfaceCoordinate}, 
     material::{Isotropic, Material}, 
     point3::{Vector3, color::Color}, 
     ray::Ray, texture::{self, SolidColor, Texture}
@@ -48,10 +48,6 @@ impl Hittable for ConstantMedium {
         hit_record1.t = hit_record1.t.max(ray_t.start);
         hit_record2.t = hit_record2.t.min(ray_t.end);
 
-        if hit_record1.t >= hit_record2.t {
-            return false;
-        }
-
         hit_record1.t = hit_record1.t.max(0.0);
 
         let ray_length: f64 = ray.direction.length();
@@ -66,7 +62,7 @@ impl Hittable for ConstantMedium {
 
         hit_record.normal = Vector3{x: 1.0, y: 0.0, z: 0.0}; // Arbitrary
         hit_record.front_face = true; // Also arbitrary
-        hit_record.surface_coords = hit_record1.surface_coords;
+        hit_record.surface_coords = SurfaceCoordinate{u: 0.0, v:0.0};
 
         hit_record.material = self.phase_function.clone();
 

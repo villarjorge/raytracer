@@ -202,7 +202,7 @@ fn ray_color(given_ray: &Ray, depth: u32, world: &dyn Hittable, background_color
     }
 
     let mut sca_att: ScatteredRayAndAttenuation = ScatteredRayAndAttenuation{
-        scattered_ray: Ray { origin: Point3 { x: 0.0, y: 0.0, z: 0.0 }, direction: Point3 { x: 1.01, y: 1.0, z: 1.0 }, inverse_direction: Point3 { x: 1.01, y: 1.0, z: 1.0 } }, 
+        scattered_ray: Ray { origin: Point3 { x: 0.0, y: 0.0, z: 0.0 }, direction: Point3 { x: 1.0, y: 1.0, z: 1.0 }, inverse_direction: Point3 { x: 1.0, y: 1.0, z: 1.0 } }, 
         attenuation: Color{x: 1.0, y: 1.0, z: 1.0}
     };
 

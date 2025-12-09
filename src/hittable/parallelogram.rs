@@ -62,7 +62,7 @@ impl Hittable for Parallelogram {
         // Return false if the hit point parameter t is outside the ray interval.
         let t: f64 = (self.d - dot(&self.normal, &ray.origin))/denominator;
         // if !ray_t.contains(&t) {
-        if t < ray_t.start || ray_t.end < t {
+        if ray_t.end < t || t < ray_t.start {
             return false;
         }
 

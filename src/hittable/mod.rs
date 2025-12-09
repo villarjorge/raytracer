@@ -115,7 +115,7 @@ impl Hittable for RotateY {
         let rotated_ray: Ray = Ray::new(origin, direction);
 
         // Determine whether an intersection exists in object space (and if so, where).
-        if self.object.hit(&rotated_ray, ray_t, hit_record) {
+        if !self.object.hit(&rotated_ray, ray_t, hit_record) {
             return false;
         }
         // Transform the intersection from object space back to world space.
