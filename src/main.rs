@@ -480,7 +480,7 @@ fn final_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
 
     let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
 
-    cam.render(&world);
+    cam.thrender(&world);
 }
 
 fn cornell_quadric() {
