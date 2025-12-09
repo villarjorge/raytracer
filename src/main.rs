@@ -708,7 +708,7 @@ fn profiler_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
 
 fn main() {
     let now: Instant = Instant::now();
-    let scene_number: u32 = 20;
+    let scene_number: u32 = 12;
 
     match scene_number {
         0 => many_spheres(),
