@@ -9,7 +9,7 @@ use rand;
 use indicatif::ProgressIterator;
 // use rayon::prelude::*;
 
-use crate::{hittable::{HitRecord, SurfaceCoordinate}, material::{Lambertian, ScatterResult}, point3::color::{Color, proccess_color}};
+use crate::{hittable::{HitRecord, SurfaceCoordinate}, material::{Lambertian, ScatteredRayAndAttenuation}, point3::color::{Color, proccess_color}};
 use crate::point3::{Point3, Vector3, cross, random_in_unit_disk, unit_vector};
 use crate::point3::color::write_color;
 use crate::ray::Ray;
@@ -201,16 +201,21 @@ fn ray_color(given_ray: &Ray, depth: u32, world: &dyn Hittable, background_color
         return background_color;
     }
 
+    let mut sca_att: ScatteredRayAndAttenuation = ScatteredRayAndAttenuation{
+        scattered_ray: Ray { origin: Point3 { x: 0.0, y: 0.0, z: 0.0 }, direction: Point3 { x: 1.01, y: 1.0, z: 1.0 }, inverse_direction: Point3 { x: 1.01, y: 1.0, z: 1.0 } }, 
+        attenuation: Color{x: 1.0, y: 1.0, z: 1.0}
+    };
+
     let color_from_emission: Color = hit_record.material.emitted(hit_record.surface_coords, &hit_record.p);
     
-    match hit_record.material.scatter(given_ray, &hit_record) {
-            ScatterResult::DidNotScatter => color_from_emission,
-            ScatterResult::DidScatter(sca_att) => {
-                let color_from_scatter: Color = sca_att.attenuation * ray_color(&sca_att.scattered_ray, depth-1, world, background_color);
-                color_from_emission + color_from_scatter
-            }
-        }
+    if !hit_record.material.scatter(given_ray, &hit_record, &mut sca_att) {
+        return color_from_emission;
     }
+
+    let color_from_scatter: Color = sca_att.attenuation * ray_color(&sca_att.scattered_ray, depth-1, world, background_color);
+    
+    color_from_emission + color_from_scatter    
+}
 
 impl Camera {
     /// Construct a camera ray originating from the defocus disk and directed at a randomly
