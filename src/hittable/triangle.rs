@@ -1,7 +1,7 @@
 use std::{ops::Range, rc::Rc};
 
 use crate::aabb::{AABB, join_aabbs};
-use crate::hittable::{HitRecord, HitResult, Hittable, SurfaceCoordinate};
+use crate::hittable::{HitRecord, Hittable, SurfaceCoordinate};
 use crate::material::Material;
 use crate::point3::{Point3, Vector3, cross, dot, unit_vector};
 use crate::ray::Ray;
@@ -52,31 +52,38 @@ impl Hittable for Triangle {
     ///     1. Finding the plane Ax + By + Cz = d that contains that triangle,
     ///     2. Solving for the intersection of a ray and the triangle-containing plane,
     ///     3. Determining if the hit point lies inside the triangle.
-    fn hit(&'_ self, ray: &Ray, ray_t: &Range<f64>) -> HitResult<'_> {
+    fn hit(&self, ray: &Ray, ray_t: &Range<f64>, hit_record: &mut HitRecord) -> bool {
         let denominator: f64 = dot(&self.normal, &ray.direction);
 
         // No hit if the ray is parallel to the plane
         if denominator.abs() < 1e-8 {
-            return HitResult::DidNotHit;
+            return false;
         }
 
         // Return false if the hit point parameter t is outside the ray interval.
         let t: f64 = (self.d - dot(&self.normal, &ray.origin))/denominator;
         if !ray_t.contains(&t) {
-            return HitResult::DidNotHit;
+            return false;
         }
         // Determine if the hit point lies within the planar shape using its plane coordinates.
-        let planar_hitpoint_vector: Vector3  = ray.at(t) - self.q;
+        let intersection: Point3 = ray.at(t);
+        let planar_hitpoint_vector: Vector3 = intersection - self.q;
         let alpha: f64 = dot(&self.w, &cross(&planar_hitpoint_vector, &self.v));
         let beta: f64 = dot(&self.w, &cross(&self.u, &planar_hitpoint_vector));
 
         if !is_interior(alpha, beta) {
-            return HitResult::DidNotHit;
+            return false;
         }
 
         let surface_coords: SurfaceCoordinate = SurfaceCoordinate { u: alpha, v: beta };
+        hit_record.surface_coords = surface_coords;
 
-        HitResult::HitRecord(HitRecord::new(ray, t, self.normal, &*self.material, surface_coords))        
+        hit_record.t = t;
+        hit_record.p = intersection;
+        hit_record.material = self.material.clone();
+        hit_record.set_face_normal(ray, self.normal);
+
+        true        
     }
     
     fn bounding_box(&self) -> &AABB {

@@ -8,7 +8,7 @@ use std::{
 
 use crate::{
     aabb::{AABB}, 
-    hittable::{HitRecord, HitResult, Hittable, SurfaceCoordinate}, 
+    hittable::{HitRecord, Hittable, SurfaceCoordinate}, 
     material::Material, 
     point3::{Point3, Vector3, dot, unit_vector}, 
     ray::Ray
@@ -26,7 +26,7 @@ pub struct Quadric {
 // Plan: instead of making some complex function to determine bounds of the quadric, let the bounding box define its extent
 
 impl Hittable for Quadric {
-    fn hit(&'_ self, ray: &Ray, ray_t: &Range<f64>) -> HitResult<'_> {
+    fn hit(&self, ray: &Ray, ray_t: &Range<f64>, hit_record: &mut HitRecord) -> bool {
         // Calculate coeficients of quadratic equation: at^2 + bt + c = 0
         let o: Point3 = ray.origin;
         let d: Point3 = ray.direction;
@@ -41,8 +41,9 @@ impl Hittable for Quadric {
         let discriminant: f64 = b*b - 4.0*a*c;
 
         if discriminant < 0.0 {
-            return HitResult::DidNotHit;
+            return false;
         } 
+
         let sqrt_discriminant: f64 = f64::sqrt(discriminant);
 
         // Find the nearest root that lies in the acceptable range
@@ -51,7 +52,7 @@ impl Hittable for Quadric {
         if !ray_t.contains(&root) {
             root = (- b + sqrt_discriminant)/(2.0*a);
             if !ray_t.contains(&root) {
-                return HitResult::DidNotHit;
+                return false;
             }
         }
 
@@ -64,18 +65,22 @@ impl Hittable for Quadric {
             z: 2.0*self.p1.z*p.z + self.p2.y*p.x + self.p2.z*p.y,
         } + self.p3;
 
+        
+        // To do: To deal with the material, dereference the pointer, then create a reference. Change this so you don't
+        // let record: HitRecord = HitRecord::new(ray, root, outward_normal, &*self.material, surface_coords);
+        hit_record.t = root;
+        hit_record.p = p;
+
         // If the ray originates inside of the surface, reverse the normal
         let outward_normal: Point3 = if dot(&d, &p) > 0.0 { -unit_vector(normal) } else { unit_vector(normal) };
+        hit_record.set_face_normal(ray, outward_normal);
 
+        hit_record.material = self.material.clone();
         // To do: Since there is no general closed form coordinates, find some other way to get surface coordinates. Use differential geomety?
-        let surface_coords: SurfaceCoordinate = SurfaceCoordinate {u: 0.0, v: 0.0};
-
         // To do: ☠☠ once you have those coordinates, you can reverse based on them, like in Parallelogram ☠☠
+        hit_record.surface_coords = SurfaceCoordinate {u: 0.0, v: 0.0};
 
-        // To do: To deal with the material, dereference the pointer, then create a reference. Change this so you don't
-        let record: HitRecord = HitRecord::new(ray, root, outward_normal, &*self.material, surface_coords);
-
-        HitResult::HitRecord(record)
+        true
     }
     fn bounding_box(&self) -> &AABB {
         &self.bounding_box

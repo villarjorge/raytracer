@@ -3,10 +3,10 @@ use std::ops::Range;
 use std::rc::Rc;
 
 use crate::aabb::join_aabbs;
+use crate::hittable::HitRecord;
 use crate::hittable::hittable_list::{HittableList};
 use crate::{aabb::AABB, hittable::Hittable};
 use crate::ray::Ray;
-use crate::hittable::{HitResult};
 
 // To do: consider if this can be replaced by rust's native implementation
 // https://doc.rust-lang.org/std/collections/struct.BTreeMap.html
@@ -25,12 +25,12 @@ pub enum BVHNode {
 }
 
 impl Hittable for BVHNode {
-    fn hit(&'_  self, ray: &Ray, ray_t: &Range<f64>) -> HitResult<'_> {
+    fn hit(&self, ray: &Ray, ray_t: &Range<f64>, hit_record: &mut HitRecord) -> bool {
         // This is the 3rd hottest part of the code, taking 25.5% of CPU time
         let mut reduced_ray_t: Range<f64> = ray_t.clone();
 
         if !self.bounding_box().hit(ray, &mut reduced_ray_t) {
-            return HitResult::DidNotHit;
+            return false;
         }
 
         let ray_t: Range<f64> = reduced_ray_t;
@@ -38,22 +38,12 @@ impl Hittable for BVHNode {
         // The right interval needs to be narrowed to prevent problems with occlusion
         // To do: refactor to remove nested match structure (add aditional function?)
         match self {
-            BVHNode::Leaf { objects, bounding_box: _ } => { objects.hit(ray, &ray_t) },
+            BVHNode::Leaf { objects, bounding_box: _ } => { objects.hit(ray, &ray_t, hit_record) },
             BVHNode::Internal { left, right, bounding_box: _ } => {
-                match left.hit(ray, &ray_t) {
-                    HitResult::DidNotHit => { 
-                        match right.hit(ray, &ray_t) {
-                            HitResult::DidNotHit => {HitResult::DidNotHit},
-                            HitResult::HitRecord(hit_record) => {HitResult::HitRecord(hit_record)}
-                        }
-                     },
-                    HitResult::HitRecord(hit_record) => {
-                        match right.hit(ray, &(ray_t.start..hit_record.t)) {
-                            HitResult::DidNotHit => {HitResult::HitRecord(hit_record)},
-                            HitResult::HitRecord(hit_record) => {HitResult::HitRecord(hit_record)}
-                        }
-                    }
-                }
+                let hit_left: bool = left.hit(ray, &ray_t, hit_record);
+                let hit_right: bool = right.hit(ray, &(ray_t.start..{if hit_left { hit_record.t } else { ray_t.end }}), hit_record);
+
+                return hit_left || hit_right;
             }
         }
     }
