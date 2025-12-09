@@ -112,8 +112,8 @@ impl Camera {
         image_buffer
     }   
 
-    pub fn render(&self, world: &dyn Hittable) {
-        // Render
+    pub fn render_ppm(&self, world: &dyn Hittable) {
+        // Render a ppm image
         let mut image_buffer: BufWriter<File> = self.create_image_and_buffer("images/image.ppm");
 
         println!("Scan lines progress:");
