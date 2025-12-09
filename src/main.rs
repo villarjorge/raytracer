@@ -137,13 +137,13 @@ fn checkered_spheres() {
 
     let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, Point3 { x: 0.7, y: 0.8, z: 1.0 });
 
-    cam.render(&world);
+    cam.thrender(&world);
 }
 
 fn earth() {
     let mut world: HittableList = HittableList::default();
 
-    let earth_texture: Rc<dyn Texture> = ImageTexture::new("textures/earthmap.jpg");
+    let earth_texture: Rc<dyn Texture> = ImageTexture::new_or_fallback("textures/earthmap.jpg");
     let earth_material: Rc<Lambertian> = Lambertian::from_texture(earth_texture);
 
     world.add(Sphere::new(Point3{x: 0.0, y: 0.0, z: 0.0}, 2.0, earth_material));
@@ -168,7 +168,7 @@ fn earth() {
 
     let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, Point3 { x: 0.7, y: 0.8, z: 1.0 });
 
-    cam.render(&world);
+    cam.thrender(&world);
 }
 
 fn perlin_spheres() {
@@ -200,7 +200,7 @@ fn perlin_spheres() {
 
     let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, Point3 { x: 0.7, y: 0.8, z: 1.0 });
 
-    cam.render(&world);
+    cam.thrender(&world);
 }
 
 fn para() {
@@ -239,7 +239,7 @@ fn para() {
 
     let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, Point3 { x: 0.7, y: 0.8, z: 1.0 });
 
-    cam.render(&world);
+    cam.thrender(&world);
 }
 
 fn simple_light() {
@@ -277,7 +277,7 @@ fn simple_light() {
 
     let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
 
-    cam.render(&world);
+    cam.thrender(&world);
 }
 
 fn cornell_box() {
@@ -296,20 +296,20 @@ fn cornell_box() {
     world.add(Parallelogram::new(point_from_array([0.0, 0.0, 555.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 555.0, 0.0]), white.clone()));
 
     let box1: Rc<HittableList> = Rc::new(create_box(point_from_array([0.0, 0.0, 0.0]), point_from_array([165.0, 330.0, 165.0]), white.clone()));
-    let box1_rotated: Rc<RotateY>  = Rc::new(RotateY::new(box1, 15.0));
+    let box1_rotated: Rc<RotateY> = Rc::new(RotateY::new(box1, 15.0));
     let box1_trans: Translate = Translate::new(box1_rotated, point_from_array([265.0, 0.0, 295.0]));
 
     world.add(box1_trans);
 
     let box2: Rc<HittableList> = Rc::new(create_box(point_from_array([0.0, 0.0, 0.0]), point_from_array([165.0, 165.0, 165.0]), white));
-    let box2_rotated: Rc<RotateY>  = Rc::new(RotateY::new(box2, -18.0));
+    let box2_rotated: Rc<RotateY> = Rc::new(RotateY::new(box2, -18.0));
     let box2_trans: Translate = Translate::new(box2_rotated, point_from_array([130.0, 0.0, 65.0]));
 
     world.add(box2_trans);
 
     let aspect_ratio: f64 = 1.0;
     let image_width: u32 = 600;
-    let samples_per_pixel: u32 = 200;
+    let samples_per_pixel: u32 = 20;
     let max_depth: u32 = 50;
     let image_quality: ImageQuality = ImageQuality {samples_per_pixel, max_depth};
 
@@ -329,7 +329,7 @@ fn cornell_box() {
 
     let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
 
-    cam.render(&world);
+    cam.thrender(&world);
 }
 
 fn cornell_smoke() {
@@ -360,7 +360,7 @@ fn cornell_smoke() {
 
     let aspect_ratio: f64 = 1.0;
     let image_width: u32 = 600;
-    let samples_per_pixel: u32 = 200;
+    let samples_per_pixel: u32 = 20;
     let max_depth: u32 = 50;
     let image_quality: ImageQuality = ImageQuality {samples_per_pixel, max_depth};
 
@@ -380,7 +380,7 @@ fn cornell_smoke() {
 
     let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
 
-    cam.render(&world);
+    cam.thrender(&world);
 }
 
 fn final_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
@@ -432,7 +432,7 @@ fn final_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
     world.add(ConstantMedium::from_color(boundary2, 0.0001, point_from_array([1.0, 1.0, 1.0])));
 
     // Earth texture
-    let emat: Rc<Lambertian> = Lambertian::from_texture(ImageTexture::new("textures/earthmap.jpg"));
+    let emat: Rc<Lambertian> = Lambertian::from_texture(ImageTexture::new_or_fallback("textures/earthmap.jpg"));
     world.add(Sphere::new(point_from_array([400.0, 200.0, 400.0]), 100.0, emat));
 
     // Perlin sphere
@@ -526,7 +526,7 @@ fn cornell_quadric() {
 
     let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
 
-    cam.render(&world);
+    cam.thrender(&world);
 }
 
 fn debug_quadric() {
@@ -563,7 +563,7 @@ fn debug_quadric() {
 
     let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
 
-    cam.render(&world);
+    cam.thrender(&world);
 }
 
 fn cornell_triangle() {
@@ -607,7 +607,7 @@ fn cornell_triangle() {
 
     let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
 
-    cam.render(&world);
+    cam.thrender(&world);
 }
 
 fn profiler_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
@@ -657,7 +657,7 @@ fn profiler_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
     world.add(ConstantMedium::from_color(boundary.clone(), 0.2, point_from_array([0.2, 0.4, 0.9])));
 
     // Earth texture
-    let emat: Rc<Lambertian> = Lambertian::from_texture(ImageTexture::new("textures/earthmap.jpg"));
+    let emat: Rc<Lambertian> = Lambertian::from_texture(ImageTexture::new_or_fallback("textures/earthmap.jpg"));
     world.add(Sphere::new(point_from_array([400.0, 200.0, 400.0]), 100.0, emat));
 
 

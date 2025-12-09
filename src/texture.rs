@@ -70,7 +70,7 @@ pub struct ImageTexture {
 }
 
 impl ImageTexture {
-    pub fn new(path: &str) -> Rc<dyn Texture> {
+    pub fn new_or_fallback(path: &str) -> Rc<dyn Texture> {
         match open(path) {
             Ok(image) => Rc::new(ImageTexture { image: image.into_rgb8() }),
             Err(image_error) => {

@@ -14,14 +14,15 @@ pub struct SurfaceCoordinate {
 }
 
 /// A grouping of parameters related to the ray-object intersection
-pub struct HitRecord<'a> {
+#[derive(Clone)]
+pub struct HitRecord {
     /// Point of intersection
     pub p: Point3,
     /// Normal at that point
     pub normal: Vector3,
     /// Material at the given intersection
     // To do: change this to a Rc<dyn Material>
-    pub material: &'a dyn Material,  // &'a Box<dyn Material>
+    pub material: Rc<dyn Material>,
     /// Parameter of the ray at the intersection
     pub t: f64,
     /// Coordinates of the point of intersection in the surface
@@ -36,26 +37,21 @@ pub struct HitRecord<'a> {
 ///     - outward_normal: normal of the surface, assumed to be unit lenght
 ///     - material
 ///     - surface_coords
-impl HitRecord<'_> {
-    pub fn new<'a>(ray: &Ray, t: f64, outward_normal: Vector3, material: &'a dyn Material, surface_coords: SurfaceCoordinate) -> HitRecord<'a> {
-        let p: Point3 = ray.at(t);
+impl HitRecord {
+    // pub fn new<'a>(ray: &Ray, t: f64, outward_normal: Vector3, material: &'a dyn Material, surface_coords: SurfaceCoordinate) -> HitRecord<'a> {
+    //     let p: Point3 = ray.at(t);
 
-        // let unit_outward_normal: Point3 = unit_vector(outward_normal);
+    //     // let unit_outward_normal: Point3 = unit_vector(outward_normal);
 
-        let front_face: bool = outward_normal.dot(ray.direction) < 0.0;
-        let normal: Vector3 = if front_face {outward_normal} else {-outward_normal};
+    //     let front_face: bool = outward_normal.dot(ray.direction) < 0.0;
+    //     let normal: Vector3 = if front_face {outward_normal} else {-outward_normal};
 
-        HitRecord {p, normal, material, t, surface_coords, front_face}
+    //     HitRecord {p, normal, material, t, surface_coords, front_face}
+    // }
+    pub fn set_face_normal(&mut self, ray: &Ray, outward_normal: Vector3) {
+        self.front_face = outward_normal.dot(ray.direction) < 0.0;
+        self.normal = if self.front_face {outward_normal} else {-outward_normal};
     }
-}
-
-/// Encapsulates the two possible results of the ray-object intersection: 
-///     - DidNotHit
-///     - HitRecord(_): did hit with it's accompaning hit record 
-// For now, checking for a hit requires calculating it, so in the function that checks for hits return ether 
-pub enum HitResult<'a> {
-    DidNotHit,
-    HitRecord(HitRecord<'a>)
 }
 
 // Instead of inheritance, create a trait that subsecuent objects will implement
@@ -63,7 +59,7 @@ pub enum HitResult<'a> {
 // Having every object be a variant of Hittable could allow to have a 
 // more complex hittable list with vectors for each object. The problem would be having too many variants that need to be handeled
 pub trait Hittable {
-    fn hit(&'_ self, ray: &Ray, ray_t: &Range<f64>) -> HitResult<'_>;
+    fn hit(&self, ray: &Ray, ray_t: &Range<f64>, hit_record: &mut HitRecord) -> bool;
     fn bounding_box(&self) -> &AABB; // Needed since hittables will be behind pointers that will be dereferenced
 }
 
@@ -75,24 +71,19 @@ pub struct Translate {
 }
 
 impl Hittable for Translate {
-    fn hit(&'_ self, ray: &Ray, ray_t: &Range<f64>) -> HitResult<'_> {
+    fn hit(&self, ray: &Ray, ray_t: &Range<f64>, hit_record: &mut HitRecord) -> bool {
         // Move the ray backwards by the offset
         let offset_ray: Ray = Ray::new(ray.origin - self.offset, ray.direction);
+
         // Check for intersection with the new ray
-        match self.object.hit(&offset_ray, ray_t) {
-            HitResult::DidNotHit => HitResult::DidNotHit,
-            HitResult::HitRecord(hr) => {
-                // Move the intersection point forwards by the offset
-                HitResult::HitRecord(HitRecord { 
-                    p: hr.p + self.offset, 
-                    normal: hr.normal, 
-                    material: hr.material, 
-                    t: hr.t, 
-                    surface_coords: hr.surface_coords, 
-                    front_face: hr.front_face
-                 })
-            }
+        if !self.object.hit(&offset_ray, ray_t, hit_record) {
+            return false;
         }
+
+        // Move the intersection point forwards by the offset
+        hit_record.p = hit_record.p + self.offset;
+
+        true
     }
 
     fn bounding_box(&self) -> &AABB {
@@ -115,27 +106,23 @@ pub struct RotateY {
 }
 
 impl Hittable for RotateY {
-    fn hit(&'_ self, ray: &Ray, ray_t: &Range<f64>) -> HitResult<'_> {
+    fn hit(&self, ray: &Ray, ray_t: &Range<f64>, hit_record: &mut HitRecord) -> bool {
         // To do: compare for performance: using rotate_y or copy pasting the same block of code four times to rotate
+        // Transform the ray from world space to object space.
         let origin: Point3 = rotate_y(&ray.origin, self.cos_theta, self.sin_theta);
         let direction: Point3 = rotate_y(&ray.direction, self.cos_theta, self.sin_theta);
 
         let rotated_ray: Ray = Ray::new(origin, direction);
 
-        match self.object.hit(&rotated_ray, ray_t) {
-            HitResult::DidNotHit => HitResult::DidNotHit,
-            HitResult::HitRecord(object_space_hit_record) => {
-                let world_space_hit_record: HitRecord = HitRecord { 
-                    p: rotate_y(&object_space_hit_record.p, self.cos_theta, -self.sin_theta),
-                    normal: rotate_y(&object_space_hit_record.normal, self.cos_theta, -self.sin_theta), 
-                    material: object_space_hit_record.material, 
-                    t: object_space_hit_record.t, 
-                    surface_coords: object_space_hit_record.surface_coords, 
-                    front_face: object_space_hit_record.front_face
-                 };
-                HitResult::HitRecord(world_space_hit_record)
-            }
+        // Determine whether an intersection exists in object space (and if so, where).
+        if !self.object.hit(&rotated_ray, ray_t, hit_record) {
+            return false;
         }
+        // Transform the intersection from object space back to world space.
+        hit_record.p = rotate_y(&hit_record.p, self.cos_theta, -self.sin_theta);
+        hit_record.normal =  rotate_y(&hit_record.normal, self.cos_theta, -self.sin_theta);
+
+        true
     }
 
     fn bounding_box(&self) -> &AABB {

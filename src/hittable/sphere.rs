@@ -3,7 +3,7 @@ use std::ops::Range;
 use std::rc::Rc;
 
 use crate::point3::Point3;
-use crate::hittable::{HitRecord, HitResult, Hittable, SurfaceCoordinate};
+use crate::hittable::{HitRecord, Hittable, SurfaceCoordinate};
 use crate::ray::Ray;
 use crate::material::Material;
 use crate::aabb::{AABB};
@@ -28,7 +28,7 @@ impl Sphere {
 }
 
 impl Hittable for Sphere {
-    fn hit(&'_ self, ray: &Ray, ray_t: &Range<f64>) -> HitResult<'_> {
+    fn hit(&self, ray: &Ray, ray_t: &Range<f64>, hit_record: &mut HitRecord) -> bool {
         // This is the 1st hottest part of the code
         // Thanks to the BVH node, this part only takes 35% of cpu time, down from 86%
         let oc: Point3 = self.center - ray.origin;
@@ -39,7 +39,7 @@ impl Hittable for Sphere {
         let discriminant: f64 = h*h - a*c;
 
         if discriminant < 0.0 {
-            return HitResult::DidNotHit;
+            return false;
         } 
         let sqrt_discriminant: f64 = f64::sqrt(discriminant);
 
@@ -49,16 +49,21 @@ impl Hittable for Sphere {
         if !ray_t.contains(&root) {
             root = (h+sqrt_discriminant)/a;
             if !ray_t.contains(&root) {
-                return HitResult::DidNotHit;
+                return false;
             }
         }
 
-        let outward_normal: Point3 = (ray.at(root) - self.center)/self.radius;
-        let surface_coords: SurfaceCoordinate = get_sphere_uv(&outward_normal);
-        // To do: To deal with the material, dereference the pointer, then create a reference. Change this so you don't
-        let record: HitRecord = HitRecord::new(ray, root, outward_normal, &*self.material, surface_coords);
+        hit_record.t = root;
+        hit_record.p = ray.at(hit_record.t);
 
-        HitResult::HitRecord(record)
+        let outward_normal: Point3 = (ray.at(root) - self.center)/self.radius;
+        hit_record.set_face_normal(ray, outward_normal);
+
+        hit_record.material = self.material.clone();
+
+        hit_record.surface_coords = get_sphere_uv(&outward_normal);
+        
+        true
     }
     fn bounding_box(&self) -> &AABB {
         &self.bounding_box

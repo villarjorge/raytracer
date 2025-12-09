@@ -9,11 +9,11 @@ use rand;
 use indicatif::ProgressIterator;
 // use rayon::prelude::*;
 
-use crate::{material::ScatterResult, point3::color::{Color, proccess_color}};
+use crate::{hittable::{HitRecord, SurfaceCoordinate}, material::{Lambertian, ScatteredRayAndAttenuation}, point3::color::{Color, proccess_color}};
 use crate::point3::{Point3, Vector3, cross, random_in_unit_disk, unit_vector};
 use crate::point3::color::write_color;
 use crate::ray::Ray;
-use crate::hittable::{Hittable, HitResult};
+use crate::hittable::{Hittable};
 
 pub struct Camera {
     // To do: Consider changing the u32 to u16 or even smaller
@@ -187,20 +187,34 @@ fn ray_color(given_ray: &Ray, depth: u32, world: &dyn Hittable, background_color
         return Color{x: 0.0, y: 0.0, z: 0.0};
     }
 
-    match world.hit(given_ray, &(0.001..f64::INFINITY)) {
+    let mut hit_record: HitRecord = HitRecord { 
+        p: Point3 { x: 0.0, y: 0.0, z: 0.0 }, 
+        normal: Point3 { x: 0.0, y: 0.0, z: 0.0 }, 
+        material: Lambertian::from_color(Point3 { x: 0.0, y: 0.0, z: 0.0 }), 
+        t: 0.0, 
+        surface_coords: SurfaceCoordinate{u: 0.0, v: 0.0}, 
+        front_face: false 
+    };
+
+    if !world.hit(given_ray, &(0.001..f64::INFINITY), &mut hit_record) {
         // If the ray hits nothing return the background color
-        HitResult::DidNotHit => {background_color},
-        HitResult::HitRecord(hit_record) => {
-            let color_from_emission: Color = hit_record.material.emitted(hit_record.surface_coords, &hit_record.p);
-            match hit_record.material.scatter(given_ray, &hit_record) {
-                ScatterResult::DidNotScatter => color_from_emission,
-                ScatterResult::DidScatter(sca_att) => {
-                    let color_from_scatter: Color = sca_att.attenuation * ray_color(&sca_att.scattered_ray, depth-1, world, background_color);
-                    color_from_emission + color_from_scatter
-                }
-            }
-        }
+        return background_color;
     }
+
+    let mut sca_att: ScatteredRayAndAttenuation = ScatteredRayAndAttenuation{
+        scattered_ray: Ray { origin: Point3 { x: 0.0, y: 0.0, z: 0.0 }, direction: Point3 { x: 1.0, y: 1.0, z: 1.0 }, inverse_direction: Point3 { x: 1.0, y: 1.0, z: 1.0 } }, 
+        attenuation: Color{x: 1.0, y: 1.0, z: 1.0}
+    };
+
+    let color_from_emission: Color = hit_record.material.emitted(hit_record.surface_coords, &hit_record.p);
+    
+    if !hit_record.material.scatter(given_ray, &hit_record, &mut sca_att) {
+        return color_from_emission;
+    }
+
+    let color_from_scatter: Color = sca_att.attenuation * ray_color(&sca_att.scattered_ray, depth-1, world, background_color);
+    
+    color_from_emission + color_from_scatter    
 }
 
 impl Camera {
