@@ -58,3 +58,14 @@ impl Hittable for HittableList {
         &self.bounding_box
     }
 }
+
+pub struct HittableArray {
+    objects: [Arc<dyn Hittable>; 1000],
+    bounding_box: AABB
+}
+
+impl HittableArray {
+    pub fn from_hittable_list(hittable_list: HittableList) -> HittableArray {
+        let objects: [Arc<dyn Hittable>; 1000] = hittable_list.objects.iter().collect();
+    }
+}

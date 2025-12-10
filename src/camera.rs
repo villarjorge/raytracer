@@ -7,7 +7,7 @@ use std::{
 use image::{ImageBuffer, RgbImage};
 use rand;
 use indicatif::ProgressIterator;
-// use rayon::prelude::*;
+use rayon::prelude::*;
 
 use crate::{hittable::{HitRecord, SurfaceCoordinate}, material::{Lambertian, ScatteredRayAndAttenuation}, point3::color::{Color, proccess_color}};
 use crate::point3::{Point3, Vector3, cross, random_in_unit_disk, unit_vector};
@@ -175,6 +175,35 @@ impl Camera {
                 *pixel = image::Rgb(proccess_color(pixel_color/(self.samples_per_pixel as f64)));
             }
         }
+        println!("\nRender done!");
+        image_buffer.save("images/image.png").unwrap();
+    }
+
+    // https://stackoverflow.com/questions/25649423/sending-trait-objects-between-threads-in-rust
+    // Add a constraint to the type (the + Sync + Send part)
+    pub fn thrender2(&self, world: &(dyn Hittable + Sync)) {
+        let mut image_buffer: ImageBuffer<image::Rgb<u8>, Vec<u8>> = RgbImage::new(self.image_width, self.image_height);
+
+        println!("Scan lines progress:");
+        // (0..self.image_height).into_par_iter().for_each(|j: u32| {
+        //     (0..self.image_width).into_par_iter().for_each(|i: u32| {
+        //         let pixel_color: Color = (0..self.samples_per_pixel).map(|_| {
+        //             let r: Ray = self.get_ray(i, j);
+        //             ray_color(&r, self.max_depth, world, self.background_color)
+        //         }).sum();
+        //         let pixel: &mut image::Rgb<u8> = image_buffer.get_pixel_mut(i, j);
+        //         *pixel = image::Rgb(proccess_color(pixel_color/(self.samples_per_pixel as f64)));
+        //     });
+        // });
+
+        for (i, j, pixel) in image_buffer.enumerate_pixels_mut().progress() {
+            let pixel_color: Color = (0..self.samples_per_pixel).into_par_iter().map(|_| {
+                let r: Ray = self.get_ray(i, j);
+                ray_color(&r, self.max_depth, world, self.background_color)
+            }).sum();
+            *pixel = image::Rgb(proccess_color(pixel_color/(self.samples_per_pixel as f64)));
+        };
+
         println!("\nRender done!");
         image_buffer.save("images/image.png").unwrap();
     }

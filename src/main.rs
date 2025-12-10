@@ -480,7 +480,7 @@ fn final_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
 
     let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
 
-    cam.thrender(&world);
+    cam.thrender2(&world);
 }
 
 fn cornell_quadric() {
@@ -708,7 +708,7 @@ fn profiler_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
 
 fn main() {
     let now: Instant = Instant::now();
-    let scene_number: u32 = 9;
+    let scene_number: u32 = 13;
 
     match scene_number {
         0 => many_spheres(),
