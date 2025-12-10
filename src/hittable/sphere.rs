@@ -24,7 +24,7 @@ impl Sphere {
         let radius_vector: Point3 = Point3 { x: radius, y: radius, z: radius };
         let bounding_box: AABB = AABB::from_points(center - radius_vector, center + radius_vector);
         Sphere { center, radius: radius.max(0.0), material, bounding_box}
-}
+    }
 }
 
 impl Hittable for Sphere {

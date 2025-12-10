@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{rc::Rc};
 
 use image::{ImageBuffer, Rgb, open};
 
@@ -13,7 +13,7 @@ pub struct SolidColor {
 }
 
 impl SolidColor {
-    pub fn new(color: Point3) -> Rc<SolidColor> {
+    pub fn new(color: Color) -> Rc<SolidColor> {
         Rc::new(SolidColor { albedo: color })
     }
 }

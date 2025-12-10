@@ -727,5 +727,5 @@ fn main() {
         _ => final_scene(400, 20, 4),
     }
 
-    println!("Time: {:.2?}", now.elapsed())
+    println!("Time: {:.2?}", now.elapsed());
 }
