@@ -62,7 +62,7 @@ impl Lambertian {
         Arc::new(Lambertian{ texture: SolidColor::new(color) })
     }
 
-    pub fn from_texture(texture: Rc<dyn Texture>) -> Arc<Lambertian> {
+    pub fn from_texture(texture: Arc<dyn Texture>) -> Arc<Lambertian> {
         Arc::new(Lambertian { texture })
     }
 }
