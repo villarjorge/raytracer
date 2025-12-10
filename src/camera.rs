@@ -6,13 +6,14 @@ use std::{
 
 use image::{ImageBuffer, RgbImage};
 use rand;
-use rayon::prelude::*;
+use indicatif::ProgressIterator;
+// use rayon::prelude::*;
 
-use crate::{material::ScatterResult, point3::color::{Color, proccess_color}};
+use crate::{hittable::{HitRecord, SurfaceCoordinate}, material::{Lambertian, ScatteredRayAndAttenuation}, point3::color::{Color, proccess_color}};
 use crate::point3::{Point3, Vector3, cross, random_in_unit_disk, unit_vector};
 use crate::point3::color::write_color;
 use crate::ray::Ray;
-use crate::hittable::{Hittable, HitResult};
+use crate::hittable::{Hittable};
 
 pub struct Camera {
     // To do: Consider changing the u32 to u16 or even smaller
@@ -58,45 +59,46 @@ impl ImageQuality {
     }
 }
 
-// To do: function has to many arguments
-pub fn create_camera(aspect_ratio: f64, image_width: u32, image_quality: ImageQuality, vfov: f64, thin_lens: ThinLens, camera_position: CameraPosition, background_color: Point3) -> Camera {
-    // Calculate the image height, and ensure that it's at least 1.
-    let image_height: u32 = cmp::max(1, (image_width as f64 / aspect_ratio) as u32);
+impl Camera {
+    pub fn new(aspect_ratio: f64, image_width: u32, image_quality: ImageQuality, vfov: f64, thin_lens: ThinLens, camera_position: CameraPosition, background_color: Point3) -> Camera {
+        // Calculate the image height, and ensure that it's at least 1.
+        let image_height: u32 = cmp::max(1, (image_width as f64 / aspect_ratio) as u32);
 
-    let camera_center: Point3 = camera_position.look_from;
+        let camera_center: Point3 = camera_position.look_from;
 
-    // Determine viewport dimensions
-    let theta: f64 = vfov.to_radians();
-    let h: f64 = (theta*0.5).tan();
-    let viewport_height: f64  = 2.0*h*thin_lens.focus_distance;
-    let viewport_width: f64 = viewport_height * (image_width as f64/image_height as f64);
-    
-    // Calculate the basis vectors for the camera coordinate frame
-    let w: Vector3 = unit_vector(camera_position.look_from - camera_position.look_at);
-    let u: Vector3 = unit_vector(cross(&camera_position.view_up, &w));
-    let v: Vector3 = unit_vector(cross(&w, &u));
+        // Determine viewport dimensions
+        let theta: f64 = vfov.to_radians();
+        let h: f64 = (theta*0.5).tan();
+        let viewport_height: f64  = 2.0*h*thin_lens.focus_distance;
+        let viewport_width: f64 = viewport_height * (image_width as f64/image_height as f64);
+        
+        // Calculate the basis vectors for the camera coordinate frame
+        let w: Vector3 = unit_vector(camera_position.look_from - camera_position.look_at);
+        let u: Vector3 = unit_vector(cross(&camera_position.view_up, &w));
+        let v: Vector3 = unit_vector(cross(&w, &u));
 
-    // Calcualte the vectors across the horizontal and down the vertical viewport edges
-    let viewport_u: Vector3 = u*viewport_width;
-    let viewport_v: Vector3 = v*(-viewport_height);
+        // Calcualte the vectors across the horizontal and down the vertical viewport edges
+        let viewport_u: Vector3 = u*viewport_width;
+        let viewport_v: Vector3 = v*(-viewport_height);
 
-    // Calculate the horizontal and vertical delta vectors from pixel to pixel.
-    let pixel_delta_u: Point3 = viewport_u / image_width as f64;
-    let pixel_delta_v: Point3 = viewport_v / image_height as f64;
+        // Calculate the horizontal and vertical delta vectors from pixel to pixel.
+        let pixel_delta_u: Point3 = viewport_u / image_width as f64;
+        let pixel_delta_v: Point3 = viewport_v / image_height as f64;
 
-    // Calculate the location of the upper left pixel (the 0, 0 pixel).
-    let viewport_upper_left: Point3 = camera_center - w*thin_lens.focus_distance - viewport_u*0.5f64 - viewport_v*0.5f64;
-    let pixel00_loc: Point3 = viewport_upper_left + (pixel_delta_u + pixel_delta_v)*0.5f64;
+        // Calculate the location of the upper left pixel (the 0, 0 pixel).
+        let viewport_upper_left: Point3 = camera_center - w*thin_lens.focus_distance - viewport_u*0.5f64 - viewport_v*0.5f64;
+        let pixel00_loc: Point3 = viewport_upper_left + (pixel_delta_u + pixel_delta_v)*0.5f64;
 
-    // Calculate the camera defocus disk basis vectors
-    let defocus_radius: f64 = thin_lens.focus_distance*( (thin_lens.defocus_angle*0.5).to_radians().tan() );
-    let defocus_disk_u: Point3 = u * defocus_radius;
-    let defocus_disk_v: Point3 = v * defocus_radius;
+        // Calculate the camera defocus disk basis vectors
+        let defocus_radius: f64 = thin_lens.focus_distance*( (thin_lens.defocus_angle*0.5).to_radians().tan() );
+        let defocus_disk_u: Point3 = u * defocus_radius;
+        let defocus_disk_v: Point3 = v * defocus_radius;
 
-    // To do: I don't like to have this many parameters here. Maybe use ray to encapsulate two points? 
-    let samples_per_pixel: u32 = image_quality.samples_per_pixel;
-    let max_depth: u32 = image_quality.max_depth;
-    Camera { image_width, image_height, samples_per_pixel, max_depth, pixel00_loc, pixel_delta_u, pixel_delta_v, camera_center, defocus_angle: thin_lens.defocus_angle, defocus_disk_u, defocus_disk_v, background_color}
+        // To do: I don't like to have this many parameters here. Maybe use ray to encapsulate two points? 
+        let samples_per_pixel: u32 = image_quality.samples_per_pixel;
+        let max_depth: u32 = image_quality.max_depth;
+        Camera { image_width, image_height, samples_per_pixel, max_depth, pixel00_loc, pixel_delta_u, pixel_delta_v, camera_center, defocus_angle: thin_lens.defocus_angle, defocus_disk_u, defocus_disk_v, background_color}
+    }
 }
 
 // Public
@@ -110,14 +112,14 @@ impl Camera {
         image_buffer
     }   
 
-    pub fn render(&self, world: &dyn Hittable) {
-        // Render
+    pub fn render_ppm(&self, world: &dyn Hittable) {
+        // Render a ppm image
         let mut image_buffer: BufWriter<File> = self.create_image_and_buffer("images/image.ppm");
 
-        for j in 0..self.image_height {
+        println!("Scan lines progress:");
+        for j in (0..self.image_height).progress() {
             // https://stackoverflow.com/questions/59890270/how-do-i-overwrite-console-output
-            // To do: better progress bar
-            eprint!("\r----Scanlines remaining: {}/{}----", self.image_height - j, self.image_height); // eprint since this is the progress of the program
+            // eprint!("\r----Scanlines remaining: {}/{}----", self.image_height - j, self.image_height); // eprint since this is the progress of the program
             for i in 0..self.image_width {
                 let mut pixel_color: Color = Color::default(); // To do: Accumulating step by step could lead to decreased accuracy
                 for _ in 0..self.samples_per_pixel {
@@ -138,10 +140,11 @@ impl Camera {
         // The same render function but with iterators instead of loops
         let mut image_buffer: BufWriter<File> = self.create_image_and_buffer("images/image.ppm");
 
+        println!("Scan lines progress:");
         // To use rayon: Import its prelude, transform range -> (range).into_par_iter()
-        // The problem is that writting to disk will become non secuential
+        // A problem is that writting to disk will become non secuential
         // Maybe switch from .ppm to other format and handle it with image crate. See creating a fractal: https://github.com/image-rs/image/blob/main/README.md
-        for j in 0..self.image_height {
+        for j in (0..self.image_height).progress() {
             for i in 0..self.image_width {
                 let pixel_color: Color = (0..self.samples_per_pixel).map(|_| {
                     let r: Ray = self.get_ray(i, j);
@@ -160,26 +163,19 @@ impl Camera {
     pub fn thrender(&self, world: &dyn Hittable) {
         let mut image_buffer: ImageBuffer<image::Rgb<u8>, Vec<u8>> = RgbImage::new(self.image_width, self.image_height);
 
-        // for (i, j, pixel) in image_buffer.enumerate_pixels_mut() {
-        //     let pixel_color: Color = (0..self.samples_per_pixel).into_par_iter().map(|_| {
-        //         let r: Ray = self.get_ray(i, j);
-        //         ray_color(&r, self.max_depth, world, self.background_color)
-        //     }).sum();
-
-        //     *pixel = image::Rgb(proccess_color(pixel_color/(self.samples_per_pixel as f64)));
-        // }
-        (0..self.image_height).into_par_iter().for_each(|j| {
-            (0..self.image_width).into_par_iter().for_each(|i| {
+        println!("Scan lines progress:");
+        // for (i, j, pixel) in image_buffer.enumerate_pixels_mut().progress() {
+        for j in (0..self.image_height).progress() {
+            for i in 0..self.image_width {
                 let pixel_color: Color = (0..self.samples_per_pixel).map(|_| {
                     let r: Ray = self.get_ray(i, j);
                     ray_color(&r, self.max_depth, world, self.background_color)
                 }).sum();
-
                 let pixel: &mut image::Rgb<u8> = image_buffer.get_pixel_mut(i, j);
                 *pixel = image::Rgb(proccess_color(pixel_color/(self.samples_per_pixel as f64)));
-            });
-        });
-
+            }
+        }
+        println!("\nRender done!");
         image_buffer.save("images/image.png").unwrap();
     }
 }
@@ -191,20 +187,34 @@ fn ray_color(given_ray: &Ray, depth: u32, world: &dyn Hittable, background_color
         return Color{x: 0.0, y: 0.0, z: 0.0};
     }
 
-    match world.hit(given_ray, &(0.001..f64::INFINITY)) {
+    let mut hit_record: HitRecord = HitRecord { 
+        p: Point3 { x: 0.0, y: 0.0, z: 0.0 }, 
+        normal: Point3 { x: 0.0, y: 0.0, z: 0.0 }, 
+        material: Lambertian::from_color(Point3 { x: 0.0, y: 0.0, z: 0.0 }), 
+        t: 0.0, 
+        surface_coords: SurfaceCoordinate{u: 0.0, v: 0.0}, 
+        front_face: false 
+    };
+
+    if !world.hit(given_ray, &(0.001..f64::INFINITY), &mut hit_record) {
         // If the ray hits nothing return the background color
-        HitResult::DidNotHit => {background_color},
-        HitResult::HitRecord(hit_record) => {
-            let color_from_emission: Color = hit_record.material.emitted(hit_record.surface_coords, &hit_record.p);
-            match hit_record.material.scatter(given_ray, &hit_record) {
-                ScatterResult::DidNotScatter => color_from_emission,
-                ScatterResult::DidScatter(sca_att) => {
-                    let color_from_scatter: Color = sca_att.attenuation * ray_color(&sca_att.scattered_ray, depth-1, world, background_color);
-                    color_from_emission + color_from_scatter
-                }
-            }
-        }
+        return background_color;
     }
+
+    let mut sca_att: ScatteredRayAndAttenuation = ScatteredRayAndAttenuation{
+        scattered_ray: Ray { origin: Point3 { x: 0.0, y: 0.0, z: 0.0 }, direction: Point3 { x: 1.0, y: 1.0, z: 1.0 }, inverse_direction: Point3 { x: 1.0, y: 1.0, z: 1.0 } }, 
+        attenuation: Color{x: 1.0, y: 1.0, z: 1.0}
+    };
+
+    let color_from_emission: Color = hit_record.material.emitted(hit_record.surface_coords, &hit_record.p);
+    
+    if !hit_record.material.scatter(given_ray, &hit_record, &mut sca_att) {
+        return color_from_emission;
+    }
+
+    let color_from_scatter: Color = sca_att.attenuation * ray_color(&sca_att.scattered_ray, depth-1, world, background_color);
+    
+    color_from_emission + color_from_scatter    
 }
 
 impl Camera {

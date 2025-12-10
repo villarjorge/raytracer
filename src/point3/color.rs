@@ -36,6 +36,7 @@ pub fn proccess_color(pixel_color: Point3) -> [u8; 3] {
     let rbyte: u8 = (256.00 * r.clamp(min, max)) as u8;
     let gbyte: u8 = (256.00 * g.clamp(min, max)) as u8;
     let bbyte: u8 = (256.00 * b.clamp(min, max)) as u8;
+    
     [rbyte, gbyte, bbyte]
 }
 

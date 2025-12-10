@@ -2,7 +2,7 @@ use std::ops::Range;
 use std::sync::Arc;
 
 use crate::aabb::{AABB, join_aabbs};
-use crate::hittable::{HitResult, Hittable};
+use crate::hittable::{HitRecord, Hittable};
 use crate::ray::Ray;
 
 #[derive(Default)]
@@ -39,21 +39,20 @@ impl HittableList {
 
 impl Hittable for HittableList {
     /// Go through the objects on the vector and compute their hit functions. Keep track of the closest and return that
-    fn hit(&'_ self, ray: &Ray, ray_t: &Range<f64>) -> HitResult<'_> {
-        let mut current_result: HitResult = HitResult::DidNotHit;
+    fn hit(&self, ray: &Ray, ray_t: &&Range<f64>, hit_record: &mut HitRecord) -> bool {
+        let mut temp_record: HitRecord = hit_record.clone();
+        let mut hit_anything: bool = false;
         let mut closest_so_far: f64 = ray_t.end; // max
 
         for object in &self.objects {
-            match (*object).hit(ray, &(ray_t.start..closest_so_far)) {
-                HitResult::DidNotHit => {},
-                HitResult::HitRecord(hit_record) => {
-                    closest_so_far = hit_record.t;
-                    current_result = HitResult::HitRecord(hit_record);
-                }
+            if object.hit(ray, &(ray_t.start..closest_so_far), &mut temp_record) {
+                hit_anything = true;
+                closest_so_far = temp_record.t;
+                *hit_record = temp_record.clone();
             }
         }
-        
-        current_result
+
+        hit_anything
     }
     fn bounding_box(&self) -> &AABB {
         &self.bounding_box

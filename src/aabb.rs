@@ -11,9 +11,20 @@ pub struct AABB {
     z: Range<f64>, 
 }
 
+/// Create an AABB from two corner points
+impl AABB {
+    pub fn from_points(a: Point3, b: Point3) -> AABB {
+        let x: Range<f64> = if a.x <= b.x {a.x..b.x} else {b.x..a.x};
+        let y: Range<f64> = if a.y <= b.y {a.y..b.y} else {b.y..a.y};
+        let z: Range<f64> = if a.z <= b.z {a.z..b.z} else {b.z..a.z};
+
+        AABB {x: pad_to_minimums(x), y: pad_to_minimums(y), z: pad_to_minimums(z)}
+    }
+}
+
 impl Default for AABB {
     fn default() -> Self {
-        aabb_from_points(Point3::default(), Point3::default())
+        AABB::from_points(Point3::default(), Point3::default())
     }
 }
 
@@ -57,15 +68,6 @@ fn pad_to_minimums(x: Range<f64>) -> Range<f64> {
     };
 
     x_expanded
-}
-
-/// Create an AABB from two corner points
-pub fn aabb_from_points(a: Point3, b: Point3) -> AABB {
-    let x: Range<f64> = if a.x <= b.x {a.x..b.x} else {b.x..a.x};
-    let y: Range<f64> = if a.y <= b.y {a.y..b.y} else {b.y..a.y};
-    let z: Range<f64> = if a.z <= b.z {a.z..b.z} else {b.z..a.z};
-
-    AABB {x: pad_to_minimums(x), y: pad_to_minimums(y), z: pad_to_minimums(z)}
 }
 
 /// Unite two ranges, creating one that encompases the two
@@ -135,14 +137,11 @@ impl AABB {
         // A bounding box is simpler than an object, we only care if the bounding box is hit or not
         // This 2nd hottest part of the code, taking 31.6% of CPU time
         let ray_origin: Point3 = ray.origin;
-        // let ray_direction: Point3 = ray.direction;
         let inverse_direction: Point3 = ray.inverse_direction;
 
         for axis_index in 0_u8..3 {
             let axis: &Range<f64> = &self[axis_index];
-            // let inverse_coord: f64 = 1.0/ray_direction[axis_index];
             let inverse_coord: f64 = inverse_direction[axis_index];
-            // let origin_coord: f64 = ray_origin[axis_index];
 
             let t0: f64 = (axis.start - ray_origin[axis_index])*inverse_coord;
             let t1: f64 = (axis.end - ray_origin[axis_index])*inverse_coord;

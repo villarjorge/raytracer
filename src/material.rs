@@ -1,11 +1,10 @@
 use std::sync::Arc;
 
 use crate::point3::color::Color;
-use crate::point3::{Point3, Vector3, dot, random_unit_vector, reflect, refract};
+use crate::point3::{Point3, Vector3, dot, random_unit_vector, reflect, refract, unit_vector};
 use crate::ray::Ray;
 use crate::hittable::{HitRecord, SurfaceCoordinate};
-use crate::texture::{Texture, create_solid_color};
-use crate::unit_vector;
+use crate::texture::{Texture, SolidColor};
 
 // If you are confused about the lifetimes, think about it this way: 
 // multiple objects could use the same material, which means that the material pointer needs to outlive everything else
@@ -14,15 +13,10 @@ pub struct ScatteredRayAndAttenuation { // think of a better name?
     pub attenuation: Color
 }
 
-pub enum ScatterResult {
-    DidNotScatter,
-    DidScatter(ScatteredRayAndAttenuation)
-}
-
 /// The default for scatter is ScatterResult::DidNotScatter and for emitted Point3 { x: 0.0, y: 0.0, z: 0.0 } (black)
 pub trait Material {
-    fn scatter(&self, _ray_in: &Ray, _record: &HitRecord) -> ScatterResult {
-        ScatterResult::DidNotScatter
+    fn scatter(&self, _ray_in: &Ray, _record: &HitRecord, _sca_att: &mut ScatteredRayAndAttenuation) -> bool {
+        false
     }
 
     fn emitted(&self, _surface_coords: SurfaceCoordinate, _p: &Point3) -> Color {
@@ -44,7 +38,7 @@ pub struct Lambertian {
 }
 
 impl Material for Lambertian {
-    fn scatter(&self, _ray_in: &Ray, record: &HitRecord) -> ScatterResult {
+    fn scatter(&self, _ray_in: &Ray, record: &HitRecord, sca_att: &mut ScatteredRayAndAttenuation) -> bool {
         // Do it this way to avoid defining a mutable varible
         let scatter_direction: Point3 = {
             let temp: Point3 = record.normal + random_unit_vector();
@@ -56,16 +50,21 @@ impl Material for Lambertian {
             }
         };
 
-        let attenuation: Color = self.texture.value(record.surface_coords, &record.p);
-        let scattered_ray: Ray = Ray::new(record.p, scatter_direction);
-        let sca_att: ScatteredRayAndAttenuation = ScatteredRayAndAttenuation{scattered_ray, attenuation};
+        sca_att.scattered_ray = Ray::new(record.p, scatter_direction);
+        sca_att.attenuation = self.texture.value(record.surface_coords, &record.p);
 
-        ScatterResult::DidScatter(sca_att)
+        true
     }
 }
 
-pub fn lambertian(color: Color) -> Arc<Lambertian> {
-    Arc::new(Lambertian{ texture: create_solid_color(color) })
+impl Lambertian {
+    pub fn from_color(color: Color) -> Arc<Lambertian> {
+        Arc::new(Lambertian{ texture: SolidColor::new(color) })
+    }
+
+    pub fn from_texture(texture: Rc<dyn Texture>) -> Arc<Lambertian> {
+        Arc::new(Lambertian { texture })
+    }
 }
 
 // pub fn lambertian(texture: Arc<dyn Texture>) -> Arc<Lambertian> {
@@ -79,14 +78,14 @@ pub struct Metal {
 }
 
 impl Material for Metal {
-    fn scatter(&self, ray_in: &Ray, record: &HitRecord) -> ScatterResult {
+    fn scatter(&self, ray_in: &Ray, record: &HitRecord, sca_att: &mut ScatteredRayAndAttenuation) -> bool {
         let reflected: Vector3 = reflect(ray_in.direction, record.normal);
         let reflected_with_fuzz: Vector3 = unit_vector(reflected) + (self.fuzz * random_unit_vector());
-        let scattered_ray: Ray = Ray::new(record.p, reflected_with_fuzz);
 
-        let sca_att: ScatteredRayAndAttenuation = ScatteredRayAndAttenuation{scattered_ray, attenuation: self.albedo};
+        sca_att.scattered_ray = Ray::new(record.p, reflected_with_fuzz);
+        sca_att.attenuation = self.albedo;
 
-        ScatterResult::DidScatter(sca_att)
+        true
     }
 }
 
@@ -105,7 +104,7 @@ pub struct Dielectric {
 }
 
 impl Material for Dielectric {
-    fn scatter(&self, ray_in: &Ray, record: &HitRecord) -> ScatterResult {
+    fn scatter(&self, ray_in: &Ray, record: &HitRecord, sca_att: &mut ScatteredRayAndAttenuation) -> bool {
         let ratio_indexes: f64 = if record.front_face {1.0/self.refraction_index} else {self.refraction_index};
 
         let unit_direction: Vector3 = unit_vector(ray_in.direction);
@@ -124,13 +123,11 @@ impl Material for Dielectric {
                 refract(unit_direction, record.normal, ratio_indexes)
             }
         };
-        
-        let attenuation: Color = Color { x: 1.0, y: 1.0, z: 1.0 };
-        let scattered_ray: Ray = Ray::new(record.p, direction);
 
-        let sca_att: ScatteredRayAndAttenuation = ScatteredRayAndAttenuation{scattered_ray, attenuation};
+        sca_att.scattered_ray = Ray::new(record.p, direction);
+        sca_att.attenuation = Color { x: 1.0, y: 1.0, z: 1.0 };
 
-        ScatterResult::DidScatter(sca_att)
+        true
     }
 }
 
@@ -150,8 +147,10 @@ pub struct DiffuseLight {
     texture: Arc<dyn Texture>
 }
 
-pub fn diffuse_light_from_color(color: Point3) -> Arc<DiffuseLight> {
-    Arc::new(DiffuseLight { texture: create_solid_color(color) })
+impl DiffuseLight {    
+    pub fn from_color(color: Point3) -> Arc<DiffuseLight> {
+        Arc::new(DiffuseLight { texture: SolidColor::new(color) })
+    }
 }
 
 impl Material for DiffuseLight {
@@ -166,11 +165,11 @@ pub struct Isotropic {
 }
 
 impl Material for Isotropic {
-    fn scatter(&self, _ray_in: &Ray, record: &HitRecord) -> ScatterResult {
+    fn scatter(&self, _ray_in: &Ray, record: &HitRecord, sca_att: &mut ScatteredRayAndAttenuation) -> bool {
         // Scatter in a uniform random direction
-        let scattered_ray: Ray = Ray::new(record.p, random_unit_vector());
-        let attenuation: Color = self.texture.value(record.surface_coords, &record.p);
+        sca_att.scattered_ray = Ray::new(record.p, random_unit_vector());
+        sca_att.attenuation = self.texture.value(record.surface_coords, &record.p);
 
-        ScatterResult::DidScatter(ScatteredRayAndAttenuation { scattered_ray, attenuation })
+        true
     }
 }

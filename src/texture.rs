@@ -12,8 +12,10 @@ pub struct SolidColor {
     albedo: Color
 }
 
-pub fn create_solid_color(color: Point3) -> Arc<SolidColor> {
-    Arc::new(SolidColor { albedo: color })
+impl SolidColor {
+    pub fn new(color: Color) -> Arc<SolidColor> {
+        Arc::new(SolidColor { albedo: color })
+    }
 }
 
 impl Texture for SolidColor {
@@ -28,12 +30,14 @@ pub struct CheckerTexture {
     pub odd: Arc<dyn Texture>
 }
 
-pub fn create_checker_texture_from_pointers(scale: f64, even: Arc<dyn Texture>, odd: Arc<dyn Texture>) -> Arc<CheckerTexture> {
-    Arc::new(CheckerTexture { inverse_scale: 1.0/scale, even, odd })
-}
+impl CheckerTexture {
+    pub fn from_pointers(scale: f64, even: Arc<dyn Texture>, odd: Arc<dyn Texture>) -> Arc<CheckerTexture> {
+        Arc::new(CheckerTexture { inverse_scale: 1.0/scale, even, odd })
+    }
 
-pub fn checker_texture_from_colors(scale: f64, even: Point3, odd: Point3) -> Arc<CheckerTexture> {
-    Arc::new(CheckerTexture { inverse_scale: 1.0/scale, even: create_solid_color(even), odd: create_solid_color(odd) })
+    pub fn from_colors(scale: f64, even: Point3, odd: Point3) -> Arc<CheckerTexture> {
+        Arc::new(CheckerTexture { inverse_scale: 1.0/scale, even: SolidColor::new(even), odd: SolidColor::new(odd) })
+    }
 }
 
 impl Texture for CheckerTexture {
@@ -65,19 +69,21 @@ pub struct ImageTexture {
     image: ImageBuffer<Rgb<u8>, Vec<u8>>
 }
 
-pub fn create_image_texture(path: &str) -> Arc<dyn Texture> {
-    match open(path) {
-        Ok(image) => Arc::new(ImageTexture { image: image.into_rgb8() }),
-        Err(image_error) => {
-            eprintln!("Could not load the image texture. Falling back to default. Error:");
-            eprintln!("{}", image_error);
+impl ImageTexture {
+    pub fn new_or_fallback(path: &str) -> Arc<dyn Texture> {
+        match open(path) {
+            Ok(image) => Arc::new(ImageTexture { image: image.into_rgb8() }),
+            Err(image_error) => {
+                eprintln!("Could not load the image texture. Falling back to default. Error:");
+                eprintln!("{}", image_error);
 
-            checker_texture_from_colors(
-                2.0,
-                Point3 { x: 1.0, y: 0.0, z: 0.862745098039 },
-                Point3 { x: 0.00392156862745, y: 0.0, z: 0.00392156862745 }
-            )
-        },
+                CheckerTexture::from_colors(
+                    2.0,
+                    Point3 { x: 1.0, y: 0.0, z: 0.862745098039 },
+                    Point3 { x: 0.00392156862745, y: 0.0, z: 0.00392156862745 }
+                )
+            },
+        }
     }
 }
 

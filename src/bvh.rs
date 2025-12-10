@@ -3,10 +3,10 @@ use std::ops::Range;
 use std::sync::Arc;
 
 use crate::aabb::join_aabbs;
+use crate::hittable::HitRecord;
 use crate::hittable::hittable_list::{HittableList};
 use crate::{aabb::AABB, hittable::Hittable};
 use crate::ray::Ray;
-use crate::hittable::{HitResult};
 
 // To do: consider if this can be replaced by rust's native implementation
 // https://doc.rust-lang.org/std/collections/struct.BTreeMap.html
@@ -25,12 +25,12 @@ pub enum BVHNode {
 }
 
 impl Hittable for BVHNode {
-    fn hit(&'_  self, ray: &Ray, ray_t: &Range<f64>) -> HitResult<'_> {
+    fn hit(&self, ray: &Ray, ray_t: &Range<f64>, hit_record: &mut HitRecord) -> bool {
         // This is the 3rd hottest part of the code, taking 25.5% of CPU time
         let mut reduced_ray_t: Range<f64> = ray_t.clone();
 
         if !self.bounding_box().hit(ray, &mut reduced_ray_t) {
-            return HitResult::DidNotHit;
+            return false;
         }
 
         let ray_t: Range<f64> = reduced_ray_t;
@@ -38,22 +38,12 @@ impl Hittable for BVHNode {
         // The right interval needs to be narrowed to prevent problems with occlusion
         // To do: refactor to remove nested match structure (add aditional function?)
         match self {
-            BVHNode::Leaf { objects, bounding_box: _ } => { objects.hit(ray, &ray_t) },
+            BVHNode::Leaf { objects, bounding_box: _ } => { objects.hit(ray, &ray_t, hit_record) },
             BVHNode::Internal { left, right, bounding_box: _ } => {
-                match left.hit(ray, &ray_t) {
-                    HitResult::DidNotHit => { 
-                        match right.hit(ray, &ray_t) {
-                            HitResult::DidNotHit => {HitResult::DidNotHit},
-                            HitResult::HitRecord(hit_record) => {HitResult::HitRecord(hit_record)}
-                        }
-                     },
-                    HitResult::HitRecord(hit_record) => {
-                        match right.hit(ray, &(ray_t.start..hit_record.t)) {
-                            HitResult::DidNotHit => {HitResult::HitRecord(hit_record)},
-                            HitResult::HitRecord(hit_record) => {HitResult::HitRecord(hit_record)}
-                        }
-                    }
-                }
+                let hit_left: bool = left.hit(ray, &ray_t, hit_record);
+                let hit_right: bool = right.hit(ray, &(ray_t.start..{if hit_left { hit_record.t } else { ray_t.end }}), hit_record);
+
+                hit_left || hit_right
             }
         }
     }
@@ -66,50 +56,51 @@ impl Hittable for BVHNode {
     }
 }
 
-pub fn bvh_node_from_hittable_list(list: HittableList) -> BVHNode {
-    create_bvh_node(list.objects)
-}
-
-// To do: Is there a way to derive comparisons for bounding boxes?
-
-pub fn create_bvh_node(mut objects: Vec<Arc<dyn Hittable>>) -> BVHNode {
-    let mut bounding_box: AABB = AABB::default();
-
-    for object in &objects {
-        bounding_box = join_aabbs(&bounding_box, object.bounding_box())
+impl BVHNode {
+    pub fn from_hittable_list(list: HittableList) -> BVHNode {
+        BVHNode::new(list.objects)
     }
 
-    let axis: u8 = bounding_box.longest_axis();
+    // To do: Is there a way to derive comparisons for bounding boxes?
+    pub fn new(mut objects: Vec<Arc<dyn Hittable>>) -> BVHNode {
+        let mut bounding_box: AABB = AABB::default();
 
-    // To do: This threshold controls how many objects there are in the leaf nodes. Optimize for performance
-    const THRESHOLD: usize = 4;
-    
-    // To do: consider using a double end queue instead of a vector
-    if objects.len() <= THRESHOLD {
-        let mut hittable_list: HittableList = HittableList::default();
-
-        for element in objects.drain(0..THRESHOLD.min(objects.len())) {
-            hittable_list.add_pointer(element);
+        for object in &objects {
+            bounding_box = join_aabbs(&bounding_box, object.bounding_box())
         }
 
-        bounding_box = hittable_list.bounding_box().clone();
+        let axis: u8 = bounding_box.longest_axis();
 
-        BVHNode::Leaf { objects: hittable_list, bounding_box}
-    } else {
-        // Use a clousure here: more idiomatic and much shorter
-        // When I changed HittableList from Vec<Box<dyn Hittable>> to Vec<Rc<dyn Hittable> clippy stopped raising this as a borrowed box issue
-        objects.sort_by(|a: &Arc<dyn Hittable + 'static>, b: &Arc<dyn Hittable + 'static>| {
-            let a_axis_interval: &Range<f64> = a.bounding_box().axis_interval(axis);
-            let b_axis_interval: &Range<f64> = b.bounding_box().axis_interval(axis);
+        // To do: This threshold controls how many objects there are in the leaf nodes. Optimize for performance
+        const THRESHOLD: usize = 4;
+        
+        // To do: consider using a double end queue instead of a vector
+        if objects.len() <= THRESHOLD {
+            let mut hittable_list: HittableList = HittableList::default();
 
-            a_axis_interval.start.total_cmp(&b_axis_interval.start)
-        });
+            for element in objects.drain(0..THRESHOLD.min(objects.len())) {
+                hittable_list.add_pointer(element);
+            }
 
-        let mid: usize = objects.len()/2;
+            bounding_box = hittable_list.bounding_box().clone();
 
-        let left: Arc<dyn Hittable> = Arc::new(create_bvh_node(objects.split_off(mid)));
-        let right: Arc<dyn Hittable> = Arc::new(create_bvh_node(objects));
+            BVHNode::Leaf { objects: hittable_list, bounding_box}
+        } else {
+            // Use a clousure here: more idiomatic and much shorter
+            // When I changed HittableList from Vec<Box<dyn Hittable>> to Vec<Rc<dyn Hittable> clippy stopped raising this as a borrowed box issue
+            objects.sort_by(|a: &Arc<dyn Hittable + 'static>, b: &Arc<dyn Hittable + 'static>| {
+                let a_axis_interval: &Range<f64> = a.bounding_box().axis_interval(axis);
+                let b_axis_interval: &Range<f64> = b.bounding_box().axis_interval(axis);
 
-        BVHNode::Internal { left, right, bounding_box }
-    }    
+                a_axis_interval.start.total_cmp(&b_axis_interval.start)
+            });
+
+            let mid: usize = objects.len()/2;
+
+            let left: Arc<dyn Hittable> = Arc::new(BVHNode::new(objects.split_off(mid)));
+            let right: Arc<dyn Hittable> = Arc::new(BVHNode::new(objects));
+
+            BVHNode::Internal { left, right, bounding_box }
+        }    
+    }
 }

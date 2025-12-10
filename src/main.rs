@@ -7,7 +7,6 @@ pub mod aabb;
 pub mod bvh;
 pub mod texture;
 pub mod perlin;
-pub mod constant_medium;
 pub mod tests;
 
 use std::sync::Arc;
@@ -16,33 +15,33 @@ use std::time::Instant;
 use rand::{Rng, SeedableRng};
 use rand::rngs::SmallRng;
 
-use crate::bvh::{BVHNode, bvh_node_from_hittable_list};
-use crate::camera::{Camera, CameraPosition, ImageQuality, ThinLens, create_camera};
-use crate::constant_medium::{constant_medium_from_color};
+use crate::bvh::{BVHNode};
+use crate::camera::{Camera, CameraPosition, ImageQuality, ThinLens};
 use crate::perlin::create_perlin_noise;
-use crate::point3::{Point3, unit_vector, point_from_array, random_vector};
-use crate::material::{Dielectric, DiffuseLight, Lambertian, Metal, dielectric, diffuse_light_from_color, lambertian, metal};
+use crate::point3::color::Color;
+use crate::point3::{Point3, point_from_array, random_vector};
+use crate::material::{Dielectric, DiffuseLight, Lambertian, Metal, dielectric, metal};
 use crate::hittable::{
-    sphere::{Sphere, sphere},
+    {RotateY, Translate},
+    sphere::Sphere,
     hittable_list::HittableList,
-    quadric::{y_cylinder},
+    quadric::y_cylinder,
+    parallelogram::{create_box, Parallelogram},
     triangle::triangle,
-    {RotateY, Translate, create_rotate_y, create_translation},
-    parallelogram::{create_box, parallelogram},
+    constant_medium::ConstantMedium
 };
-use crate::texture::{CheckerTexture, PerlinNoiseTexture, Texture, checker_texture_from_colors, create_image_texture, create_solid_color};
+use crate::texture::{CheckerTexture, ImageTexture, PerlinNoiseTexture, SolidColor, Texture};
 
 // To do: once new() is implemented for hittables, materials and textures standarize the creation of objects in main
 
 fn many_spheres() {
     // World
-
     let mut world: HittableList = HittableList::default();
 
-    let checker: Arc<CheckerTexture> = checker_texture_from_colors(3.1, Point3 {x: 0.2, y: 0.3, z: 0.1}, Point3 {x: 0.9, y: 0.9, z: 0.9});
-    // let ground_material = Lambertian{texture: create_solid_color(Point3 { x: 0.5, y: 0.5, z: 0.5 })};
+    let checker: Arc<CheckerTexture> = CheckerTexture::from_colors(3.1, Color {x: 0.2, y: 0.3, z: 0.1}, Color {x: 0.9, y: 0.9, z: 0.9});
+    // let ground_material = Lambertian{texture: SolidColor::new(Point3 { x: 0.5, y: 0.5, z: 0.5 })};
     let ground_material: Lambertian = Lambertian{texture: checker};
-    world.add(sphere(Point3{x: 0.0, y: -1000.0, z: -1.0}, 1000.0, Arc::new(ground_material)));
+    world.add(Sphere::new(Point3{x: 0.0, y: -1000.0, z: -1.0}, 1000.0, Arc::new(ground_material)));
 
     const N: i32 = 11;
 
@@ -55,34 +54,31 @@ fn many_spheres() {
                 if choose_mat < 0.8 {
                     // Diffuse
                     let albedo: Point3 = random_vector(0.0, 1.0)*random_vector(0.0, 1.0);
-                    let sphere_material: Lambertian = Lambertian{texture: create_solid_color(albedo)};
-                    world.add(sphere(center, 0.2, Arc::new(sphere_material)));
+                    let sphere_material: Lambertian = Lambertian{texture: SolidColor::new(albedo)};
+                    world.add(Sphere::new(center, 0.2, Arc::new(sphere_material)));
                 } else if choose_mat < 0.95 {
                     // Metal
                     let albedo: Point3 = random_vector(0.0, 1.0)*random_vector(0.0, 1.0);
                     let fuzz: f64 = rand::random_range(0.0..0.5);
                     let sphere_material: Metal = Metal{albedo, fuzz};
-                    world.add(sphere(center, 0.2, Arc::new(sphere_material)));
+                    world.add(Sphere::new(center, 0.2, Arc::new(sphere_material)));
                 } else {
                     // Glass
                     let sphere_material: Dielectric = Dielectric { refraction_index: 1.5 };
-                    world.add(sphere(center, 0.2, Arc::new(sphere_material)));
+                    world.add(Sphere::new(center, 0.2, Arc::new(sphere_material)));
                 }
             }
         }
     }
 
     let material1: Dielectric = Dielectric { refraction_index: 1.5 };
-    world.add(sphere(Point3 { x: 0.0, y: 1.0, z: 0.0 }, 1.0, Arc::new(material1)));
+    world.add(Sphere::new(Point3 { x: 0.0, y: 1.0, z: 0.0 }, 1.0, Arc::new(material1)));
 
-    let material2: Lambertian = Lambertian { texture: create_solid_color(Point3 { x: 0.4, y: 0.2, z: 0.1 }) };
-    world.add(sphere(Point3 { x: -4.0, y: 1.0, z: 0.0 }, 1.0, Arc::new(material2)));
+    let material2: Lambertian = Lambertian { texture: SolidColor::new(Point3 { x: 0.4, y: 0.2, z: 0.1 }) };
+    world.add(Sphere::new(Point3 { x: -4.0, y: 1.0, z: 0.0 }, 1.0, Arc::new(material2)));
 
     let material3: Metal = Metal { albedo: Point3 { x: 0.7, y: 0.6, z: 0.5 }, fuzz: 0.0 };
-    world.add(sphere(Point3 { x: 4.0, y: 1.0, z: 0.0 },  1.0,  Arc::new(material3)));
-
-    // let material3: BlackBody = BlackBody {  };
-    // world.add(Sphere{center: Point3 { x: 4.0, y: 1.0, z: 0.0 }, radius: 1.0, material: Arc::new(material3)});
+    world.add(Sphere::new(Point3 { x: 4.0, y: 1.0, z: 0.0 },  1.0,  Arc::new(material3)));
 
     let aspect_ratio: f64 = 16.0/9.0;
     let image_width: u32 = 1200; // 1200
@@ -102,24 +98,24 @@ fn many_spheres() {
 
     let camera_position: CameraPosition = CameraPosition{look_from, look_at, view_up};
 
-    let cam: Camera = create_camera(aspect_ratio, image_width, image_quality, vfov, thin_lens, camera_position, Point3 { x: 0.7, y: 0.8, z: 1.0 });
+    let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, thin_lens, camera_position, Point3 { x: 0.7, y: 0.8, z: 1.0 });
 
     // To do: Make this a parameter that can be passed in the console
     // If you want to compare without the bvh
     // cam.render(&world);
 
-    let bvh_world: BVHNode = bvh_node_from_hittable_list(world);
-    cam.render(&bvh_world);
+    let bvh_world: BVHNode = BVHNode::from_hittable_list(world);
+    cam.thrender(&bvh_world);
 }
 
 fn checkered_spheres() {
     let mut world: HittableList = HittableList::default();
 
-    let checker: Arc<CheckerTexture> = checker_texture_from_colors(0.10, Point3 {x: 0.2, y: 0.3, z: 0.1}, Point3 {x: 0.9, y: 0.9, z: 0.9});
-    let material: Arc<Lambertian> = Arc::new(Lambertian{texture: checker});
+    let checker: Arc<CheckerTexture> = CheckerTexture::from_colors(0.10, Point3 {x: 0.2, y: 0.3, z: 0.1}, Point3 {x: 0.9, y: 0.9, z: 0.9});
+    let material: Arc<Lambertian> = Lambertian::from_texture(checker);
 
-    world.add(sphere(Point3{x: 0.0, y: -10.0, z: 0.0}, 10.0, material.clone()));
-    world.add(sphere(Point3{x: 0.0, y: 10.0, z: 0.0}, 10.0, material));
+    world.add(Sphere::new(Point3{x: 0.0, y: -10.0, z: 0.0}, 10.0, material.clone()));
+    world.add(Sphere::new(Point3{x: 0.0, y: 10.0, z: 0.0}, 10.0, material));
 
     let aspect_ratio: f64 = 16.0/9.0;
     let image_width: u32 = 400;
@@ -139,18 +135,18 @@ fn checkered_spheres() {
 
     let camera_position: CameraPosition = CameraPosition { look_from, look_at, view_up };
 
-    let cam: Camera = create_camera(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, Point3 { x: 0.7, y: 0.8, z: 1.0 });
+    let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, Point3 { x: 0.7, y: 0.8, z: 1.0 });
 
-    cam.render(&world);
+    cam.thrender(&world);
 }
 
 fn earth() {
     let mut world: HittableList = HittableList::default();
 
-    let earth_texture: Arc<dyn Texture> = create_image_texture("textures/earthmap.jpg");
+    let earth_texture: Arc<dyn Texture> = ImageTexture::new_or_fallback("textures/earthmap.jpg");
     let earth_material: Arc<Lambertian> = Arc::new(Lambertian{texture: earth_texture});
 
-    world.add(sphere(Point3{x: 0.0, y: 0.0, z: 0.0}, 2.0, earth_material));
+    world.add(Sphere::new(Point3{x: 0.0, y: 0.0, z: 0.0}, 2.0, earth_material));
 
     let aspect_ratio: f64 = 16.0/9.0;
     let image_width: u32 = 400;
@@ -170,19 +166,19 @@ fn earth() {
 
     let camera_position: CameraPosition = CameraPosition { look_from, look_at, view_up };
 
-    let cam: Camera = create_camera(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, Point3 { x: 0.7, y: 0.8, z: 1.0 });
+    let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, Point3 { x: 0.7, y: 0.8, z: 1.0 });
 
-    cam.render(&world);
+    cam.thrender(&world);
 }
 
 fn perlin_spheres() {
     let mut world: HittableList = HittableList::default();
 
     let perlin_texture: Arc<PerlinNoiseTexture>  = Arc::new(PerlinNoiseTexture { perlin_noise: create_perlin_noise(), scale: 2.0});
-    let perlin_material: Arc<Lambertian> = Arc::new(Lambertian{ texture: perlin_texture });
+    let perlin_material: Arc<Lambertian> = Lambertian::from_texture(perlin_texture);
 
-    world.add(sphere(Point3{x: 0.0, y: -1000.0, z: 0.0}, 1000.0, perlin_material.clone()));
-    world.add(sphere(Point3{x: 0.0, y: 2.0, z: 0.0}, 2.0, perlin_material));
+    world.add(Sphere::new(Point3{x: 0.0, y: -1000.0, z: 0.0}, 1000.0, perlin_material.clone()));
+    world.add(Sphere::new(Point3{x: 0.0, y: 2.0, z: 0.0}, 2.0, perlin_material));
 
     let aspect_ratio: f64 = 16.0/9.0;
     let image_width: u32 = 400;
@@ -202,26 +198,26 @@ fn perlin_spheres() {
 
     let camera_position: CameraPosition = CameraPosition { look_from, look_at, view_up };
 
-    let cam: Camera = create_camera(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, Point3 { x: 0.7, y: 0.8, z: 1.0 });
+    let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, Point3 { x: 0.7, y: 0.8, z: 1.0 });
 
-    cam.render(&world);
+    cam.thrender(&world);
 }
 
 fn para() {
     let mut world: HittableList = HittableList::default();
 
     // Materials
-    let left_red: Arc<Lambertian> = Arc::new(Lambertian{texture: create_solid_color(Point3 { x: 1.0, y: 0.2, z: 0.2 })});
-    let back_green: Arc<Lambertian> = Arc::new(Lambertian{texture: create_solid_color(Point3 { x: 0.2, y: 1.0, z: 0.2 })});
-    let right_blue: Arc<Lambertian> = Arc::new(Lambertian{texture: create_solid_color(Point3 { x: 0.2, y: 0.2, z: 1.0 })});
-    let upper_orange: Arc<Lambertian> = Arc::new(Lambertian{texture: create_solid_color(Point3 { x: 1.0, y: 0.5, z: 0.0 })});
-    let lower_teal: Arc<Lambertian> = Arc::new(Lambertian{texture: create_solid_color(Point3 { x: 0.2, y: 0.8, z: 0.8})});
+    let left_red: Arc<Lambertian> = Lambertian::from_color(Color { x: 1.0, y: 0.2, z: 0.2 });
+    let back_green: Arc<Lambertian> = Lambertian::from_color(Color { x: 0.2, y: 1.0, z: 0.2 });
+    let right_blue: Arc<Lambertian> = Lambertian::from_color(Color { x: 0.2, y: 0.2, z: 1.0 });
+    let upper_orange: Arc<Lambertian> = Lambertian::from_color(Color { x: 1.0, y: 0.5, z: 0.0 });
+    let lower_teal: Arc<Lambertian> = Lambertian::from_color(Color { x: 0.2, y: 0.8, z: 0.8});
 
-    world.add(parallelogram(Point3{x: -3.0, y: -2.0, z:5.0}, Point3{x: 0.0, y: 0.0, z:-4.0}, Point3{x: 0.0, y:4.0, z:0.0}, left_red));
-    world.add(parallelogram(Point3{x: -2.0, y: -2.0, z:0.0}, Point3{x: 4.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:4.0, z:0.0}, back_green));
-    world.add(parallelogram(Point3{x:  3.0, y: -2.0, z:1.0}, Point3{x: 0.0, y: 0.0, z: 4.0}, Point3{x: 0.0, y:4.0, z:0.0}, right_blue));
-    world.add(parallelogram(Point3{x: -2.0, y:  3.0, z:1.0}, Point3{x: 4.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:4.0}, upper_orange));
-    world.add(parallelogram(Point3{x: -2.0, y: -3.0, z:5.0}, Point3{x: 4.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:-4.0}, lower_teal));
+    world.add(Parallelogram::new(Point3{x: -3.0, y: -2.0, z:5.0}, Point3{x: 0.0, y: 0.0, z:-4.0}, Point3{x: 0.0, y:4.0, z:0.0}, left_red));
+    world.add(Parallelogram::new(Point3{x: -2.0, y: -2.0, z:0.0}, Point3{x: 4.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:4.0, z:0.0}, back_green));
+    world.add(Parallelogram::new(Point3{x:  3.0, y: -2.0, z:1.0}, Point3{x: 0.0, y: 0.0, z: 4.0}, Point3{x: 0.0, y:4.0, z:0.0}, right_blue));
+    world.add(Parallelogram::new(Point3{x: -2.0, y:  3.0, z:1.0}, Point3{x: 4.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:4.0}, upper_orange));
+    world.add(Parallelogram::new(Point3{x: -2.0, y: -3.0, z:5.0}, Point3{x: 4.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:-4.0}, lower_teal));
 
     let aspect_ratio: f64 = 1.0;
     let image_width: u32 = 400;
@@ -241,9 +237,9 @@ fn para() {
 
     let camera_position: CameraPosition = CameraPosition { look_from, look_at, view_up };
 
-    let cam: Camera = create_camera(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, Point3 { x: 0.7, y: 0.8, z: 1.0 });
+    let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, Point3 { x: 0.7, y: 0.8, z: 1.0 });
 
-    cam.render(&world);
+    cam.thrender(&world);
 }
 
 fn simple_light() {
@@ -251,13 +247,13 @@ fn simple_light() {
 
     // Materials
     let perlin_texture: Arc<PerlinNoiseTexture>  = Arc::new(PerlinNoiseTexture { perlin_noise: create_perlin_noise(), scale: 2.0});
-    let perlin_material: Arc<Lambertian> = Arc::new(Lambertian{ texture: perlin_texture });
+    let perlin_material: Arc<Lambertian> = Lambertian::from_texture(perlin_texture);
 
-    world.add(sphere(Point3{x: 0.0, y: -1000.0, z: 0.0}, 1000.0, perlin_material.clone()));
-    world.add(sphere(Point3{x: 0.0, y: 2.0, z: 0.0}, 2.0, perlin_material));
+    world.add(Sphere::new(Point3{x: 0.0, y: -1000.0, z: 0.0}, 1000.0, perlin_material.clone()));
+    world.add(Sphere::new(Point3{x: 0.0, y: 2.0, z: 0.0}, 2.0, perlin_material));
 
-    let diffuse_light: Arc<DiffuseLight> = diffuse_light_from_color(Point3 { x: 4.0, y: 4.0, z: 4.0 });
-    world.add(parallelogram(Point3{x: 3.0, y: 1.0, z:-2.0}, Point3{x: 2.0, y: 0.0, z:0.0}, Point3{x: 0.0, y:2.0, z:0.0}, diffuse_light));
+    let diffuse_light: Arc<DiffuseLight> = DiffuseLight::from_color(Point3 { x: 4.0, y: 4.0, z: 4.0 });
+    world.add(Parallelogram::new(Point3{x: 3.0, y: 1.0, z:-2.0}, Point3{x: 2.0, y: 0.0, z:0.0}, Point3{x: 0.0, y:2.0, z:0.0}, diffuse_light));
 
     let aspect_ratio: f64 = 16.0/9.0;
     let image_width: u32 = 400;
@@ -279,41 +275,41 @@ fn simple_light() {
 
     let camera_position: CameraPosition = CameraPosition { look_from, look_at, view_up };
 
-    let cam: Camera = create_camera(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
+    let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
 
-    cam.render(&world);
+    cam.thrender(&world);
 }
 
 fn cornell_box() {
     let mut world: HittableList = HittableList::default();
 
-    let red: Arc<Lambertian> = Arc::new(Lambertian{ texture: create_solid_color(Point3 { x: 0.65, y: 0.05, z: 0.05 }) });
-    let white: Arc<Lambertian> = Arc::new(Lambertian{ texture: create_solid_color(Point3 { x: 0.73, y: 0.73, z: 0.73 }) });
-    let green: Arc<Lambertian> = Arc::new(Lambertian{ texture: create_solid_color(Point3 { x: 0.12, y: 0.45, z: 0.15 }) });
-    let diffuse_light: Arc<DiffuseLight> = diffuse_light_from_color(Point3 { x: 15.0, y: 15.0, z: 15.0 });
+    let red: Arc<Lambertian> = Lambertian::from_color(Point3 { x: 0.65, y: 0.05, z: 0.05 });
+    let white: Arc<Lambertian> = Lambertian::from_color(Point3 { x: 0.73, y: 0.73, z: 0.73 });
+    let green: Arc<Lambertian> = Lambertian::from_color(Point3 { x: 0.12, y: 0.45, z: 0.15 });
+    let diffuse_light: Arc<DiffuseLight> = DiffuseLight::from_color(Point3 { x: 15.0, y: 15.0, z: 15.0 });
 
-    world.add(parallelogram(Point3{x: 555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z:0.0}, Point3{x: 0.0, y:0.0, z:555.0}, green));
-    world.add(parallelogram(Point3{x: 0.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:555.0}, red));
-    world.add(parallelogram(Point3{x:  343.0, y: 554.0, z: 332.0}, Point3{x: -130.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:-105.0}, diffuse_light));
-    world.add(parallelogram(point_from_array([0.0, 555.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
-    world.add(parallelogram(point_from_array([0.0, 0.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
-    world.add(parallelogram(point_from_array([0.0, 0.0, 555.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 555.0, 0.0]), white.clone()));
+    world.add(Parallelogram::new(Point3{x: 555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z:0.0}, Point3{x: 0.0, y:0.0, z:555.0}, green));
+    world.add(Parallelogram::new(Point3{x: 0.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:555.0}, red));
+    world.add(Parallelogram::new(Point3{x:  343.0, y: 554.0, z: 332.0}, Point3{x: -130.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:-105.0}, diffuse_light));
+    world.add(Parallelogram::new(point_from_array([0.0, 555.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
+    world.add(Parallelogram::new(point_from_array([0.0, 0.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
+    world.add(Parallelogram::new(point_from_array([0.0, 0.0, 555.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 555.0, 0.0]), white.clone()));
 
     let box1: Arc<HittableList> = Arc::new(create_box(point_from_array([0.0, 0.0, 0.0]), point_from_array([165.0, 330.0, 165.0]), white.clone()));
-    let box1_rotated: Arc<RotateY>  = Arc::new(create_rotate_y(box1, 15.0));
-    let box1_trans: Translate = create_translation(box1_rotated, point_from_array([265.0, 0.0, 295.0]));
+    let box1_rotated: Arc<RotateY> = Arc::new(RotateY::new(box1, 15.0));
+    let box1_trans: Translate = Translate::new(box1_rotated, point_from_array([265.0, 0.0, 295.0]));
 
     world.add(box1_trans);
 
     let box2: Arc<HittableList> = Arc::new(create_box(point_from_array([0.0, 0.0, 0.0]), point_from_array([165.0, 165.0, 165.0]), white));
-    let box2_rotated: Arc<RotateY>  = Arc::new(create_rotate_y(box2, -18.0));
-    let box2_trans: Translate = create_translation(box2_rotated, point_from_array([130.0, 0.0, 65.0]));
+    let box2_rotated: Arc<RotateY> = Arc::new(RotateY::new(box2, -18.0));
+    let box2_trans: Translate = Translate::new(box2_rotated, point_from_array([130.0, 0.0, 65.0]));
 
     world.add(box2_trans);
 
     let aspect_ratio: f64 = 1.0;
     let image_width: u32 = 600;
-    let samples_per_pixel: u32 = 200;
+    let samples_per_pixel: u32 = 20;
     let max_depth: u32 = 50;
     let image_quality: ImageQuality = ImageQuality {samples_per_pixel, max_depth};
 
@@ -331,40 +327,40 @@ fn cornell_box() {
 
     let camera_position: CameraPosition = CameraPosition { look_from, look_at, view_up };
 
-    let cam: Camera = create_camera(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
+    let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
 
-    cam.render(&world);
+    cam.thrender(&world);
 }
 
 fn cornell_smoke() {
     let mut world: HittableList = HittableList::default();
 
-    let red: Arc<Lambertian> = Arc::new(Lambertian{ texture: create_solid_color(Point3 { x: 0.65, y: 0.05, z: 0.05 }) });
-    let white: Arc<Lambertian> = Arc::new(Lambertian{ texture: create_solid_color(Point3 { x: 0.73, y: 0.73, z: 0.73 }) });
-    let green: Arc<Lambertian> = Arc::new(Lambertian{ texture: create_solid_color(Point3 { x: 0.12, y: 0.45, z: 0.15 }) });
-    let diffuse_light: Arc<DiffuseLight> = diffuse_light_from_color(Point3 { x: 7.0, y: 7.0, z: 7.0 });
+    let red: Arc<Lambertian> = Lambertian::from_color(Point3 { x: 0.65, y: 0.05, z: 0.05 });
+    let white: Arc<Lambertian> = Lambertian::from_color(Point3 { x: 0.73, y: 0.73, z: 0.73 });
+    let green: Arc<Lambertian> = Lambertian::from_color(Point3 { x: 0.12, y: 0.45, z: 0.15 });
+    let diffuse_light: Arc<DiffuseLight> = DiffuseLight::from_color(Point3 { x: 7.0, y: 7.0, z: 7.0 });
 
-    world.add(parallelogram(Point3{x: 555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z:0.0}, Point3{x: 0.0, y:0.0, z:555.0}, green));
-    world.add(parallelogram(Point3{x: 0.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:555.0}, red));
-    world.add(parallelogram(Point3{x:  113.0, y: 554.0, z: 127.0}, Point3{x: 330.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:305.0}, diffuse_light));
-    world.add(parallelogram(point_from_array([0.0, 555.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
-    world.add(parallelogram(point_from_array([0.0, 0.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
-    world.add(parallelogram(point_from_array([0.0, 0.0, 555.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 555.0, 0.0]), white.clone()));
+    world.add(Parallelogram::new(Point3{x: 555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z:0.0}, Point3{x: 0.0, y:0.0, z:555.0}, green));
+    world.add(Parallelogram::new(Point3{x: 0.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:555.0}, red));
+    world.add(Parallelogram::new(Point3{x:  113.0, y: 554.0, z: 127.0}, Point3{x: 330.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:305.0}, diffuse_light));
+    world.add(Parallelogram::new(point_from_array([0.0, 555.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
+    world.add(Parallelogram::new(point_from_array([0.0, 0.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
+    world.add(Parallelogram::new(point_from_array([0.0, 0.0, 555.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 555.0, 0.0]), white.clone()));
 
     let box1: Arc<HittableList> = Arc::new(create_box(point_from_array([0.0, 0.0, 0.0]), point_from_array([165.0, 330.0, 165.0]), white.clone()));
-    let box1_rotated: Arc<RotateY>  = Arc::new(create_rotate_y(box1, 15.0));
-    let box1_trans: Translate = create_translation(box1_rotated, point_from_array([265.0, 0.0, 295.0]));
+    let box1_rotated: Arc<RotateY>  = Arc::new(RotateY::new(box1, 15.0));
+    let box1_trans: Translate = Translate::new(box1_rotated, point_from_array([265.0, 0.0, 295.0]));
 
     let box2: Arc<HittableList> = Arc::new(create_box(point_from_array([0.0, 0.0, 0.0]), point_from_array([165.0, 165.0, 165.0]), white));
-    let box2_rotated: Arc<RotateY>  = Arc::new(create_rotate_y(box2, -18.0));
-    let box2_trans: Translate = create_translation(box2_rotated, point_from_array([130.0, 0.0, 65.0]));
+    let box2_rotated: Arc<RotateY>  = Arc::new(RotateY::new(box2, -18.0));
+    let box2_trans: Translate = Translate::new(box2_rotated, point_from_array([130.0, 0.0, 65.0]));
 
-    world.add(constant_medium_from_color(Arc::new(box1_trans), 0.01, point_from_array([0.0, 0.0, 0.0])));
-    world.add(constant_medium_from_color(Arc::new(box2_trans), 0.01, point_from_array([1.0, 1.0, 1.0])));
+    world.add(ConstantMedium::from_color(Arc::new(box1_trans), 0.01, point_from_array([0.0, 0.0, 0.0])));
+    world.add(ConstantMedium::from_color(Arc::new(box2_trans), 0.01, point_from_array([1.0, 1.0, 1.0])));
 
     let aspect_ratio: f64 = 1.0;
     let image_width: u32 = 600;
-    let samples_per_pixel: u32 = 200;
+    let samples_per_pixel: u32 = 20;
     let max_depth: u32 = 50;
     let image_quality: ImageQuality = ImageQuality {samples_per_pixel, max_depth};
 
@@ -382,15 +378,15 @@ fn cornell_smoke() {
 
     let camera_position: CameraPosition = CameraPosition { look_from, look_at, view_up };
 
-    let cam: Camera = create_camera(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
+    let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
 
-    cam.render(&world);
+    cam.thrender(&world);
 }
 
 fn final_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
     // Randomized boxes for the ground
     let mut boxes1: HittableList = HittableList::default();
-    let ground: Arc<Lambertian> = lambertian(point_from_array([0.48, 0.83, 0.53]));
+    let ground: Arc<Lambertian> = Lambertian::from_color(point_from_array([0.48, 0.83, 0.53]));
 
     // In total 400 boxes, 2400 parallelograms
     let boxes_per_side: u32 = 20;
@@ -410,53 +406,53 @@ fn final_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
 
     let mut world: HittableList = HittableList::default();
 
-    world.add(bvh_node_from_hittable_list(boxes1));
+    world.add(BVHNode::from_hittable_list(boxes1));
 
-    let light: Arc<DiffuseLight> = diffuse_light_from_color(point_from_array([7.0, 7.0, 7.0]));
-    world.add(parallelogram(point_from_array([123.0,554.0,147.0]), point_from_array([300.0, 0.0, 0.0]), point_from_array([0.0,0.0,265.0]), light));
+    let light: Arc<DiffuseLight> = DiffuseLight::from_color(point_from_array([7.0, 7.0, 7.0]));
+    world.add(Parallelogram::new(point_from_array([123.0,554.0,147.0]), point_from_array([300.0, 0.0, 0.0]), point_from_array([0.0,0.0,265.0]), light));
 
     // Moving sphere that does not move
     let center: Point3 = point_from_array([400.0, 400.0, 200.0]);
-    let sphere_material: Arc<Lambertian> = lambertian(point_from_array([0.7, 0.3, 0.1]));
-    world.add(sphere(center, 50.0, sphere_material));
+    let sphere_material: Arc<Lambertian> = Lambertian::from_color(point_from_array([0.7, 0.3, 0.1]));
+    world.add(Sphere::new(center, 50.0, sphere_material));
 
     // Fuzzy metal and glass spheres
-    world.add(sphere(point_from_array([260.0, 150.0, 45.0]), 50.0, dielectric(1.5)));
-    world.add(sphere(
+    world.add(Sphere::new(point_from_array([260.0, 150.0, 45.0]), 50.0, dielectric(1.5)));
+    world.add(Sphere::new(
         point_from_array([0.0, 150.0, 145.0]), 50.0, metal(point_from_array([0.8, 0.8, 0.9]), 1.0)
     ));
 
     // Blue sphere with subsurface scattering (volume inside a dielectric)
-    let boundary: Arc<Sphere> = Arc::new(sphere(point_from_array([360.0, 150.0, 145.0]), 70.0, dielectric(1.5)));
+    let boundary: Arc<Sphere> = Arc::new(Sphere::new(point_from_array([360.0, 150.0, 145.0]), 70.0, dielectric(1.5)));
     world.add_pointer(boundary.clone());
-    world.add(constant_medium_from_color(boundary.clone(), 0.2, point_from_array([0.2, 0.4, 0.9])));
+    world.add(ConstantMedium::from_color(boundary.clone(), 0.2, point_from_array([0.2, 0.4, 0.9])));
 
     // Big mist covering everything
-    let boundary2: Arc<Sphere> = Arc::new(sphere(point_from_array([0.0, 0.0, 0.0]), 5000.0, dielectric(1.5)));
-    world.add(constant_medium_from_color(boundary2, 0.0001, point_from_array([1.0, 1.0, 1.0])));
+    let boundary2: Arc<Sphere> = Arc::new(Sphere::new(point_from_array([0.0, 0.0, 0.0]), 5000.0, dielectric(1.5)));
+    world.add(ConstantMedium::from_color(boundary2, 0.0001, point_from_array([1.0, 1.0, 1.0])));
 
     // Earth texture
-    let emat: Arc<Lambertian> = Arc::new(Lambertian{texture: create_image_texture("textures/earthmap.jpg")});
-    world.add(sphere(point_from_array([400.0, 200.0, 400.0]), 100.0, emat));
+    let emat: Arc<Lambertian> = Lambertian::from_texture(ImageTexture::new_or_fallback("textures/earthmap.jpg"));
+    world.add(Sphere::new(point_from_array([400.0, 200.0, 400.0]), 100.0, emat));
 
     // Perlin sphere
     let perlin_texture: Arc<PerlinNoiseTexture>  = Arc::new(PerlinNoiseTexture { perlin_noise: create_perlin_noise(), scale: 0.2});
-    let perlin_material: Arc<Lambertian> = Arc::new(Lambertian{ texture: perlin_texture });
-    world.add(sphere(point_from_array([220.0, 280.0, 300.0]), 80.0, perlin_material));
+    let perlin_material: Arc<Lambertian> = Lambertian::from_texture(perlin_texture);
+    world.add(Sphere::new(point_from_array([220.0, 280.0, 300.0]), 80.0, perlin_material));
 
     // Group of spheres
     let mut spheres: HittableList = HittableList::default();
-    let white: Arc<Lambertian> = lambertian(point_from_array([0.73, 0.73, 0.73]));
+    let white: Arc<Lambertian> = Lambertian::from_color(point_from_array([0.73, 0.73, 0.73]));
 
     let number_of_spheres: u32 = 1000;
     for _ in 0..number_of_spheres {
-        spheres.add(sphere(random_vector(0.0, 165.0), 10.0, white.clone()));
+        spheres.add(Sphere::new(random_vector(0.0, 165.0), 10.0, white.clone()));
     }
     // Translate and rotate them at the same time
-    world.add_pointer(Arc::new(create_translation(
+    world.add_pointer(Arc::new(Translate::new(
             Arc::new(
-                create_rotate_y(
-                    Arc::new(bvh_node_from_hittable_list(spheres)),
+                RotateY::new(
+                    Arc::new(BVHNode::from_hittable_list(spheres)),
                     15.0)
             ),
             point_from_array([-100.0, 270.0, 395.0])
@@ -482,30 +478,30 @@ fn final_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
 
     let camera_position: CameraPosition = CameraPosition { look_from, look_at, view_up };
 
-    let cam: Camera = create_camera(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
+    let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
 
-    cam.render(&world);
+    cam.thrender(&world);
 }
 
 fn cornell_quadric() {
     let mut world: HittableList = HittableList::default();
 
-    let red: Arc<Lambertian> = Arc::new(Lambertian{ texture: create_solid_color(Point3 { x: 0.65, y: 0.05, z: 0.05 }) });
-    let white: Arc<Lambertian> = Arc::new(Lambertian{ texture: create_solid_color(Point3 { x: 0.73, y: 0.73, z: 0.73 }) });
-    let green: Arc<Lambertian> = Arc::new(Lambertian{ texture: create_solid_color(Point3 { x: 0.12, y: 0.45, z: 0.15 }) });
-    let diffuse_light: Arc<DiffuseLight> = diffuse_light_from_color(Point3 { x: 15.0, y: 15.0, z: 15.0 });
+    let red: Arc<Lambertian> = Lambertian::from_color(Point3 { x: 0.65, y: 0.05, z: 0.05 });
+    let white: Arc<Lambertian> = Lambertian::from_color(Point3 { x: 0.73, y: 0.73, z: 0.73 });
+    let green: Arc<Lambertian> = Lambertian::from_color(Point3 { x: 0.12, y: 0.45, z: 0.15 });
+    let diffuse_light: Arc<DiffuseLight> = DiffuseLight::from_color(Point3 { x: 15.0, y: 15.0, z: 15.0 });
 
-    world.add(parallelogram(Point3{x: 555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z:0.0}, Point3{x: 0.0, y:0.0, z:555.0}, green));
-    world.add(parallelogram(Point3{x: 0.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:555.0}, red));
-    world.add(parallelogram(Point3{x:  113.0, y: 554.0, z: 127.0}, Point3{x: 330.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:305.0}, diffuse_light));
-    world.add(parallelogram(point_from_array([0.0, 555.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
-    world.add(parallelogram(point_from_array([0.0, 0.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
-    world.add(parallelogram(point_from_array([0.0, 0.0, 555.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 555.0, 0.0]), white.clone()));
+    world.add(Parallelogram::new(Point3{x: 555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z:0.0}, Point3{x: 0.0, y:0.0, z:555.0}, green));
+    world.add(Parallelogram::new(Point3{x: 0.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:555.0}, red));
+    world.add(Parallelogram::new(Point3{x:  113.0, y: 554.0, z: 127.0}, Point3{x: 330.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:305.0}, diffuse_light));
+    world.add(Parallelogram::new(point_from_array([0.0, 555.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
+    world.add(Parallelogram::new(point_from_array([0.0, 0.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
+    world.add(Parallelogram::new(point_from_array([0.0, 0.0, 555.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 555.0, 0.0]), white.clone()));
 
     world.add(y_cylinder(Point3 { x: 150.0, y: 555.0/2.0, z: 175.0 }, 50.0, white.clone()));
     world.add(y_cylinder(Point3 { x: 400.0, y: 555.0/2.0, z: 555.0/2.0 + 50.0 }, 80.0, white.clone()));
-    // world.add(quadric_sphere(Point3 { x: 555.0/2.0, y: 555.0/2.0, z: 555.0/2.0 }, 100.0, white.clone()));
-    // world.add(sphere(Point3 { x: 555.0/2.0, y: 555.0/2.0, z: 555.0/2.0 }, 100.0, white.clone()));
+    // world.add(quadric_Sphere::new(Point3 { x: 555.0/2.0, y: 555.0/2.0, z: 555.0/2.0 }, 100.0, white.clone()));
+    // world.add(Sphere::new(Point3 { x: 555.0/2.0, y: 555.0/2.0, z: 555.0/2.0 }, 100.0, white.clone()));
     // world.add(y_cone(Point3 { x: 200.0, y: 555.0, z: 200.0 }, Point3 { x: 50.0, y: 50.0, z: 50.0 }, white.clone()));
 
     let aspect_ratio: f64 = 1.0;
@@ -528,21 +524,21 @@ fn cornell_quadric() {
 
     let camera_position: CameraPosition = CameraPosition { look_from, look_at, view_up };
 
-    let cam: Camera = create_camera(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
+    let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
 
-    cam.render(&world);
+    cam.thrender(&world);
 }
 
 fn debug_quadric() {
     let mut world: HittableList = HittableList::default();
 
-    let diffuse_light: Arc<DiffuseLight> = diffuse_light_from_color(Point3 { x: 15.0, y: 15.0, z: 15.0 });
+    let diffuse_light: Arc<DiffuseLight> = DiffuseLight::from_color(Point3 { x: 15.0, y: 15.0, z: 15.0 });
 
-    world.add(parallelogram(Point3{x:  10.0, y: 10.0, z: 10.0}, Point3{x: 10.0, y: 0.0, z: 10.0}, Point3{x: 0.0, y:10.0, z:10.0}, diffuse_light));
+    world.add(Parallelogram::new(Point3{x:  10.0, y: 10.0, z: 10.0}, Point3{x: 10.0, y: 0.0, z: 10.0}, Point3{x: 0.0, y:10.0, z:10.0}, diffuse_light));
 
-    let white: Arc<Lambertian> = Arc::new(Lambertian{ texture: create_solid_color(Point3 { x: 0.73, y: 0.73, z: 0.73 }) });
+    let white: Arc<Lambertian> = Lambertian::from_color(Point3 { x: 0.73, y: 0.73, z: 0.73 });
 
-    world.add(sphere(Point3 { x: 3.0, y: 0.0, z: 0.0 }, 1.0, white.clone()));
+    world.add(Sphere::new(Point3 { x: 3.0, y: 0.0, z: 0.0 }, 1.0, white.clone()));
     world.add(y_cylinder(Point3 { x: 0.0, y: 0.0, z: 0.0 },1.0, white.clone()));
 
     let aspect_ratio: f64 = 1.0;
@@ -565,29 +561,29 @@ fn debug_quadric() {
 
     let camera_position: CameraPosition = CameraPosition { look_from, look_at, view_up };
 
-    let cam: Camera = create_camera(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
+    let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
 
-    cam.render(&world);
+    cam.thrender(&world);
 }
 
 fn cornell_triangle() {
     let mut world: HittableList = HittableList::default();
 
-    let red: Arc<Lambertian> = Arc::new(Lambertian{ texture: create_solid_color(Point3 { x: 0.65, y: 0.05, z: 0.05 }) });
-    let white: Arc<Lambertian> = Arc::new(Lambertian{ texture: create_solid_color(Point3 { x: 0.73, y: 0.73, z: 0.73 }) });
-    let green: Arc<Lambertian> = Arc::new(Lambertian{ texture: create_solid_color(Point3 { x: 0.12, y: 0.45, z: 0.15 }) });
-    let diffuse_light: Arc<DiffuseLight> = diffuse_light_from_color(Point3 { x: 15.0, y: 15.0, z: 15.0 });
+    let red: Arc<Lambertian> = Lambertian::from_color(Point3 { x: 0.65, y: 0.05, z: 0.05 });
+    let white: Arc<Lambertian> = Lambertian::from_color(Point3 { x: 0.73, y: 0.73, z: 0.73 });
+    let green: Arc<Lambertian> = Lambertian::from_color(Point3 { x: 0.12, y: 0.45, z: 0.15 });
+    let diffuse_light: Arc<DiffuseLight> = DiffuseLight::from_color(Point3 { x: 15.0, y: 15.0, z: 15.0 });
 
-    world.add(parallelogram(Point3{x: 555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z:0.0}, Point3{x: 0.0, y:0.0, z:555.0}, green));
-    world.add(parallelogram(Point3{x: 0.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:555.0}, red));
-    world.add(parallelogram(Point3{x:  113.0, y: 554.0, z: 127.0}, Point3{x: 330.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:305.0}, diffuse_light));
-    world.add(parallelogram(point_from_array([0.0, 555.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
-    world.add(parallelogram(point_from_array([0.0, 0.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
-    world.add(parallelogram(point_from_array([0.0, 0.0, 555.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 555.0, 0.0]), white.clone()));
+    world.add(Parallelogram::new(Point3{x: 555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z:0.0}, Point3{x: 0.0, y:0.0, z:555.0}, green));
+    world.add(Parallelogram::new(Point3{x: 0.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:555.0}, red));
+    world.add(Parallelogram::new(Point3{x:  113.0, y: 554.0, z: 127.0}, Point3{x: 330.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:305.0}, diffuse_light));
+    world.add(Parallelogram::new(point_from_array([0.0, 555.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
+    world.add(Parallelogram::new(point_from_array([0.0, 0.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
+    world.add(Parallelogram::new(point_from_array([0.0, 0.0, 555.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 555.0, 0.0]), white.clone()));
 
 
     world.add(triangle(Point3 { x: 555.0/2.0, y: 555.0/2.0, z: 555.0/2.0 }, Point3 { x: 100.0, y: 100.0, z: 10.0 }, Point3 { x: 100.0, y: 0.0, z: 100.0 }, white.clone()));
-    // world.add(parallelogram(Point3 { x: 555.0/2.0, y: 555.0/2.0, z: 555.0/2.0 }, Point3 { x: 100.0, y: 100.0, z: 10.0 }, Point3 { x: 100.0, y: 0.0, z: 100.0 }, white.clone()));
+    // world.add(Parallelogram::new(Point3 { x: 555.0/2.0, y: 555.0/2.0, z: 555.0/2.0 }, Point3 { x: 100.0, y: 100.0, z: 10.0 }, Point3 { x: 100.0, y: 0.0, z: 100.0 }, white.clone()));
 
     let aspect_ratio: f64 = 1.0;
     let image_width: u32 = 300;
@@ -609,16 +605,16 @@ fn cornell_triangle() {
 
     let camera_position: CameraPosition = CameraPosition { look_from, look_at, view_up };
 
-    let cam: Camera = create_camera(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
+    let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
 
-    cam.render(&world);
+    cam.thrender(&world);
 }
 
 fn profiler_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
     // Similar to the final scene but with some of the random elements removed to asses performance
     // boxes for the ground
     let mut boxes1: HittableList = HittableList::default();
-    let ground: Arc<Lambertian> = lambertian(point_from_array([0.48, 0.83, 0.53]));
+    let ground: Arc<Lambertian> = Lambertian::from_color(point_from_array([0.48, 0.83, 0.53]));
 
     let mut rng: SmallRng = SmallRng::seed_from_u64(42_u64);
     // In total 400 boxes, 2400 parallelograms
@@ -639,45 +635,45 @@ fn profiler_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
 
     let mut world: HittableList = HittableList::default();
 
-    world.add(bvh_node_from_hittable_list(boxes1));
+    world.add(BVHNode::from_hittable_list(boxes1));
 
-    let light: Arc<DiffuseLight> = diffuse_light_from_color(point_from_array([7.0, 7.0, 7.0]));
-    world.add(parallelogram(point_from_array([123.0,554.0,147.0]), point_from_array([300.0, 0.0, 0.0]), point_from_array([0.0,0.0,265.0]), light));
+    let light: Arc<DiffuseLight> = DiffuseLight::from_color(point_from_array([7.0, 7.0, 7.0]));
+    world.add(Parallelogram::new(point_from_array([123.0,554.0,147.0]), point_from_array([300.0, 0.0, 0.0]), point_from_array([0.0,0.0,265.0]), light));
 
     // Moving sphere that does not move
     let center: Point3 = point_from_array([400.0, 400.0, 200.0]);
-    let sphere_material: Arc<Lambertian> = lambertian(point_from_array([0.7, 0.3, 0.1]));
-    world.add(sphere(center, 50.0, sphere_material));
+    let sphere_material: Arc<Lambertian> = Lambertian::from_color(point_from_array([0.7, 0.3, 0.1]));
+    world.add(Sphere::new(center, 50.0, sphere_material));
 
     // Fuzzy metal and glass spheres
-    world.add(sphere(point_from_array([260.0, 150.0, 45.0]), 50.0, dielectric(1.5)));
-    world.add(sphere(
+    world.add(Sphere::new(point_from_array([260.0, 150.0, 45.0]), 50.0, dielectric(1.5)));
+    world.add(Sphere::new(
         point_from_array([0.0, 150.0, 145.0]), 50.0, metal(point_from_array([0.8, 0.8, 0.9]), 1.0)
     ));
 
     // Blue sphere with subsurface scattering (volume inside a dielectric)
-    let boundary: Arc<Sphere> = Arc::new(sphere(point_from_array([360.0, 150.0, 145.0]), 70.0, dielectric(1.5)));
+    let boundary: Arc<Sphere> = Arc::new(Sphere::new(point_from_array([360.0, 150.0, 145.0]), 70.0, dielectric(1.5)));
     world.add_pointer(boundary.clone());
-    world.add(constant_medium_from_color(boundary.clone(), 0.2, point_from_array([0.2, 0.4, 0.9])));
+    world.add(ConstantMedium::from_color(boundary.clone(), 0.2, point_from_array([0.2, 0.4, 0.9])));
 
     // Earth texture
-    let emat: Arc<Lambertian> = Arc::new(Lambertian{texture: create_image_texture("textures/earthmap.jpg")});
-    world.add(sphere(point_from_array([400.0, 200.0, 400.0]), 100.0, emat));
+    let emat: Arc<Lambertian> = Lambertian::from_texture(ImageTexture::new_or_fallback("textures/earthmap.jpg"));
+    world.add(Sphere::new(point_from_array([400.0, 200.0, 400.0]), 100.0, emat));
 
 
     // Group of spheres
     let mut spheres: HittableList = HittableList::default();
-    let white: Arc<Lambertian> = lambertian(point_from_array([0.73, 0.73, 0.73]));
+    let white: Arc<Lambertian> = Lambertian::from_color(Point3::new(0.73, 0.73, 0.73));
 
     let number_of_spheres: u32 = 1000;
     for _ in 0..number_of_spheres {
-        spheres.add(sphere(random_vector(0.0, 165.0), 10.0, white.clone()));
+        spheres.add(Sphere::new(random_vector(0.0, 165.0), 10.0, white.clone()));
     }
     // Translate and rotate them at the same time
-    world.add_pointer(Arc::new(create_translation(
+    world.add_pointer(Arc::new(Translate::new(
             Arc::new(
-                create_rotate_y(
-                    Arc::new(bvh_node_from_hittable_list(spheres)),
+                RotateY::new(
+                    Arc::new(BVHNode::from_hittable_list(spheres)),
                     15.0)
             ),
             point_from_array([-100.0, 270.0, 395.0])
@@ -705,14 +701,14 @@ fn profiler_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
 
     let camera_position: CameraPosition = CameraPosition { look_from, look_at, view_up };
 
-    let cam: Camera = create_camera(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
+    let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
 
-    cam.render_iterators(&world);
+    cam.thrender(&world);
 }
 
 fn main() {
     let now: Instant = Instant::now();
-    let scene_number: u32 = 0;
+    let scene_number: u32 = 9;
 
     match scene_number {
         0 => many_spheres(),
@@ -731,5 +727,5 @@ fn main() {
         _ => final_scene(400, 20, 4),
     }
 
-    println!("Time: {:.2?}", now.elapsed())
+    println!("Time: {:.2?}", now.elapsed());
 }

@@ -3,6 +3,7 @@ use rand;
 
 // Lots of boiler plate here
 // Should I implement all the traits again for references?
+// To do: Consider replacing the Point3 with this crate: https://docs.rs/glam/latest/glam/index.html
 
 // Name is point3 to avoid warning with similarly named vec
 // To do: Remove this derive to sort out references and borrows

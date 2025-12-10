@@ -18,6 +18,7 @@ Primitives are implemented through a trait called Hittable. The currently implem
 - Sphere
 - Parallelogram
 - Triangle: Copies the code from parallelogram changing the function that determines if the point is inside the primitive
+- ConstantMedium
 
 And the one that I have added:
 
