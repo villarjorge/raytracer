@@ -9,7 +9,7 @@ use rand;
 use indicatif::ProgressIterator;
 use rayon::prelude::*;
 
-use crate::{hittable::{HitRecord, SurfaceCoordinate}, material::{Lambertian, ScatteredRayAndAttenuation}, point3::color::{Color, proccess_color}};
+use crate::{hittable::{HitRecord, SurfaceCoordinate, hittable_list::HittableSlice}, material::{Lambertian, ScatteredRayAndAttenuation}, point3::color::{Color, proccess_color}};
 use crate::point3::{Point3, Vector3, cross, random_in_unit_disk, unit_vector};
 use crate::point3::color::write_color;
 use crate::ray::Ray;
@@ -196,13 +196,13 @@ impl Camera {
         //     });
         // });
 
-        for (i, j, pixel) in image_buffer.enumerate_pixels_mut().progress() {
-            let pixel_color: Color = (0..self.samples_per_pixel).into_par_iter().map(|_| {
+        for (i, j, pixel) in image_buffer.enumerate_pixels_mut().into_par_iter() {
+            let pixel_color: Color = (0..self.samples_per_pixel).map(|_| {
                 let r: Ray = self.get_ray(i, j);
                 ray_color(&r, self.max_depth, world, self.background_color)
             }).sum();
             *pixel = image::Rgb(proccess_color(pixel_color/(self.samples_per_pixel as f64)));
-        };
+        }
 
         println!("\nRender done!");
         image_buffer.save("images/image.png").unwrap();

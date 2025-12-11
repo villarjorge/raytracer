@@ -36,7 +36,6 @@ impl Hittable for BVHNode {
         let ray_t: Range<f64> = reduced_ray_t;
         
         // The right interval needs to be narrowed to prevent problems with occlusion
-        // To do: refactor to remove nested match structure (add aditional function?)
         match self {
             BVHNode::Leaf { objects, bounding_box: _ } => { objects.hit(ray, &ray_t, hit_record) },
             BVHNode::Internal { left, right, bounding_box: _ } => {

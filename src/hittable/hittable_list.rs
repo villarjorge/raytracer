@@ -59,13 +59,39 @@ impl Hittable for HittableList {
     }
 }
 
-pub struct HittableArray {
-    objects: [Arc<dyn Hittable>; 1000],
+/// Similar to HittableList, but with an Arc of a slice so that sync is implemented
+pub struct HittableSlice {
+    objects: Arc<[Arc<dyn Hittable>]>,
     bounding_box: AABB
 }
 
-impl HittableArray {
-    pub fn from_hittable_list(hittable_list: HittableList) -> HittableArray {
-        let objects: [Arc<dyn Hittable>; 1000] = hittable_list.objects.iter().collect();
+impl HittableSlice {
+    pub fn from_hittable_list(hittable_list: HittableList) -> HittableSlice {
+        HittableSlice{ 
+            objects: Arc::from(hittable_list.objects.as_slice()),
+            bounding_box: hittable_list.bounding_box,
+         }
+    }
+}
+
+impl Hittable for HittableSlice {
+        /// Go through the objects on the vector and compute their hit functions. Keep track of the closest and return that
+    fn hit(&self, ray: &Ray, ray_t: &Range<f64>, hit_record: &mut HitRecord) -> bool {
+        let mut temp_record: HitRecord = hit_record.clone();
+        let mut hit_anything: bool = false;
+        let mut closest_so_far: f64 = ray_t.end; // max
+        // Dereference the ourter arc
+        for object in &(*self.objects) {
+            if object.hit(ray, &(ray_t.start..closest_so_far), &mut temp_record) {
+                hit_anything = true;
+                closest_so_far = temp_record.t;
+                *hit_record = temp_record.clone();
+            }
+        }
+
+        hit_anything
+    }
+    fn bounding_box(&self) -> &AABB {
+        &self.bounding_box
     }
 }

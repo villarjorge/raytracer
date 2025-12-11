@@ -17,6 +17,7 @@ use rand::rngs::SmallRng;
 
 use crate::bvh::{BVHNode};
 use crate::camera::{Camera, CameraPosition, ImageQuality, ThinLens};
+use crate::hittable::hittable_list::HittableSlice;
 use crate::perlin::create_perlin_noise;
 use crate::point3::color::Color;
 use crate::point3::{Point3, point_from_array, random_vector};
@@ -480,7 +481,7 @@ fn final_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
 
     let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
 
-    cam.thrender2(&world);
+    cam.thrender2(&HittableSlice::from_hittable_list(world));
 }
 
 fn cornell_quadric() {
