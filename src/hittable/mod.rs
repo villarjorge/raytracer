@@ -170,6 +170,8 @@ impl RotateY {
     }
 }
 
+// To do: the same way you can rotate and translate, create a scale instance. 
+
 pub mod hittable_list;
 pub mod parallelogram;
 pub mod sphere;

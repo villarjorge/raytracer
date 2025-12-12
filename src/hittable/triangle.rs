@@ -101,19 +101,20 @@ fn is_interior(alpha: f64, beta: f64) -> bool {
     alpha > 0.0 && beta > 0.0 && alpha + beta < 1.0
 }
 /// Load a Hittable list of triangles from a path. Assume that the file only has the coordinates of the vertices
-pub fn load_model(model_path: &str, material: Rc<dyn Material>) -> HittableList {
+pub fn load_model(model_path: &str, scale: f64, material: Rc<dyn Material>) -> HittableList {
     let raw_string: String = fs::read_to_string(model_path).unwrap();
 
     // To do: make it so that you can collect into a HittableList
     let mut points: Vec<Point3> = vec!();
 
     for line in raw_string.split("\n") {
+        // Rust does not remove the new line caracter: https://stackoverflow.com/questions/58567077/cant-parse-string-from-stdin-to-floating-point-rust
         let floats_vec: Vec<f64> = line.split(" ").map(
-            |s: &str| { s.parse::<f64>().unwrap() }
+            |s: &str| { s.trim().parse::<f64>().unwrap() }
         ).collect();
 
         points.push(
-            Point3::new(
+            scale*Point3::new(
                 floats_vec[0],
                 floats_vec[1],
                 floats_vec[2]
