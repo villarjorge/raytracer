@@ -17,6 +17,7 @@ use rand::rngs::SmallRng;
 
 use crate::bvh::{BVHNode};
 use crate::camera::{Camera, CameraPosition, ImageQuality, ThinLens};
+use crate::hittable::triangle::{Triangle, load_model};
 use crate::perlin::create_perlin_noise;
 use crate::point3::color::Color;
 use crate::point3::{Point3, point_from_array, random_vector};
@@ -27,7 +28,6 @@ use crate::hittable::{
     hittable_list::HittableList,
     quadric::y_cylinder,
     parallelogram::{create_box, Parallelogram},
-    triangle::triangle,
     constant_medium::ConstantMedium
 };
 use crate::texture::{CheckerTexture, ImageTexture, PerlinNoiseTexture, SolidColor, Texture};
@@ -582,7 +582,7 @@ fn cornell_triangle() {
     world.add(Parallelogram::new(point_from_array([0.0, 0.0, 555.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 555.0, 0.0]), white.clone()));
 
 
-    world.add(triangle(Point3 { x: 555.0/2.0, y: 555.0/2.0, z: 555.0/2.0 }, Point3 { x: 100.0, y: 100.0, z: 10.0 }, Point3 { x: 100.0, y: 0.0, z: 100.0 }, white.clone()));
+    world.add(Triangle::new(Point3 { x: 555.0/2.0, y: 555.0/2.0, z: 555.0/2.0 }, Point3 { x: 100.0, y: 100.0, z: 10.0 }, Point3 { x: 100.0, y: 0.0, z: 100.0 }, white.clone()));
     // world.add(Parallelogram::new(Point3 { x: 555.0/2.0, y: 555.0/2.0, z: 555.0/2.0 }, Point3 { x: 100.0, y: 100.0, z: 10.0 }, Point3 { x: 100.0, y: 0.0, z: 100.0 }, white.clone()));
 
     let aspect_ratio: f64 = 1.0;
@@ -706,9 +706,51 @@ fn profiler_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
     cam.thrender(&world);
 }
 
+fn cornell_model() {
+    let mut world: HittableList = HittableList::default();
+
+    let red: Rc<Lambertian> = Lambertian::from_color(Point3 { x: 0.65, y: 0.05, z: 0.05 });
+    let white: Rc<Lambertian> = Lambertian::from_color(Point3 { x: 0.73, y: 0.73, z: 0.73 });
+    let green: Rc<Lambertian> = Lambertian::from_color(Point3 { x: 0.12, y: 0.45, z: 0.15 });
+    let diffuse_light: Rc<DiffuseLight> = DiffuseLight::from_color(Point3 { x: 15.0, y: 15.0, z: 15.0 });
+
+    world.add(Parallelogram::new(Point3{x: 555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z:0.0}, Point3{x: 0.0, y:0.0, z:555.0}, green));
+    world.add(Parallelogram::new(Point3{x: 0.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:555.0}, red));
+    world.add(Parallelogram::new(Point3{x:  113.0, y: 554.0, z: 127.0}, Point3{x: 330.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:305.0}, diffuse_light));
+    world.add(Parallelogram::new(point_from_array([0.0, 555.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
+    world.add(Parallelogram::new(point_from_array([0.0, 0.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
+    world.add(Parallelogram::new(point_from_array([0.0, 0.0, 555.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 555.0, 0.0]), white.clone()));
+
+    world.add(load_model("models/pawn.txt", white.clone()));
+
+    let aspect_ratio: f64 = 1.0;
+    let image_width: u32 = 300;
+    let image_quality: ImageQuality = ImageQuality::low_quality();
+    // let image_width: u32 = 600;
+    // let image_quality: ImageQuality = ImageQuality::medium_quality();
+
+    let background_color: Point3 = Point3 { x: 0.0, y: 0.0, z: 0.0 };
+
+    let vfov: f64 = 40.0;
+    let defocus_angle:f64 = 0.0;
+    let focus_distance: f64 = 10.0;
+
+    let lens: ThinLens = ThinLens { defocus_angle, focus_distance };
+
+    let look_from: Point3 = Point3{x: 278.0, y: 278.0, z: -800.0};
+    let look_at: Point3 = Point3{x: 278.0, y: 278.0, z: 0.0};
+    let view_up: Point3 = Point3{x: 0.0, y: 1.0, z: 0.0};
+
+    let camera_position: CameraPosition = CameraPosition { look_from, look_at, view_up };
+
+    let cam: Camera = Camera::new(aspect_ratio, image_width, image_quality, vfov, lens, camera_position, background_color);
+
+    cam.thrender(&world);
+}
+
 fn main() {
     let now: Instant = Instant::now();
-    let scene_number: u32 = 9;
+    let scene_number: u32 = 13;
 
     match scene_number {
         0 => many_spheres(),
@@ -724,6 +766,7 @@ fn main() {
         10 => debug_quadric(),
         11 => cornell_triangle(),
         12 => profiler_scene(400, 20, 4),
+        13 => cornell_model(),
         _ => final_scene(400, 20, 4),
     }
 
