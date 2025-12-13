@@ -125,10 +125,10 @@ pub fn load_model(model_path: &str, scale: f64, material: Rc<dyn Material>) -> H
     let mut list: HittableList = HittableList::default();
     // Remember how to get a slice https://stackoverflow.com/questions/39785597/how-do-i-get-a-slice-of-a-vect-in-rust
     // And how to flatten the two zips https://stackoverflow.com/questions/29669287/how-can-i-zip-more-than-two-iterators
-    for zipped_points in points.iter().zip(&points[1..]).zip(&points[2..]) {
-        let p1 = zipped_points.0.0;
-        let p2 = zipped_points.0.1;
-        let p3 = zipped_points.1;
+    for zipped_points in points.iter().zip(&points[1..]).zip(&points[2..]).step_by(3) {
+        let p1: &Point3 = zipped_points.0.0;
+        let p2: &Point3 = zipped_points.0.1;
+        let p3: &Point3 = zipped_points.1;
 
         let q: Point3 = p1.clone();
         let u: Point3 = *p2 - q;

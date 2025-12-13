@@ -721,10 +721,10 @@ fn cornell_model() {
     world.add(Parallelogram::new(point_from_array([0.0, 0.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
     world.add(Parallelogram::new(point_from_array([0.0, 0.0, 555.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 555.0, 0.0]), white.clone()));
 
-    let model: HittableList = load_model("models/pawn.txt", 1000.0, white.clone());
+    let model: HittableList = load_model("models/pawn.txt", 750.0, white.clone());
 
     world.add(
-        Translate::new(Rc::new(model), Point3::new(300.0, 300.0, 300.0))
+        Translate::new(Rc::new(model), Point3::new(300.0, 0.0, 300.0))
     );
 
     let aspect_ratio: f64 = 1.0;

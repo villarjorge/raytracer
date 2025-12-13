@@ -53,7 +53,7 @@ impl ImageQuality {
     pub fn low_quality() -> ImageQuality {
         ImageQuality { samples_per_pixel: 20, max_depth: 4 }
     }
-    /// A medium quality preset. It has 20 samples per pixel and rays stop after 50 bounces
+    /// A medium quality preset. It has 200 samples per pixel and rays stop after 50 bounces
     pub fn medium_quality() -> ImageQuality {
         ImageQuality { samples_per_pixel: 200, max_depth: 50 }
     }

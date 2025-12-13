@@ -171,6 +171,7 @@ impl RotateY {
 }
 
 // To do: the same way you can rotate and translate, create a scale instance. 
+// Making a hittable bigger is the same as making the ray smaller. You would also have to scale up the bounding box
 
 pub mod hittable_list;
 pub mod parallelogram;
