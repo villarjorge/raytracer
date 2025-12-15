@@ -2,6 +2,7 @@ use std::fs;
 use std::{ops::Range, rc::Rc};
 
 use crate::aabb::{AABB, join_aabbs};
+use crate::bvh::BVHNode;
 use crate::hittable::hittable_list::HittableList;
 use crate::hittable::{HitRecord, Hittable, SurfaceCoordinate};
 use crate::material::Material;
@@ -101,7 +102,7 @@ fn is_interior(alpha: f64, beta: f64) -> bool {
     alpha > 0.0 && beta > 0.0 && alpha + beta < 1.0
 }
 /// Load a Hittable list of triangles from a path. Assume that the file only has the coordinates of the vertices
-pub fn load_model(model_path: &str, scale: f64, material: Rc<dyn Material>) -> HittableList {
+pub fn load_model(model_path: &str, scale: f64, material: Rc<dyn Material>) -> BVHNode {
     let raw_string: String = fs::read_to_string(model_path).unwrap();
 
     // To do: make it so that you can collect into a HittableList
@@ -139,5 +140,5 @@ pub fn load_model(model_path: &str, scale: f64, material: Rc<dyn Material>) -> H
         );
     }
 
-    list
+    BVHNode::from_hittable_list(list)
 }
