@@ -62,7 +62,7 @@ impl HitRecord {
 // To do: Think about traits versus enums for objects. Eg: scene object hittable that contains sphere, quadrilateral, disk etc
 // Having every object be a variant of Hittable could allow to have a
 // more complex hittable list with vectors for each object. The problem would be having too many variants that need to be handeled
-pub trait Hittable {
+pub trait Hittable: Send + Sync {
     fn hit(&self, ray: &Ray, ray_t: &Range<f64>, hit_record: &mut HitRecord) -> bool;
     fn bounding_box(&self) -> &AABB; // Needed since hittables will be behind pointers that will be dereferenced
 }

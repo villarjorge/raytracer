@@ -15,7 +15,7 @@ pub struct ScatteredRayAndAttenuation {
 }
 
 /// The default for scatter is ScatterResult::DidNotScatter and for emitted Point3 { x: 0.0, y: 0.0, z: 0.0 } (black)
-pub trait Material {
+pub trait Material: Sync + Send {
     fn scatter(
         &self,
         _ray_in: &Ray,

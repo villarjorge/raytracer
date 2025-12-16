@@ -8,7 +8,7 @@ use crate::{
     point3::{Point3, color::Color},
 };
 
-pub trait Texture {
+pub trait Texture: Sync + Send {
     fn value(&self, surface_coords: SurfaceCoordinate, p: &Point3) -> Color;
 }
 
