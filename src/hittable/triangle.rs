@@ -1,5 +1,6 @@
 use std::fs;
-use std::{ops::Range, rc::Rc};
+use std::ops::Range;
+use std::sync::Arc;
 
 use crate::aabb::{AABB, join_aabbs};
 use crate::bvh::BVHNode;
@@ -20,7 +21,7 @@ pub struct Triangle {
     /// A vector normal to the plane defined by u and v, scaled a certain way
     w: Vector3,
     /// Material of the triangle
-    material: Rc<dyn Material>,
+    material: Arc<dyn Material>,
     /// Bounding box of the triangle
     bounding_box: AABB,
     /// Normal defined by cross(u, v)
@@ -38,7 +39,7 @@ fn create_aabb_para(q: Point3, u: Point3, v: Point3) -> AABB {
 }
 
 impl Triangle {
-    pub fn new(q: Point3, u: Vector3, v: Vector3, material: Rc<dyn Material>) -> Triangle {
+    pub fn new(q: Point3, u: Vector3, v: Vector3, material: Arc<dyn Material>) -> Triangle {
         let bounding_box: AABB = create_aabb_para(q, u, v);
 
         let n: Vector3 = cross(&u, &v);
@@ -46,7 +47,16 @@ impl Triangle {
         let d: f64 = dot(&normal, &q);
         let w: Vector3 = n / dot(&n, &n);
 
-        Triangle { q, u, v, w, material, bounding_box, normal, d }
+        Triangle {
+        q,
+        u,
+        v,
+        w,
+        material,
+        bounding_box,
+        normal,
+        d,
+    }
     }
 }
 
@@ -67,7 +77,7 @@ impl Hittable for Triangle {
         }
 
         // Return false if the hit point parameter t is outside the ray interval.
-        let t: f64 = (self.d - dot(&self.normal, &ray.origin))/denominator;
+        let t: f64 = (self.d - dot(&self.normal, &ray.origin)) / denominator;
         if !ray_t.contains(&t) {
             return false;
         }
@@ -89,9 +99,9 @@ impl Hittable for Triangle {
         hit_record.material = self.material.clone();
         hit_record.set_face_normal(ray, self.normal);
 
-        true        
+        true
     }
-    
+
     fn bounding_box(&self) -> &AABB {
         &self.bounding_box
     }

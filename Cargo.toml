@@ -5,9 +5,9 @@ edition = "2024"
 
 [dependencies]
 rand = "0.9"
-image = "0.25.9"
+image = {version = "0.25.9", features = ["rayon"]}
 rayon = "1.11.0"
-indicatif = "0.18.3"
+indicatif = {version = "0.18.3", features = ["rayon"]}
 
 [profile.release]
 debug = 1

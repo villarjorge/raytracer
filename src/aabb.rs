@@ -4,21 +4,25 @@ use crate::point3::Point3;
 use crate::ray::Ray;
 
 #[derive(Clone)]
-/// An axis aligned bounding box (AABB), composed from three ranges of f64's. 
+/// An axis aligned bounding box (AABB), composed from three ranges of f64's.
 pub struct AABB {
-    x: Range<f64>, 
-    y: Range<f64>, 
-    z: Range<f64>, 
+    x: Range<f64>,
+    y: Range<f64>,
+    z: Range<f64>,
 }
 
 /// Create an AABB from two corner points
 impl AABB {
     pub fn from_points(a: Point3, b: Point3) -> AABB {
-        let x: Range<f64> = if a.x <= b.x {a.x..b.x} else {b.x..a.x};
-        let y: Range<f64> = if a.y <= b.y {a.y..b.y} else {b.y..a.y};
-        let z: Range<f64> = if a.z <= b.z {a.z..b.z} else {b.z..a.z};
+        let x: Range<f64> = if a.x <= b.x { a.x..b.x } else { b.x..a.x };
+        let y: Range<f64> = if a.y <= b.y { a.y..b.y } else { b.y..a.y };
+        let z: Range<f64> = if a.z <= b.z { a.z..b.z } else { b.z..a.z };
 
-        AABB {x: pad_to_minimums(x), y: pad_to_minimums(y), z: pad_to_minimums(z)}
+        AABB {
+            x: pad_to_minimums(x),
+            y: pad_to_minimums(y),
+            z: pad_to_minimums(z),
+        }
     }
 }
 
@@ -36,16 +40,18 @@ impl Index<u8> for AABB {
 
     fn index(&self, index: u8) -> &Self::Output {
         match index {
-            0 => { &self.x },
-            1 => { &self.y },
-            2 => { &self.z },
-            _ => { panic!() }
+            0 => &self.x,
+            1 => &self.y,
+            2 => &self.z,
+            _ => {
+                panic!()
+            }
         }
     }
 }
 
 impl Add<Point3> for AABB {
-    /// Shift an AABB by the coordinates of the point 
+    /// Shift an AABB by the coordinates of the point
     type Output = Self;
 
     fn add(self, rhs: Point3) -> Self::Output {
@@ -53,7 +59,11 @@ impl Add<Point3> for AABB {
         let y_new: Range<f64> = (self.y.start + rhs.y)..(self.y.end + rhs.y);
         let z_new: Range<f64> = (self.z.start + rhs.z)..(self.z.end + rhs.z);
 
-        AABB {x: x_new, y: y_new, z: z_new }
+        AABB {
+            x: x_new,
+            y: y_new,
+            z: z_new,
+        }
     }
 }
 
@@ -62,9 +72,13 @@ fn pad_to_minimums(x: Range<f64>) -> Range<f64> {
     const DELTA: f64 = 0.0001;
 
     let x_expanded: Range<f64> = {
-        if x.end < x.start { panic!("Tried to pad reversed (and therefore empty) range") }
-        else if x.end - x.start < DELTA { (x.start + DELTA)..(x.end + DELTA) }
-        else { x.start..x.end }
+        if x.end < x.start {
+            panic!("Tried to pad reversed (and therefore empty) range")
+        } else if x.end - x.start < DELTA {
+            (x.start + DELTA)..(x.end + DELTA)
+        } else {
+            x.start..x.end
+        }
     };
 
     x_expanded
@@ -81,7 +95,11 @@ pub fn join_aabbs(bounding_box0: &AABB, bounding_box1: &AABB) -> AABB {
     let y: Range<f64> = unite_ranges(&bounding_box0.y, &bounding_box1.y);
     let z: Range<f64> = unite_ranges(&bounding_box0.z, &bounding_box1.z);
 
-    AABB {x: pad_to_minimums(x), y: pad_to_minimums(y), z: pad_to_minimums(z)}
+    AABB {
+        x: pad_to_minimums(x),
+        y: pad_to_minimums(y),
+        z: pad_to_minimums(z),
+    }
 }
 
 // fn check_axis(ray_t: &Range<f64>, axis: &Range<f64>, inverse_coord: f64, origin_coord: f64) -> bool {
@@ -116,18 +134,28 @@ impl AABB {
             let inverse_coord: f64 = inverse_direction[axis_index];
             // let origin_coord: f64 = ray_origin[axis_index];
 
-            let t0: f64 = (axis.start - ray_origin[axis_index])*inverse_coord;
-            let t1: f64 = (axis.end - ray_origin[axis_index])*inverse_coord;
+            let t0: f64 = (axis.start - ray_origin[axis_index]) * inverse_coord;
+            let t1: f64 = (axis.end - ray_origin[axis_index]) * inverse_coord;
 
-            // To do: Remove this comparison https://tavianator.com/2011/ray_box.html 
+            // To do: Remove this comparison https://tavianator.com/2011/ray_box.html
             if t0 < t1 {
-                if t0 > ray_t.start { ray_t.start = t0; }
-                if t1 < ray_t.end { ray_t.end = t1; }
+                if t0 > ray_t.start {
+                    ray_t.start = t0;
+                }
+                if t1 < ray_t.end {
+                    ray_t.end = t1;
+                }
             } else {
-                if t1 > ray_t.start { ray_t.start = t1; }
-                if t0 < ray_t.end { ray_t.end = t0; }
+                if t1 > ray_t.start {
+                    ray_t.start = t1;
+                }
+                if t0 < ray_t.end {
+                    ray_t.end = t0;
+                }
             }
-            if ray_t.end <= ray_t.start { return false; }
+            if ray_t.end <= ray_t.start {
+                return false;
+            }
         }
 
         true
@@ -143,10 +171,10 @@ impl AABB {
             let axis: &Range<f64> = &self[axis_index];
             let inverse_coord: f64 = inverse_direction[axis_index];
 
-            let t0: f64 = (axis.start - ray_origin[axis_index])*inverse_coord;
-            let t1: f64 = (axis.end - ray_origin[axis_index])*inverse_coord;
+            let t0: f64 = (axis.start - ray_origin[axis_index]) * inverse_coord;
+            let t1: f64 = (axis.end - ray_origin[axis_index]) * inverse_coord;
 
-            // This website helped me optimize this a little: https://tavianator.com/2011/ray_box.html 
+            // This website helped me optimize this a little: https://tavianator.com/2011/ray_box.html
             if t0 < t1 {
                 ray_t.start = ray_t.start.max(t0);
                 ray_t.end = ray_t.end.min(t1);
@@ -162,7 +190,9 @@ impl AABB {
             // ray_t.start = ray_t.start.max(t0.min(t1));
             // ray_t.end = ray_t.end.min(t0.max(t1));
 
-            if ray_t.end <= ray_t.start { return false; }
+            if ray_t.end <= ray_t.start {
+                return false;
+            }
             // if ray_t.is_empty() { return false; }
         }
 
@@ -175,8 +205,8 @@ impl AABB {
         let origin: Point3 = ray.origin;
         let inverse_direction: Point3 = ray.inverse_direction;
 
-        let tx1: f64 = (self.x.start - origin.x)*inverse_direction.x;
-        let tx2: f64 = (self.x.end - origin.x)*inverse_direction.x;
+        let tx1: f64 = (self.x.start - origin.x) * inverse_direction.x;
+        let tx2: f64 = (self.x.end - origin.x) * inverse_direction.x;
 
         // let mut tmin: f64 = tx1.min(tx2);
         // let mut tmax: f64 = tx1.max(tx2);
@@ -184,16 +214,16 @@ impl AABB {
         let mut tmin: f64 = f64::min(tx1, tx2);
         let mut tmax: f64 = f64::max(tx1, tx2);
 
-        let ty1: f64 = (self.y.start - origin.y)*inverse_direction.y;
-        let ty2: f64 = (self.y.end - origin.y)*inverse_direction.y;
+        let ty1: f64 = (self.y.start - origin.y) * inverse_direction.y;
+        let ty2: f64 = (self.y.end - origin.y) * inverse_direction.y;
 
         // tmin = tmin.max(ty1.min(ty2));
         // tmax = tmax.min(ty1.max(ty2));
         tmin = f64::max(tmin, f64::min(ty1, ty2));
         tmax = f64::min(tmax, f64::max(ty1, ty2));
 
-        let tz1: f64 = (self.z.start - origin.z)*inverse_direction.z;
-        let tz2: f64 = (self.z.end - origin.z)*inverse_direction.z;
+        let tz1: f64 = (self.z.start - origin.z) * inverse_direction.z;
+        let tz2: f64 = (self.z.end - origin.z) * inverse_direction.z;
 
         // tmin = tmax.max(tz1.min(tz2));
         // tmax = tmax.min(tz1.max(tz2));
@@ -224,9 +254,12 @@ impl AABB {
         let z_size: f64 = self.z.end - self.z.start;
 
         // To do: This can be done with 3 comparisons instead of 4
-        if x_size > y_size && x_size > z_size { 0 }
-        else if y_size > x_size && y_size > z_size { 1 }
-        else { 2 }
+        if x_size > y_size && x_size > z_size {
+            0
+        } else if y_size > x_size && y_size > z_size {
+            1
+        } else {
+            2
+        }
     }
 }
-

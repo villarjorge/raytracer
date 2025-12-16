@@ -1,4 +1,4 @@
-use std::array::{from_fn};
+use std::array::from_fn;
 
 use rand::random_range;
 
@@ -22,14 +22,19 @@ pub fn create_perlin_noise() -> PerlinNoise {
     let y_perm: [u32; POINT_COUNT as usize] = perlin_generate_perm();
     let z_perm: [u32; POINT_COUNT as usize] = perlin_generate_perm();
 
-    PerlinNoise { random_vectors, x_perm, y_perm, z_perm }
+    PerlinNoise {
+        random_vectors,
+        x_perm,
+        y_perm,
+        z_perm,
+    }
 }
 
 fn perlin_generate_perm() -> [u32; POINT_COUNT as usize] {
     let mut perm: [u32; POINT_COUNT as usize] = from_fn(|i| i as u32);
     // You have to reverse it, something like n..1 will be silently initialized as empty
     for i in (1..POINT_COUNT as usize).rev() {
-        let j: usize  = random_range(0..=i) as usize;
+        let j: usize = random_range(0..=i) as usize;
         perm.swap(i, j);
     }
 
@@ -52,19 +57,17 @@ impl PerlinNoise {
         for di in 0_i64..2 {
             for dj in 0_i64..2 {
                 for dk in 0_i64..2 {
-
                     let temp: [usize; 3] = [
                         ((i + di) & 255) as usize,
                         ((j + dj) & 255) as usize,
                         ((k + dk) & 255) as usize,
                     ];
 
-                    let float_index: u32 = 
-                        self.x_perm[temp[0]] ^ 
-                        self.y_perm[temp[1]] ^ 
-                        self.z_perm[temp[2]];
+                    let float_index: u32 =
+                        self.x_perm[temp[0]] ^ self.y_perm[temp[1]] ^ self.z_perm[temp[2]];
 
-                    c[di as usize][dj as usize][dk as usize] = self.random_vectors[float_index as usize]
+                    c[di as usize][dj as usize][dk as usize] =
+                        self.random_vectors[float_index as usize]
                 }
             }
         }
@@ -81,7 +84,7 @@ impl PerlinNoise {
             accum += weight * self.noise(&temp_p);
             weight *= 0.5;
             // To do: implement mulassign for point3
-            temp_p = 2.0*temp_p;
+            temp_p = 2.0 * temp_p;
         }
 
         accum.abs()
@@ -98,10 +101,10 @@ pub fn trilinear_interp(c: [[[f64; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
                 let j_float: f64 = j as f64;
                 let k_float: f64 = k as f64;
 
-                accum +=  (i_float*u + (1.0 - i_float)*(1.0 - u))
-                        * (j_float*v + (1.0 - j_float)*(1.0 - v))
-                        * (k_float*w + (1.0 - k_float)*(1.0 - w))
-                        * coef;
+                accum += (i_float * u + (1.0 - i_float) * (1.0 - u))
+                    * (j_float * v + (1.0 - j_float) * (1.0 - v))
+                    * (k_float * w + (1.0 - k_float) * (1.0 - w))
+                    * coef;
             }
         }
     }
@@ -109,9 +112,9 @@ pub fn trilinear_interp(c: [[[f64; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
 }
 
 pub fn perlin_interpolation(c: [[[Vector3; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
-    let uu: f64 = u*u*(3.0 - 2.0*u);
-    let vv: f64 = v*v*(3.0 - 2.0*v);
-    let ww: f64 = w*w*(3.0 - 2.0*w);
+    let uu: f64 = u * u * (3.0 - 2.0 * u);
+    let vv: f64 = v * v * (3.0 - 2.0 * v);
+    let ww: f64 = w * w * (3.0 - 2.0 * w);
 
     let mut accum: f64 = 0.0;
 
@@ -122,12 +125,16 @@ pub fn perlin_interpolation(c: [[[Vector3; 2]; 2]; 2], u: f64, v: f64, w: f64) -
                 let j_float: f64 = j as f64;
                 let k_float: f64 = k as f64;
 
-                let weight_v: Point3 = Point3 { x: u - i_float, y: v - j_float, z: w - k_float };
+                let weight_v: Point3 = Point3 {
+                    x: u - i_float,
+                    y: v - j_float,
+                    z: w - k_float,
+                };
 
-                accum +=  (i_float*uu + (1.0 - i_float)*(1.0 - uu))
-                        * (j_float*vv + (1.0 - j_float)*(1.0 - vv))
-                        * (k_float*ww + (1.0 - k_float)*(1.0 - ww))
-                        * coef.dot(weight_v);
+                accum += (i_float * uu + (1.0 - i_float) * (1.0 - uu))
+                    * (j_float * vv + (1.0 - j_float) * (1.0 - vv))
+                    * (k_float * ww + (1.0 - k_float) * (1.0 - ww))
+                    * coef.dot(weight_v);
             }
         }
     }
