@@ -196,3 +196,4 @@ pub mod parallelogram;
 pub mod quadric;
 pub mod sphere;
 pub mod triangle;
+pub mod constant_medium;
