@@ -149,8 +149,8 @@ impl Camera {
         image_buffer
     }
 
+    /// From a hittable, render a ppm image. The image will be saved in images/image.ppm
     pub fn render_ppm(&self, world: &dyn Hittable) {
-        // Render a ppm image
         let mut image_buffer: BufWriter<File> = self.create_image_and_buffer("images/image.ppm");
 
         println!("Scan lines progress:");
@@ -177,8 +177,8 @@ impl Camera {
         image_buffer.flush().unwrap();
     }
 
+    /// The same render function but with iterators instead of loops
     pub fn render_iterators(&self, world: &dyn Hittable) {
-        // The same render function but with iterators instead of loops
         let mut image_buffer: BufWriter<File> = self.create_image_and_buffer("images/image.ppm");
 
         println!("Scan lines progress:");
@@ -206,6 +206,7 @@ impl Camera {
         image_buffer.flush().unwrap();
     }
 
+    /// From a hittable, render a png image. The image will be saved in images/image.png
     pub fn render(&self, world: &dyn Hittable) {
         let mut image_buffer: ImageBuffer<image::Rgb<u8>, Vec<u8>> =
             RgbImage::new(self.image_width, self.image_height);
@@ -230,11 +231,13 @@ impl Camera {
         image_buffer.save("images/image.png").unwrap();
     }
 
+    /// From a hittable, render a png image using multiple threads. The image will be saved in images/image.png
     // https://stackoverflow.com/questions/25649423/sending-trait-objects-between-threads-in-rust
     // Add a constraint to the type (the + Sync + Send part)
     // Very easy to convert into parallel code once you know that par_enumerate_pixels_mut exists and you manage to sort out its dependencies
     // For a while it said that image_buffer.par_enumerate_pixels_mut() was not an iterator
     // The constraint also needed to be added to the traits: Hittable, Material and Texture
+    // To do: this function only gets you about a 2 times speed improvement
     pub fn thrender(&self, world: &(dyn Hittable + Sync + Send)) {
         let mut image_buffer: ImageBuffer<image::Rgb<u8>, Vec<u8>> =
             RgbImage::new(self.image_width, self.image_height);
@@ -335,11 +338,7 @@ fn ray_color2(
     background_color: Color,
 ) -> Color {
     if depth == 0 {
-        return Color {
-            x: 0.0,
-            y: 0.0,
-            z: 0.0,
-        };
+        return Color::black();
     }
 
     let mut hit_record: HitRecord = HitRecord {
