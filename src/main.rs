@@ -215,7 +215,7 @@ fn many_spheres() {
     // cam.render(&HittableSlice::from_hittable_list(world));
 
     let bvh_world: BVHNode = BVHNode::from_hittable_list(world);
-    cam.thrender(&bvh_world);
+    cam.render(&bvh_world);
 }
 
 fn checkered_spheres() {
@@ -309,7 +309,7 @@ fn checkered_spheres() {
         },
     );
 
-    cam.thrender(&HittableSlice::from_hittable_list(world));
+    cam.render(&HittableSlice::from_hittable_list(world));
 }
 
 fn earth() {
@@ -384,7 +384,7 @@ fn earth() {
         },
     );
 
-    cam.thrender(&HittableSlice::from_hittable_list(world));
+    cam.render(&HittableSlice::from_hittable_list(world));
 }
 
 fn perlin_spheres() {
@@ -469,7 +469,7 @@ fn perlin_spheres() {
         },
     );
 
-    cam.thrender(&HittableSlice::from_hittable_list(world));
+    cam.render(&HittableSlice::from_hittable_list(world));
 }
 
 fn para() {
@@ -647,7 +647,7 @@ fn para() {
         },
     );
 
-    cam.thrender(&HittableSlice::from_hittable_list(world));
+    cam.render(&HittableSlice::from_hittable_list(world));
 }
 
 fn simple_light() {
@@ -759,7 +759,7 @@ fn simple_light() {
         background_color,
     );
 
-    cam.thrender(&HittableSlice::from_hittable_list(world));
+    cam.render(&HittableSlice::from_hittable_list(world));
 }
 
 fn cornell_box() {
@@ -935,7 +935,7 @@ fn cornell_box() {
         background_color,
     );
 
-    cam.thrender(&HittableSlice::from_hittable_list(world));
+    cam.render(&HittableSlice::from_hittable_list(world));
 }
 
 fn cornell_smoke() {
@@ -1118,7 +1118,7 @@ fn cornell_smoke() {
         background_color,
     );
 
-    cam.thrender(&HittableSlice::from_hittable_list(world));
+    cam.render(&HittableSlice::from_hittable_list(world));
 }
 
 fn final_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
@@ -1292,8 +1292,8 @@ fn final_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
         camera_position,
         background_color,
     );
-
-    cam.thrender2(&HittableSlice::from_hittable_list(world));
+    // cam.render(&HittableSlice::from_hittable_list(world));
+    cam.thrender(&HittableSlice::from_hittable_list(world));
 }
 
 fn cornell_quadric() {
@@ -1468,7 +1468,7 @@ fn cornell_quadric() {
         background_color,
     );
 
-    cam.thrender(&HittableSlice::from_hittable_list(world));
+    cam.render(&HittableSlice::from_hittable_list(world));
 }
 
 fn debug_quadric() {
@@ -1580,7 +1580,7 @@ fn debug_quadric() {
         background_color,
     );
 
-    cam.thrender(&HittableSlice::from_hittable_list(world));
+    cam.render(&HittableSlice::from_hittable_list(world));
 }
 
 fn cornell_triangle() {
@@ -1753,7 +1753,7 @@ fn cornell_triangle() {
         background_color,
     );
 
-    cam.thrender(&HittableSlice::from_hittable_list(world));
+    cam.render(&HittableSlice::from_hittable_list(world));
 }
 
 fn profiler_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
@@ -1908,7 +1908,7 @@ fn profiler_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
         background_color,
     );
 
-    cam.thrender(&HittableSlice::from_hittable_list(world));
+    cam.render(&HittableSlice::from_hittable_list(world));
 }
 
 fn main() {
@@ -1929,6 +1929,7 @@ fn main() {
         10 => debug_quadric(),
         11 => cornell_triangle(),
         12 => profiler_scene(400, 20, 4),
+        13 => final_scene(800, 200, 50),
         _ => final_scene(400, 20, 4),
     }
 

@@ -5,7 +5,7 @@ use std::{
 };
 
 use image::{ImageBuffer, RgbImage};
-use indicatif::{ProgressIterator};
+use indicatif::{ParallelProgressIterator, ProgressIterator};
 use rand;
 use rayon::prelude::*;
 
@@ -206,7 +206,7 @@ impl Camera {
         image_buffer.flush().unwrap();
     }
 
-    pub fn thrender(&self, world: &dyn Hittable) {
+    pub fn render(&self, world: &dyn Hittable) {
         let mut image_buffer: ImageBuffer<image::Rgb<u8>, Vec<u8>> =
             RgbImage::new(self.image_width, self.image_height);
 
@@ -234,12 +234,14 @@ impl Camera {
     // Add a constraint to the type (the + Sync + Send part)
     // Very easy to convert into parallel code once you know that par_enumerate_pixels_mut exists and you manage to sort out its dependencies
     // For a while it said that image_buffer.par_enumerate_pixels_mut() was not an iterator
-    pub fn thrender2(&self, world: &(dyn Hittable + Sync + Send)) {
+    // The constraint also needed to be added to the traits: Hittable, Material and Texture
+    pub fn thrender(&self, world: &(dyn Hittable + Sync + Send)) {
         let mut image_buffer: ImageBuffer<image::Rgb<u8>, Vec<u8>> = RgbImage::new(self.image_width, self.image_height);
 
         println!("Scan lines progress:");
-        image_buffer.par_enumerate_pixels_mut().for_each(|(i, j, pixel)| {
-            let pixel_color: Color = (0..self.samples_per_pixel)
+        // To do: change this progress to something that does not update as often
+        image_buffer.par_enumerate_pixels_mut().progress().for_each(|(i, j, pixel)| {
+            let pixel_color: Color = (0..self.samples_per_pixel).into_par_iter()
                 .map(|_| {
                     let r: Ray = self.get_ray(i, j);
                     ray_color2(&r, self.max_depth, world, self.background_color)
