@@ -1,16 +1,14 @@
-use std::{
-    ops::Range, 
-    sync::Arc,
-};
+use std::{ops::Range, sync::Arc};
 
 use rand::random_range;
 
 use crate::{
-    aabb::AABB, 
-    hittable::{HitRecord, Hittable, SurfaceCoordinate}, 
-    material::{Isotropic, Material}, 
-    point3::{Vector3, color::Color}, 
-    ray::Ray, texture::{self, SolidColor, Texture}
+    aabb::AABB,
+    hittable::{HitRecord, Hittable, SurfaceCoordinate},
+    material::{Isotropic, Material},
+    point3::{Vector3, color::Color},
+    ray::Ray,
+    texture::{self, SolidColor, Texture},
 };
 
 pub struct ConstantMedium {
@@ -18,17 +16,29 @@ pub struct ConstantMedium {
     pub neg_inv_density: f64,
     // In the book phase function is typed as a shared pointer to a material, but when creating the object the material is always casted into an isotropic material
     // Needs to be typed this way to make it easier to shove it into a hit record
-    pub phase_function: Arc<dyn Material> 
+    pub phase_function: Arc<dyn Material>,
 }
 
 impl ConstantMedium {
-    pub fn new(boundary: Arc<dyn Hittable>, density: f64, texture: Arc<dyn Texture>) -> ConstantMedium {
-        ConstantMedium { boundary, neg_inv_density: -1.0/density, phase_function: Arc::new(Isotropic{texture}) }
+    pub fn new(
+        boundary: Arc<dyn Hittable>,
+        density: f64,
+        texture: Arc<dyn Texture>,
+    ) -> ConstantMedium {
+        ConstantMedium {
+            boundary,
+            neg_inv_density: -1.0 / density,
+            phase_function: Arc::new(Isotropic { texture }),
+        }
     }
 
     pub fn from_color(boundary: Arc<dyn Hittable>, density: f64, color: Color) -> ConstantMedium {
         let texture: Arc<texture::SolidColor> = SolidColor::new(color);
-        ConstantMedium { boundary, neg_inv_density: -1.0/density, phase_function: Arc::new(Isotropic{texture}) }
+        ConstantMedium {
+            boundary,
+            neg_inv_density: -1.0 / density,
+            phase_function: Arc::new(Isotropic { texture }),
+        }
     }
 }
 
@@ -37,11 +47,18 @@ impl Hittable for ConstantMedium {
         let mut hit_record1: HitRecord = hit_record.clone();
         let mut hit_record2: HitRecord = hit_record.clone();
 
-        if !self.boundary.hit(ray, &(-f64::INFINITY..f64::INFINITY), &mut hit_record1) {
+        if !self
+            .boundary
+            .hit(ray, &(-f64::INFINITY..f64::INFINITY), &mut hit_record1)
+        {
             return false;
         }
 
-        if !self.boundary.hit(ray, &(hit_record1.t+0.0001..f64::INFINITY), &mut hit_record2) {
+        if !self.boundary.hit(
+            ray,
+            &(hit_record1.t + 0.0001..f64::INFINITY),
+            &mut hit_record2,
+        ) {
             return false;
         }
 
@@ -55,20 +72,26 @@ impl Hittable for ConstantMedium {
         let x: f64 = random_range(0.0..1.0);
         let hit_distance: f64 = self.neg_inv_density * x.ln();
 
-        if hit_distance > distance_inside_boundary { return false; }
+        if hit_distance > distance_inside_boundary {
+            return false;
+        }
 
         hit_record.t = hit_record1.t + hit_distance / ray_length;
         hit_record.p = ray.at(hit_record.t);
 
-        hit_record.normal = Vector3{x: 1.0, y: 0.0, z: 0.0}; // Arbitrary
+        hit_record.normal = Vector3 {
+            x: 1.0,
+            y: 0.0,
+            z: 0.0,
+        }; // Arbitrary
         hit_record.front_face = true; // Also arbitrary
-        hit_record.surface_coords = SurfaceCoordinate{u: 0.0, v:0.0};
+        hit_record.surface_coords = SurfaceCoordinate { u: 0.0, v: 0.0 };
 
         hit_record.material = self.phase_function.clone();
 
         true
     }
-    
+
     fn bounding_box(&self) -> &AABB {
         self.boundary.bounding_box()
     }

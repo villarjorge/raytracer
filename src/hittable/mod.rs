@@ -1,16 +1,16 @@
 use std::ops::Range;
 use std::sync::Arc;
 
-use crate::aabb::{AABB};
+use crate::aabb::AABB;
+use crate::material::Material;
 use crate::point3::{Point3, Vector3, point_from_array, rotate_y};
 use crate::ray::Ray;
-use crate::material::Material;
 
 #[derive(Clone, Copy)]
 /// The coordinates in a given surface
 pub struct SurfaceCoordinate {
     pub u: f64,
-    pub v: f64
+    pub v: f64,
 }
 
 /// A grouping of parameters related to the ray-object intersection
@@ -22,7 +22,7 @@ pub struct HitRecord {
     pub normal: Vector3,
     /// Material at the given intersection
     // To do: change this to a Rc<dyn Material>
-    pub material: Arc<dyn Material>,  // &'a Box<dyn Material>
+    pub material: Arc<dyn Material>, // &'a Box<dyn Material>
     /// Parameter of the ray at the intersection
     pub t: f64,
     /// Coordinates of the point of intersection in the surface
@@ -31,9 +31,9 @@ pub struct HitRecord {
     pub front_face: bool,
 }
 
-/// Creates a HitRecord given some of it's parameters: 
-///     - ray, 
-///     - t: parameter of the ray, 
+/// Creates a HitRecord given some of it's parameters:
+///     - ray,
+///     - t: parameter of the ray,
 ///     - outward_normal: normal of the surface, assumed to be unit lenght
 ///     - material
 ///     - surface_coords
@@ -50,13 +50,17 @@ impl HitRecord {
     // }
     pub fn set_face_normal(&mut self, ray: &Ray, outward_normal: Vector3) {
         self.front_face = outward_normal.dot(ray.direction) < 0.0;
-        self.normal = if self.front_face {outward_normal} else {-outward_normal};
+        self.normal = if self.front_face {
+            outward_normal
+        } else {
+            -outward_normal
+        };
     }
 }
 
 // Instead of inheritance, create a trait that subsecuent objects will implement
-// To do: Think about traits versus enums for objects. Eg: scene object hittable that contains sphere, quadrilateral, disk etc 
-// Having every object be a variant of Hittable could allow to have a 
+// To do: Think about traits versus enums for objects. Eg: scene object hittable that contains sphere, quadrilateral, disk etc
+// Having every object be a variant of Hittable could allow to have a
 // more complex hittable list with vectors for each object. The problem would be having too many variants that need to be handeled
 pub trait Hittable {
     fn hit(&self, ray: &Ray, ray_t: &Range<f64>, hit_record: &mut HitRecord) -> bool;
@@ -67,7 +71,7 @@ pub trait Hittable {
 pub struct Translate {
     object: Arc<dyn Hittable>,
     offset: Vector3,
-    bounding_box: AABB
+    bounding_box: AABB,
 }
 
 impl Hittable for Translate {
@@ -94,15 +98,20 @@ impl Hittable for Translate {
 impl Translate {
     pub fn new(object: Arc<dyn Hittable>, offset: Vector3) -> Translate {
         let bounding_box: AABB = (*object.bounding_box()).clone();
-        Translate { object, offset, bounding_box: bounding_box + offset }
-    }}
+        Translate {
+            object,
+            offset,
+            bounding_box: bounding_box + offset,
+        }
+    }
+}
 
 /// An instance of rotation on the y axis
 pub struct RotateY {
     object: Arc<dyn Hittable>,
     sin_theta: f64,
     cos_theta: f64,
-    bounding_box: AABB
+    bounding_box: AABB,
 }
 
 impl Hittable for RotateY {
@@ -120,7 +129,7 @@ impl Hittable for RotateY {
         }
         // Transform the intersection from object space back to world space.
         hit_record.p = rotate_y(&hit_record.p, self.cos_theta, -self.sin_theta);
-        hit_record.normal =  rotate_y(&hit_record.normal, self.cos_theta, -self.sin_theta);
+        hit_record.normal = rotate_y(&hit_record.normal, self.cos_theta, -self.sin_theta);
 
         true
     }
@@ -137,8 +146,8 @@ impl RotateY {
         let cos_theta: f64 = radians.cos();
         let bounding_box: AABB = object.bounding_box().clone();
 
-        let mut minimum: [f64; 3] = [ f64::INFINITY, f64::INFINITY, f64::INFINITY ];
-        let mut maximum: [f64; 3] = [ -f64::INFINITY, -f64::INFINITY, -f64::INFINITY ];
+        let mut minimum: [f64; 3] = [f64::INFINITY, f64::INFINITY, f64::INFINITY];
+        let mut maximum: [f64; 3] = [-f64::INFINITY, -f64::INFINITY, -f64::INFINITY];
 
         for i_int in 0..2 {
             for j_int in 0..2 {
@@ -149,14 +158,18 @@ impl RotateY {
 
                     // To do: make the fields of bounding box public to not index them like this
                     // To do: possible opportunity to use arrays here for better performance (the compiler will paralelize?)
-                    let x: f64 = i*bounding_box[0].end + (1.0 - i)*bounding_box[0].start;
-                    let y: f64 = j*bounding_box[1].end + (1.0 - j)*bounding_box[1].start;
-                    let z: f64 = k*bounding_box[2].end + (1.0 - k)*bounding_box[2].start;
+                    let x: f64 = i * bounding_box[0].end + (1.0 - i) * bounding_box[0].start;
+                    let y: f64 = j * bounding_box[1].end + (1.0 - j) * bounding_box[1].start;
+                    let z: f64 = k * bounding_box[2].end + (1.0 - k) * bounding_box[2].start;
 
-                    let x_new =  cos_theta*x + sin_theta*z;
-                    let z_new: f64 = -sin_theta*x + cos_theta*z;
+                    let x_new = cos_theta * x + sin_theta * z;
+                    let z_new: f64 = -sin_theta * x + cos_theta * z;
 
-                    let tester: Vector3 = Vector3 { x:x_new, y, z:z_new };
+                    let tester: Vector3 = Vector3 {
+                        x: x_new,
+                        y,
+                        z: z_new,
+                    };
 
                     for c in 0..2 {
                         minimum[c] = minimum[c].min(tester[c as u8]);
@@ -166,13 +179,18 @@ impl RotateY {
             }
         }
 
-        RotateY { object, sin_theta, cos_theta, bounding_box: AABB::from_points(point_from_array(minimum), point_from_array(maximum)) }
+        RotateY {
+            object,
+            sin_theta,
+            cos_theta,
+            bounding_box: AABB::from_points(point_from_array(minimum), point_from_array(maximum)),
+        }
     }
 }
 
+pub mod constant_medium;
 pub mod hittable_list;
 pub mod parallelogram;
-pub mod sphere;
 pub mod quadric;
+pub mod sphere;
 pub mod triangle;
-pub mod constant_medium;

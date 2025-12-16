@@ -1,4 +1,4 @@
-use std::{ops::Range};
+use std::ops::Range;
 use std::sync::Arc;
 
 use crate::aabb::{AABB, join_aabbs};
@@ -43,7 +43,16 @@ pub fn triangle(q: Point3, u: Vector3, v: Vector3, material: Arc<dyn Material>) 
     let d: f64 = dot(&normal, &q);
     let w: Vector3 = n / dot(&n, &n);
 
-    Triangle { q, u, v, w, material, bounding_box, normal, d }
+    Triangle {
+        q,
+        u,
+        v,
+        w,
+        material,
+        bounding_box,
+        normal,
+        d,
+    }
 }
 
 // To do: extend triangle to any polygon. How to do it efficiently and with little code?
@@ -62,7 +71,7 @@ impl Hittable for Triangle {
         }
 
         // Return false if the hit point parameter t is outside the ray interval.
-        let t: f64 = (self.d - dot(&self.normal, &ray.origin))/denominator;
+        let t: f64 = (self.d - dot(&self.normal, &ray.origin)) / denominator;
         if !ray_t.contains(&t) {
             return false;
         }
@@ -84,9 +93,9 @@ impl Hittable for Triangle {
         hit_record.material = self.material.clone();
         hit_record.set_face_normal(ray, self.normal);
 
-        true        
+        true
     }
-    
+
     fn bounding_box(&self) -> &AABB {
         &self.bounding_box
     }

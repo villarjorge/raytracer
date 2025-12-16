@@ -2,14 +2,18 @@ use std::sync::Arc;
 
 use image::{ImageBuffer, Rgb, open};
 
-use crate::{hittable::SurfaceCoordinate, perlin::PerlinNoise, point3::{Point3, color::Color}};
+use crate::{
+    hittable::SurfaceCoordinate,
+    perlin::PerlinNoise,
+    point3::{Point3, color::Color},
+};
 
 pub trait Texture {
     fn value(&self, surface_coords: SurfaceCoordinate, p: &Point3) -> Color;
 }
 
 pub struct SolidColor {
-    albedo: Color
+    albedo: Color,
 }
 
 impl SolidColor {
@@ -27,16 +31,28 @@ impl Texture for SolidColor {
 pub struct CheckerTexture {
     pub inverse_scale: f64,
     pub even: Arc<dyn Texture>,
-    pub odd: Arc<dyn Texture>
+    pub odd: Arc<dyn Texture>,
 }
 
 impl CheckerTexture {
-    pub fn from_pointers(scale: f64, even: Arc<dyn Texture>, odd: Arc<dyn Texture>) -> Arc<CheckerTexture> {
-        Arc::new(CheckerTexture { inverse_scale: 1.0/scale, even, odd })
+    pub fn from_pointers(
+        scale: f64,
+        even: Arc<dyn Texture>,
+        odd: Arc<dyn Texture>,
+    ) -> Arc<CheckerTexture> {
+        Arc::new(CheckerTexture {
+            inverse_scale: 1.0 / scale,
+            even,
+            odd,
+        })
     }
 
     pub fn from_colors(scale: f64, even: Point3, odd: Point3) -> Arc<CheckerTexture> {
-        Arc::new(CheckerTexture { inverse_scale: 1.0/scale, even: SolidColor::new(even), odd: SolidColor::new(odd) })
+        Arc::new(CheckerTexture {
+            inverse_scale: 1.0 / scale,
+            even: SolidColor::new(even),
+            odd: SolidColor::new(odd),
+        })
     }
 }
 
@@ -63,26 +79,36 @@ impl Texture for CheckerTexture {
     }
 }
 
-/// An image texture, build on the image crate. Create with create_image_texture(). 
+/// An image texture, build on the image crate. Create with create_image_texture().
 /// If the path gives an error, load an error texture that is easy to see
 pub struct ImageTexture {
-    image: ImageBuffer<Rgb<u8>, Vec<u8>>
+    image: ImageBuffer<Rgb<u8>, Vec<u8>>,
 }
 
 impl ImageTexture {
     pub fn new_or_fallback(path: &str) -> Arc<dyn Texture> {
         match open(path) {
-            Ok(image) => Arc::new(ImageTexture { image: image.into_rgb8() }),
+            Ok(image) => Arc::new(ImageTexture {
+                image: image.into_rgb8(),
+            }),
             Err(image_error) => {
                 eprintln!("Could not load the image texture. Falling back to default. Error:");
                 eprintln!("{}", image_error);
 
                 CheckerTexture::from_colors(
                     2.0,
-                    Point3 { x: 1.0, y: 0.0, z: 0.862745098039 },
-                    Point3 { x: 0.00392156862745, y: 0.0, z: 0.00392156862745 }
+                    Point3 {
+                        x: 1.0,
+                        y: 0.0,
+                        z: 0.862745098039,
+                    },
+                    Point3 {
+                        x: 0.00392156862745,
+                        y: 0.0,
+                        z: 0.00392156862745,
+                    },
                 )
-            },
+            }
         }
     }
 }
@@ -92,7 +118,7 @@ impl Texture for ImageTexture {
         // Clamp input texture coordinates to [0,1] x [1,0]
         let clamped_surface_coords: SurfaceCoordinate = SurfaceCoordinate {
             u: surface_coords.u.clamp(0.0, 1.0),
-            v: 1.0 - surface_coords.v.clamp(0.0, 1.0) // Flip v to image coordinates
+            v: 1.0 - surface_coords.v.clamp(0.0, 1.0), // Flip v to image coordinates
         };
 
         let u_integer: u32 = (self.image.width() as f64 * clamped_surface_coords.u) as u32;
@@ -100,14 +126,18 @@ impl Texture for ImageTexture {
         // https://docs.rs/image/0.25.9/image/struct.ImageBuffer.html#method.get_pixel
         let texture_pixel: &Rgb<u8> = self.image.get_pixel(u_integer, v_integer);
 
-        let color_scale: f64 = 1.0/255.0;
-        Point3 { x: (texture_pixel.0[0] as f64)*color_scale, y: (texture_pixel.0[1] as f64)*color_scale, z: (texture_pixel.0[2] as f64)*color_scale }
+        let color_scale: f64 = 1.0 / 255.0;
+        Point3 {
+            x: (texture_pixel.0[0] as f64) * color_scale,
+            y: (texture_pixel.0[1] as f64) * color_scale,
+            z: (texture_pixel.0[2] as f64) * color_scale,
+        }
     }
 }
 
 pub struct PerlinNoiseTexture {
     pub perlin_noise: PerlinNoise,
-    pub scale: f64
+    pub scale: f64,
 }
 
 impl Texture for PerlinNoiseTexture {
@@ -119,6 +149,10 @@ impl Texture for PerlinNoiseTexture {
         // Turbulent perlin noise
         // Point3 { x: 1.0, y: 1.0, z: 1.0 } * self.perlin_noise.turbulence(&p, 7)
         // Turbulent perlin noise modulated with a sine
-        Point3 { x: 0.5, y: 0.5, z: 0.5 } * (1.0 + (self.scale * p.z + 10.0 * self.perlin_noise.turbulence(p, 7)).sin())
+        Point3 {
+            x: 0.5,
+            y: 0.5,
+            z: 0.5,
+        } * (1.0 + (self.scale * p.z + 10.0 * self.perlin_noise.turbulence(p, 7)).sin())
     }
 }
