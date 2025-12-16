@@ -9,7 +9,7 @@ use indicatif::{ParallelProgressIterator, ProgressIterator};
 use rand;
 use rayon::prelude::*;
 
-use crate::hittable::{Hittable};
+use crate::hittable::Hittable;
 use crate::point3::color::write_color;
 use crate::point3::{Point3, Vector3, cross, random_in_unit_disk, unit_vector};
 use crate::ray::Ray;
@@ -236,21 +236,26 @@ impl Camera {
     // For a while it said that image_buffer.par_enumerate_pixels_mut() was not an iterator
     // The constraint also needed to be added to the traits: Hittable, Material and Texture
     pub fn thrender(&self, world: &(dyn Hittable + Sync + Send)) {
-        let mut image_buffer: ImageBuffer<image::Rgb<u8>, Vec<u8>> = RgbImage::new(self.image_width, self.image_height);
+        let mut image_buffer: ImageBuffer<image::Rgb<u8>, Vec<u8>> =
+            RgbImage::new(self.image_width, self.image_height);
 
         println!("Scan lines progress:");
         // To do: change this progress to something that does not update as often
-        image_buffer.par_enumerate_pixels_mut().progress().for_each(|(i, j, pixel)| {
-            let pixel_color: Color = (0..self.samples_per_pixel).into_par_iter()
-                .map(|_| {
-                    let r: Ray = self.get_ray(i, j);
-                    ray_color2(&r, self.max_depth, world, self.background_color)
-                })
-                .sum();
-            *pixel = image::Rgb(proccess_color(
-                pixel_color / (self.samples_per_pixel as f64),
-            ));
-        });
+        image_buffer
+            .par_enumerate_pixels_mut()
+            .progress()
+            .for_each(|(i, j, pixel)| {
+                let pixel_color: Color = (0..self.samples_per_pixel)
+                    .into_par_iter()
+                    .map(|_| {
+                        let r: Ray = self.get_ray(i, j);
+                        ray_color2(&r, self.max_depth, world, self.background_color)
+                    })
+                    .sum();
+                *pixel = image::Rgb(proccess_color(
+                    pixel_color / (self.samples_per_pixel as f64),
+                ));
+            });
         println!("\nRender done!");
         image_buffer.save("images/image.png").unwrap();
     }
@@ -302,7 +307,8 @@ fn ray_color(given_ray: &Ray, depth: u32, world: &dyn Hittable, background_color
         attenuation: Color {
             x: 1.0,
             y: 1.0,
-            z: 1.0,},
+            z: 1.0,
+        },
     };
 
     let color_from_emission: Color = hit_record
@@ -322,7 +328,12 @@ fn ray_color(given_ray: &Ray, depth: u32, world: &dyn Hittable, background_color
     color_from_emission + color_from_scatter
 }
 
-fn ray_color2(given_ray: &Ray, depth: u32, world: &(dyn Hittable + Sync + Send), background_color: Color) -> Color {
+fn ray_color2(
+    given_ray: &Ray,
+    depth: u32,
+    world: &(dyn Hittable + Sync + Send),
+    background_color: Color,
+) -> Color {
     if depth == 0 {
         return Color {
             x: 0.0,
@@ -366,7 +377,8 @@ fn ray_color2(given_ray: &Ray, depth: u32, world: &(dyn Hittable + Sync + Send),
         attenuation: Color {
             x: 1.0,
             y: 1.0,
-            z: 1.0,},
+            z: 1.0,
+        },
     };
 
     let color_from_emission: Color = hit_record

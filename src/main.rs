@@ -17,8 +17,8 @@ use rand::{Rng, SeedableRng};
 
 use crate::bvh::BVHNode;
 use crate::camera::{Camera, CameraPosition, ImageQuality, ThinLens};
-use crate::hittable::triangle::{Triangle, load_model};
 use crate::hittable::hittable_list::HittableSlice;
+use crate::hittable::triangle::{Triangle, load_model};
 use crate::hittable::{
     constant_medium::ConstantMedium,
     hittable_list::HittableList,
@@ -1138,11 +1138,14 @@ fn final_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
             let y1: f64 = rand::random_range(1.0..101.0);
             let z1: f64 = z0 + w;
 
-            boxes1.add(create_box(
-                point_from_array([x0, y0, z0]),
-                point_from_array([x1, y1, z1]),
-                ground.clone(),
-            ).to_hittable_slice());
+            boxes1.add(
+                create_box(
+                    point_from_array([x0, y0, z0]),
+                    point_from_array([x1, y1, z1]),
+                    ground.clone(),
+                )
+                .to_hittable_slice(),
+            );
         }
     }
 
@@ -1775,11 +1778,14 @@ fn profiler_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
             let y1: f64 = rng.random_range(1.0..101.0);
             let z1: f64 = z0 + w;
 
-            boxes1.add(create_box(
-                point_from_array([x0, y0, z0]),
-                point_from_array([x1, y1, z1]),
-                ground.clone(),
-            ).to_hittable_slice());
+            boxes1.add(
+                create_box(
+                    point_from_array([x0, y0, z0]),
+                    point_from_array([x1, y1, z1]),
+                    ground.clone(),
+                )
+                .to_hittable_slice(),
+            );
         }
     }
 
@@ -1914,23 +1920,106 @@ fn profiler_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
 fn cornell_model() {
     let mut world: HittableList = HittableList::default();
 
-    let red: Arc<Lambertian> = Lambertian::from_color(Point3 { x: 0.65, y: 0.05, z: 0.05 });
-    let white: Arc<Lambertian> = Lambertian::from_color(Point3 { x: 0.73, y: 0.73, z: 0.73 });
-    let green: Arc<Lambertian> = Lambertian::from_color(Point3 { x: 0.12, y: 0.45, z: 0.15 });
-    let diffuse_light: Arc<DiffuseLight> = DiffuseLight::from_color(Point3 { x: 15.0, y: 15.0, z: 15.0 });
+    let red: Arc<Lambertian> = Lambertian::from_color(Point3 {
+        x: 0.65,
+        y: 0.05,
+        z: 0.05,
+    });
+    let white: Arc<Lambertian> = Lambertian::from_color(Point3 {
+        x: 0.73,
+        y: 0.73,
+        z: 0.73,
+    });
+    let green: Arc<Lambertian> = Lambertian::from_color(Point3 {
+        x: 0.12,
+        y: 0.45,
+        z: 0.15,
+    });
+    let diffuse_light: Arc<DiffuseLight> = DiffuseLight::from_color(Point3 {
+        x: 15.0,
+        y: 15.0,
+        z: 15.0,
+    });
 
-    world.add(Parallelogram::new(Point3{x: 555.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z:0.0}, Point3{x: 0.0, y:0.0, z:555.0}, green));
-    world.add(Parallelogram::new(Point3{x: 0.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y: 555.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:555.0}, red));
-    world.add(Parallelogram::new(Point3{x:  113.0, y: 554.0, z: 127.0}, Point3{x: 330.0, y: 0.0, z: 0.0}, Point3{x: 0.0, y:0.0, z:305.0}, diffuse_light));
-    world.add(Parallelogram::new(point_from_array([0.0, 555.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
-    world.add(Parallelogram::new(point_from_array([0.0, 0.0, 0.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 0.0, 555.0]), white.clone()));
-    world.add(Parallelogram::new(point_from_array([0.0, 0.0, 555.0]), point_from_array([555.0, 0.0, 0.0]), point_from_array([0.0, 555.0, 0.0]), white.clone()));
+    world.add(Parallelogram::new(
+        Point3 {
+            x: 555.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        Point3 {
+            x: 0.0,
+            y: 555.0,
+            z: 0.0,
+        },
+        Point3 {
+            x: 0.0,
+            y: 0.0,
+            z: 555.0,
+        },
+        green,
+    ));
+    world.add(Parallelogram::new(
+        Point3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        Point3 {
+            x: 0.0,
+            y: 555.0,
+            z: 0.0,
+        },
+        Point3 {
+            x: 0.0,
+            y: 0.0,
+            z: 555.0,
+        },
+        red,
+    ));
+    world.add(Parallelogram::new(
+        Point3 {
+            x: 113.0,
+            y: 554.0,
+            z: 127.0,
+        },
+        Point3 {
+            x: 330.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        Point3 {
+            x: 0.0,
+            y: 0.0,
+            z: 305.0,
+        },
+        diffuse_light,
+    ));
+    world.add(Parallelogram::new(
+        point_from_array([0.0, 555.0, 0.0]),
+        point_from_array([555.0, 0.0, 0.0]),
+        point_from_array([0.0, 0.0, 555.0]),
+        white.clone(),
+    ));
+    world.add(Parallelogram::new(
+        point_from_array([0.0, 0.0, 0.0]),
+        point_from_array([555.0, 0.0, 0.0]),
+        point_from_array([0.0, 0.0, 555.0]),
+        white.clone(),
+    ));
+    world.add(Parallelogram::new(
+        point_from_array([0.0, 0.0, 555.0]),
+        point_from_array([555.0, 0.0, 0.0]),
+        point_from_array([0.0, 555.0, 0.0]),
+        white.clone(),
+    ));
 
     let model: BVHNode = load_model("models/pawn.txt", 750.0, white.clone());
 
-    world.add(
-        Translate::new(Arc::new(model), Point3::new(300.0, 300.0, 300.0))
-    );
+    world.add(Translate::new(
+        Arc::new(model),
+        Point3::new(300.0, 300.0, 300.0),
+    ));
 
     let aspect_ratio: f64 = 1.0;
     // let image_width: u32 = 300;
@@ -1953,9 +2042,21 @@ fn cornell_model() {
         focus_distance,
     };
 
-    let look_from: Point3 = Point3{x: 278.0, y: 278.0, z: -800.0};
-    let look_at: Point3 = Point3{x: 278.0, y: 278.0, z: 0.0};
-    let view_up: Point3 = Point3{x: 0.0, y: 1.0, z: 0.0};
+    let look_from: Point3 = Point3 {
+        x: 278.0,
+        y: 278.0,
+        z: -800.0,
+    };
+    let look_at: Point3 = Point3 {
+        x: 278.0,
+        y: 278.0,
+        z: 0.0,
+    };
+    let view_up: Point3 = Point3 {
+        x: 0.0,
+        y: 1.0,
+        z: 0.0,
+    };
 
     let camera_position: CameraPosition = CameraPosition {
         look_from,

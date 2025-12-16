@@ -48,18 +48,17 @@ impl Triangle {
         let w: Vector3 = n / dot(&n, &n);
 
         Triangle {
-        q,
-        u,
-        v,
-        w,
-        material,
-        bounding_box,
-        normal,
-        d,
-    }
+            q,
+            u,
+            v,
+            w,
+            material,
+            bounding_box,
+            normal,
+            d,
+        }
     }
 }
-
 
 // To do: extend triangle to any polygon. How to do it efficiently and with little code?
 
@@ -116,21 +115,16 @@ pub fn load_model(model_path: &str, scale: f64, material: Arc<dyn Material>) -> 
     let raw_string: String = fs::read_to_string(model_path).unwrap();
 
     // To do: make it so that you can collect into a HittableList
-    let mut points: Vec<Point3> = vec!();
+    let mut points: Vec<Point3> = vec![];
 
     for line in raw_string.split("\n") {
         // Rust does not remove the new line caracter: https://stackoverflow.com/questions/58567077/cant-parse-string-from-stdin-to-floating-point-rust
-        let floats_vec: Vec<f64> = line.split(" ").map(
-            |s: &str| { s.trim().parse::<f64>().unwrap() }
-        ).collect();
+        let floats_vec: Vec<f64> = line
+            .split(" ")
+            .map(|s: &str| s.trim().parse::<f64>().unwrap())
+            .collect();
 
-        points.push(
-            scale*Point3::new(
-                floats_vec[0],
-                floats_vec[1],
-                floats_vec[2]
-            )
-        );
+        points.push(scale * Point3::new(floats_vec[0], floats_vec[1], floats_vec[2]));
     }
 
     let mut list: HittableList = HittableList::default();
@@ -141,13 +135,11 @@ pub fn load_model(model_path: &str, scale: f64, material: Arc<dyn Material>) -> 
         let p2: &Point3 = zipped_points.0.1;
         let p3: &Point3 = zipped_points.1;
 
-        let q: Point3 = p1.clone();
+        let q: Point3 = *p1;
         let u: Point3 = *p2 - q;
         let v: Point3 = *p3 - q;
 
-        list.add(
-            Triangle::new(q, u, v, material.clone())
-        );
+        list.add(Triangle::new(q, u, v, material.clone()));
     }
 
     BVHNode::from_hittable_list(list)
