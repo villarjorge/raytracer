@@ -56,6 +56,34 @@ impl Parallelogram {
             bounding_box,
         }
     }
+    pub fn from_vertex_locations(
+        v1: Point3,
+        v2: Point3,
+        v3: Point3,
+        material: Arc<dyn Material>,
+    ) -> Parallelogram {
+        let q: Point3 = v1;
+        let u: Point3 = q - v2;
+        let v: Point3 = q - v3;
+
+        let bounding_box: AABB = create_aabb_para(q, u, v);
+
+        let n: Vector3 = cross(&u, &v);
+        let normal: Vector3 = unit_vector(n);
+        let d: f64 = dot(&normal, &q);
+        let w: Vector3 = n / dot(&n, &n);
+
+        Parallelogram {
+            q,
+            u,
+            v,
+            w,
+            material,
+            bounding_box,
+            normal,
+            d,
+        }
+    }
 }
 
 // To do: extend parallelogram to any polygon. How to do it efficiently and with little code?

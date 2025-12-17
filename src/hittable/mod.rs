@@ -193,6 +193,7 @@ impl RotateY {
 
 pub mod constant_medium;
 pub mod hittable_list;
+pub mod load_obj;
 pub mod parallelogram;
 pub mod quadric;
 pub mod sphere;

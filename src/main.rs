@@ -18,8 +18,9 @@ use rand::{Rng, SeedableRng};
 use crate::bvh::BVHNode;
 use crate::camera::{Camera, CameraPosition, ImageQuality, ThinLens};
 use crate::hittable::hittable_list::HittableSlice;
+use crate::hittable::load_obj::load_model;
 use crate::hittable::quadric::{Quadric, quadric_sphere};
-use crate::hittable::triangle::{Triangle, load_model};
+use crate::hittable::triangle::Triangle;
 use crate::hittable::{
     constant_medium::ConstantMedium,
     hittable_list::HittableList,
@@ -1129,7 +1130,7 @@ fn cornell_model() {
     let mut world: HittableList = create_empty_cornell_box();
     let white: Arc<Lambertian> = Lambertian::from_color(Point3::new(0.73, 0.73, 0.73));
 
-    let model: BVHNode = load_model("models/pawn.txt", 750.0, white.clone());
+    let model: BVHNode = load_model("models//Pawn/CHAHIN_PAWN.obj", 750.0, white.clone());
 
     world.add(Translate::new(
         Arc::new(model),
@@ -1252,7 +1253,7 @@ fn spherical_mirror() {
 
 fn main() {
     let now: Instant = Instant::now();
-    let scene_number: u32 = 15;
+    let scene_number: u32 = 14;
 
     match scene_number {
         0 => many_spheres(),

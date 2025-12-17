@@ -78,6 +78,10 @@ impl BVHNode {
         BVHNode::new(list.objects)
     }
 
+    pub fn from_vec(objects: Vec<Arc<dyn Hittable>>) -> BVHNode {
+        BVHNode::new(objects)
+    }
+
     // To do: Is there a way to derive comparisons for bounding boxes?
     pub fn new(mut objects: Vec<Arc<dyn Hittable>>) -> BVHNode {
         let mut bounding_box: AABB = AABB::default();
