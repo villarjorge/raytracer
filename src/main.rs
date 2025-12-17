@@ -1130,11 +1130,12 @@ fn cornell_model() {
     let mut world: HittableList = create_empty_cornell_box();
     let white: Arc<Lambertian> = Lambertian::from_color(Point3::new(0.73, 0.73, 0.73));
 
-    let model: BVHNode = load_model("models//Pawn/CHAHIN_PAWN.obj", 750.0, white.clone());
+    // let model: BVHNode = load_model("models/Pawn/CHAHIN_PAWN.obj", 750.0, white.clone());
+    let model: BVHNode = load_model("models/teapot.obj", 75.0, white.clone());
 
     world.add(Translate::new(
         Arc::new(model),
-        Point3::new(300.0, 300.0, 300.0),
+        Point3::new(300.0, 150.0, 300.0),
     ));
 
     let aspect_ratio: f64 = 1.0;

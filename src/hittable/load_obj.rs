@@ -35,7 +35,7 @@ pub fn load_model(model_path: &str, scale: f64, material: Arc<dyn Material>) -> 
                     "f" => {
                         // the format can be like this: f v1/vt1/vn1 v2/vt2/vn2 v3/vt3/vn3 so only get the vertex
                         let vertices: Vec<usize> = line_iter
-                            .map(|s| s.split_once("/").unwrap().0.parse::<usize>().unwrap())
+                            .map(|s| s.split("/").next().unwrap().parse::<usize>().unwrap())
                             .map(|i| i - 1) // normalize into 0 index
                             .collect();
                         if vertices.len() != 3 && vertices.len() != 4 {
