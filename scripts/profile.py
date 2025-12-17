@@ -1,3 +1,7 @@
+"""
+Build and run the project with the AMDμ Prof CLI.
+"""
+
 import subprocess
 
 if __name__ == "__main__":

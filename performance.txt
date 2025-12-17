@@ -42,3 +42,6 @@
         With cached inverse direction in ray: 24.838s, 24.854s, 25.001s
         Removing a branch in aabb hit: 24.266s, 24.016s
         Removing another branch in aabb hit: 25.986s, 25.859s
+
+16/10/2025
+    With multithreading I am only seeing an improvement of around 2 times in the final scene

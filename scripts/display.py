@@ -1,3 +1,8 @@
+"""
+A script that uses imageio and matplotlib to render a ppm. S
+ince I wrote it, I have moved away from using ppm, so I don't need it anymore
+"""
+
 import imageio.v3 as iio
 import matplotlib.pyplot as plt
 

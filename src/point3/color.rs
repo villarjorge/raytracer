@@ -11,6 +11,7 @@ use std::{
 // Not trivial to do since the sum of two waves does not have a singular frequency. https://www.tandfonline.com/doi/abs/10.1080/10867651.1999.10487511
 
 // Define this alias
+// To do: make this a type why not
 pub type Color = Point3;
 
 fn linear_to_gamma(linear_component: f64) -> f64 {
@@ -21,14 +22,26 @@ fn linear_to_gamma(linear_component: f64) -> f64 {
 }
 
 impl Color {
-    pub fn black() -> Color {
-        Color::new(0.0, 0.0, 0.0)
+    pub const fn black() -> Color {
+        Color {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        }
     }
-    pub fn white() -> Color {
-        Color::new(1.0, 1.0, 1.0)
+    pub const fn white() -> Color {
+        Color {
+            x: 1.0,
+            y: 1.0,
+            z: 1.0,
+        }
     }
     pub fn blue() -> Color {
-        Color::new(0.7, 0.8, 1.0)
+        Color {
+            x: 0.7,
+            y: 0.8,
+            z: 1.0,
+        }
     }
 }
 

@@ -1184,7 +1184,8 @@ fn spherical_mirror() {
     world.add(sphere_light);
 
     let metal: Arc<Metal> = metal(Color::new(0.8, 0.8, 0.8), 0.0);
-    let mirror_sphere_small: Quadric = quadric_sphere(Point3::new(0.0, 0.0, 0.0), 10.0, metal.clone());
+    let mirror_sphere_small: Quadric =
+        quadric_sphere(Point3::new(0.0, 0.0, 0.0), 10.0, metal.clone());
     world.add(mirror_sphere_small);
 
     // Group of spheres
@@ -1198,7 +1199,8 @@ fn spherical_mirror() {
 
     world.add(spheres.to_bvh_node());
 
-    let blue: Arc<Lambertian> = Lambertian::from_color(Color::new(0.0, 48.0/255.0, 143.0/255.0));
+    let blue: Arc<Lambertian> =
+        Lambertian::from_color(Color::new(0.0, 48.0 / 255.0, 143.0 / 255.0));
 
     world.add(Parallelogram::new(
         Point3::new(-30.0, -30.0, -30.0),

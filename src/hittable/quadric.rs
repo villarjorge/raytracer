@@ -28,7 +28,7 @@ impl Hittable for Quadric {
         let o: Point3 = ray.origin;
         let d: Point3 = ray.direction;
 
-        // Use sympy_quadric.py to get these coeficients
+        // Use scripts/sympy_quadric.py to get these coeficients. Transform h = -0.5 * b like in sphere
         let a: f64 = self.p1.dot(d * d) + self.p2.dot(prod1(&d, &d));
         let h: f64 =
             -self.p1.dot(d * o) - 0.5 * self.p2.dot(anticross(&d, &o)) - 0.5 * self.p3.dot(d);
@@ -55,8 +55,8 @@ impl Hittable for Quadric {
 
         let p: Point3 = ray.at(root);
 
-        // This is also in sympy_quadric.py
-        let normal: Vector3 = Point3 {
+        // This was also obtained with scripts/sympy_quadric.py
+        let normal: Vector3 = Vector3 {
             x: 2.0 * self.p1.x * p.x + self.p2.x * p.y + self.p2.y * p.z,
             y: 2.0 * self.p1.y * p.y + self.p2.x * p.x + self.p2.z * p.z,
             z: 2.0 * self.p1.z * p.z + self.p2.y * p.x + self.p2.z * p.y,
