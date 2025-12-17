@@ -31,11 +31,12 @@ impl Hittable for Quadric {
         // Use sympy_quadric.py to get these coeficients
         // To do: clean this up further like in sphere b = -2h => h = -1/2 b
         let a: f64 = self.p1.dot(d * d) + self.p2.dot(prod1(&d, &d));
-        let b: f64 = 2.0 * self.p1.dot(d * o) + self.p2.dot(anticross(&d, &o)) + self.p3.dot(d);
+        let h: f64 =
+            -self.p1.dot(d * o) - 0.5 * self.p2.dot(anticross(&d, &o)) - 0.5 * self.p3.dot(d);
         let c: f64 = self.p1.dot(o * o) + self.p2.dot(anticross(&o, &o)) + self.p3.dot(o) + self.j;
 
         // Once you have those coeficients, you procede in basically the same way as in sphere
-        let discriminant: f64 = b * b - 4.0 * a * c;
+        let discriminant: f64 = h * h - a * c;
 
         if discriminant < 0.0 {
             return false;
@@ -44,10 +45,10 @@ impl Hittable for Quadric {
         let sqrt_discriminant: f64 = f64::sqrt(discriminant);
 
         // Find the nearest root that lies in the acceptable range
-        let mut root: f64 = (-b - sqrt_discriminant) / (2.0 * a);
+        let mut root: f64 = (h - sqrt_discriminant) / a;
 
         if !ray_t.contains(&root) {
-            root = (-b + sqrt_discriminant) / (2.0 * a);
+            root = (h + sqrt_discriminant) / a;
             if !ray_t.contains(&root) {
                 return false;
             }
@@ -62,8 +63,6 @@ impl Hittable for Quadric {
             z: 2.0 * self.p1.z * p.z + self.p2.y * p.x + self.p2.z * p.y,
         } + self.p3;
 
-        // To do: To deal with the material, dereference the pointer, then create a reference. Change this so you don't
-        // let record: HitRecord = HitRecord::new(ray, root, outward_normal, &*self.material, surface_coords);
         hit_record.t = root;
         hit_record.p = p;
 
@@ -73,6 +72,7 @@ impl Hittable for Quadric {
         } else {
             unit_vector(normal)
         };
+        
         hit_record.set_face_normal(ray, outward_normal);
 
         hit_record.material = self.material.clone();

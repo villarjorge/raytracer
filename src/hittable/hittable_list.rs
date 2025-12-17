@@ -2,6 +2,7 @@ use std::ops::Range;
 use std::sync::Arc;
 
 use crate::aabb::{AABB, join_aabbs};
+use crate::bvh::BVHNode;
 use crate::hittable::{HitRecord, Hittable};
 use crate::ray::Ray;
 
@@ -37,6 +38,9 @@ impl HittableList {
     }
     pub fn to_hittable_slice(self) -> HittableSlice {
         HittableSlice::from_hittable_list(self)
+    }
+    pub fn to_bvh_node(self) -> BVHNode {
+        BVHNode::from_hittable_list(self)
     }
 }
 

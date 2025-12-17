@@ -53,6 +53,9 @@ pub struct ImageQuality {
 }
 
 impl ImageQuality {
+    pub fn new(samples_per_pixel: u32, max_depth: u32) -> ImageQuality {
+        ImageQuality { samples_per_pixel, max_depth }
+    }
     /// A low quality preset for debuging and prototyping. It has 20 samples per pixel and rays stop after 4 bounces
     pub fn low_quality() -> ImageQuality {
         ImageQuality {

@@ -27,6 +27,9 @@ impl Color {
     pub fn white() -> Color {
         Color::new(1.0, 1.0, 1.0)
     }
+    pub fn blue() -> Color {
+        Color::new(0.7, 0.8, 1.0)
+    }
 }
 
 /// Process the color from linear space rgb to u8 rgb by tranforming from linear to gamma, clamping it to the 0..1 range and mutipling it by 256.

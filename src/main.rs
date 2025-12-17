@@ -18,6 +18,7 @@ use rand::{Rng, SeedableRng};
 use crate::bvh::BVHNode;
 use crate::camera::{Camera, CameraPosition, ImageQuality, ThinLens};
 use crate::hittable::hittable_list::HittableSlice;
+use crate::hittable::quadric::{Quadric, quadric_sphere};
 use crate::hittable::triangle::{Triangle, load_model};
 use crate::hittable::{
     constant_medium::ConstantMedium,
@@ -139,7 +140,7 @@ fn many_spheres() {
         vfov,
         thin_lens,
         camera_position,
-        Color::new(0.7, 0.8, 1.0),
+        Color::blue(),
     );
 
     // To do: Make this a parameter that can be passed in the console
@@ -988,7 +989,7 @@ fn cornell_triangle() {
 }
 
 fn profiler_scene(image_width: u32, samples_per_pixel: u32, max_depth: u32) {
-    // Similar to the final scene but with some of the random elements removed to asses performance
+    // Similar to the final scene but with some of the random elements removed to assess performance
     // boxes for the ground
     let mut boxes1: HittableList = HittableList::default();
     let ground: Arc<Lambertian> = Lambertian::from_color(Point3::new(0.48, 0.83, 0.53));
@@ -1175,9 +1176,81 @@ fn cornell_model() {
     cam.thrender(&HittableSlice::from_hittable_list(world));
 }
 
+fn spherical_mirror() {
+    let mut world: HittableList = HittableList::default();
+
+    let diffuse_light: Arc<DiffuseLight> = DiffuseLight::from_color(Point3::new(15.0, 15.0, 15.0));
+    let sphere_light: Sphere = Sphere::new(Point3::new(0.0, 300.0, 0.0), 100.0, diffuse_light);
+    world.add(sphere_light);
+
+    let metal: Arc<Metal> = metal(Color::new(0.8, 0.8, 0.8), 0.0);
+    let mirror_sphere_small: Sphere = Sphere::new(Point3::new(0.0, 0.0, 0.0), 10.0, metal.clone());
+    world.add(mirror_sphere_small);
+
+    // Group of spheres
+    let mut spheres: HittableList = HittableList::default();
+    let white: Arc<Lambertian> = Lambertian::from_color(Point3::new(0.73, 0.73, 0.73));
+
+    let number_of_spheres: u32 = 100;
+    for _ in 0..number_of_spheres {
+        spheres.add(Sphere::new(random_vector(-25.0, 25.0), 1.0, white.clone()));
+    }
+
+    world.add(spheres.to_bvh_node());
+
+    let blue: Arc<Lambertian> = Lambertian::from_color(Color::new(0.0, 48.0/255.0, 143.0/255.0));
+
+    world.add(Parallelogram::new(
+        Point3::new(-30.0, -30.0, -30.0),
+        Point3::new(60.0, 0.0, 0.0),
+        Point3::new(0.0, 0.0, 60.0),
+        blue.clone(),
+    ));
+
+    let mirror_sphere_big: Sphere = Sphere::new(Point3::new(0.0, 0.0, 0.0), 600.0, metal.clone());
+    world.add(mirror_sphere_big);
+
+    let aspect_ratio: f64 = 1.0;
+    let image_width: u32 = 600;
+    let image_quality: ImageQuality = ImageQuality::low_quality();
+
+    let background_color: Color = Color::black();
+
+    let vfov: f64 = 40.0;
+    let defocus_angle: f64 = 0.0;
+    let focus_distance: f64 = 10.0;
+
+    let lens: ThinLens = ThinLens {
+        defocus_angle,
+        focus_distance,
+    };
+
+    let look_from: Point3 = Point3::new(-100.0, 0.0, 0.0);
+    let look_at: Point3 = Point3::new(0.0, 0.0, 0.0);
+    let view_up: Point3 = Point3::new(0.0, 1.0, 0.0);
+
+    let camera_position: CameraPosition = CameraPosition {
+        look_from,
+        look_at,
+        view_up,
+    };
+
+    let cam: Camera = Camera::new(
+        aspect_ratio,
+        image_width,
+        image_quality,
+        vfov,
+        lens,
+        camera_position,
+        background_color,
+    );
+
+    cam.thrender(&world.to_hittable_slice());
+}
+
 fn main() {
     let now: Instant = Instant::now();
-    let scene_number: u32 = 9;
+    let scene_number: u32 = 15;
 
     match scene_number {
         0 => many_spheres(),
@@ -1195,8 +1268,9 @@ fn main() {
         12 => profiler_scene(400, 20, 4),
         13 => final_scene(800, 200, 50),
         14 => cornell_model(),
+        15 => spherical_mirror(),
         _ => final_scene(400, 20, 4),
     }
 
-    println!("Time: {:.2?}", now.elapsed());
+    println!("Image rendered in: {:.2?}", now.elapsed());
 }
