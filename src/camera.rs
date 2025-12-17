@@ -237,7 +237,7 @@ impl Camera {
     // Very easy to convert into parallel code once you know that par_enumerate_pixels_mut exists and you manage to sort out its dependencies
     // For a while it said that image_buffer.par_enumerate_pixels_mut() was not an iterator
     // The constraint also needed to be added to the traits: Hittable, Material and Texture
-    // To do: this function only gets you about a 2 times speed improvement
+    // To do: Multithreadin only gets you about a 2 times speed improvement
     pub fn thrender(&self, world: &(dyn Hittable + Sync + Send)) {
         let mut image_buffer: ImageBuffer<image::Rgb<u8>, Vec<u8>> =
             RgbImage::new(self.image_width, self.image_height);

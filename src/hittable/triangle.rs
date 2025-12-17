@@ -60,8 +60,6 @@ impl Triangle {
     }
 }
 
-// To do: extend triangle to any polygon. How to do it efficiently and with little code?
-
 impl Hittable for Triangle {
     /// Ray-triangle intersection will be determined in three steps:
     ///     1. Finding the plane Ax + By + Cz = d that contains that triangle,

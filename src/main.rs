@@ -872,7 +872,7 @@ fn cornell_quadric() {
         background_color,
     );
 
-    cam.render(&HittableSlice::from_hittable_list(world));
+    cam.thrender(&HittableSlice::from_hittable_list(world));
 }
 
 fn debug_quadric() {
@@ -1177,7 +1177,7 @@ fn cornell_model() {
 
 fn main() {
     let now: Instant = Instant::now();
-    let scene_number: u32 = 13;
+    let scene_number: u32 = 9;
 
     match scene_number {
         0 => many_spheres(),

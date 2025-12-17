@@ -118,90 +118,46 @@ fn is_interior(alpha: f64, beta: f64) -> bool {
 pub fn create_box(a: Point3, b: Point3, material: Arc<dyn Material>) -> HittableList {
     let mut sides: HittableList = HittableList::default();
 
-    let vertex_min: Point3 = Point3 {
-        x: a.x.min(b.x),
-        y: a.y.min(b.y),
-        z: a.z.min(b.z),
-    };
-    let vertex_max: Point3 = Point3 {
-        x: a.x.max(b.x),
-        y: a.y.max(b.y),
-        z: a.z.max(b.z),
-    };
+    let vertex_min: Point3 = Point3::new(a.x.min(b.x), a.y.min(b.y), a.z.min(b.z));
+    let vertex_max: Point3 = Point3::new(a.x.max(b.x), a.y.max(b.y), a.z.max(b.z));
 
-    let dx: Point3 = Point3 {
-        x: vertex_max.x - vertex_min.x,
-        y: 0.0,
-        z: 0.0,
-    };
-    let dy: Point3 = Point3 {
-        x: 0.0,
-        y: vertex_max.y - vertex_min.y,
-        z: 0.0,
-    };
-    let dz: Point3 = Point3 {
-        x: 0.0,
-        y: 0.0,
-        z: vertex_max.z - vertex_min.z,
-    };
+    let dx: Point3 = Point3::new(vertex_max.x - vertex_min.x, 0.0, 0.0);
+    let dy: Point3 = Point3::new(0.0, vertex_max.y - vertex_min.y, 0.0);
+    let dz: Point3 = Point3::new(0.0, 0.0, vertex_max.z - vertex_min.z);
 
     // To do: think of a better way to do this with a loop and an indicator
     sides.add(Parallelogram::new(
-        Point3 {
-            x: vertex_min.x,
-            y: vertex_min.y,
-            z: vertex_max.z,
-        },
+        Point3::new(vertex_min.x, vertex_min.y, vertex_max.z),
         dx,
         dy,
         material.clone(),
     ));
     sides.add(Parallelogram::new(
-        Point3 {
-            x: vertex_max.x,
-            y: vertex_min.y,
-            z: vertex_max.z,
-        },
+        Point3::new(vertex_max.x, vertex_min.y, vertex_max.z),
         -dz,
         dy,
         material.clone(),
     ));
     sides.add(Parallelogram::new(
-        Point3 {
-            x: vertex_max.x,
-            y: vertex_min.y,
-            z: vertex_min.z,
-        },
+        Point3::new(vertex_max.x, vertex_min.y, vertex_min.z),
         -dx,
         dy,
         material.clone(),
     ));
     sides.add(Parallelogram::new(
-        Point3 {
-            x: vertex_min.x,
-            y: vertex_min.y,
-            z: vertex_min.z,
-        },
+        Point3::new(vertex_min.x, vertex_min.y, vertex_min.z),
         dz,
         dy,
         material.clone(),
     ));
     sides.add(Parallelogram::new(
-        Point3 {
-            x: vertex_min.x,
-            y: vertex_max.y,
-            z: vertex_max.z,
-        },
+        Point3::new(vertex_min.x, vertex_max.y, vertex_max.z),
         dx,
         -dz,
         material.clone(),
     ));
     sides.add(Parallelogram::new(
-        Point3 {
-            x: vertex_min.x,
-            y: vertex_min.y,
-            z: vertex_min.z,
-        },
+        Point3::new(vertex_min.x, vertex_min.y, vertex_min.z),
         dx,
         dz,
         material.clone(),

@@ -21,7 +21,6 @@ pub struct HitRecord {
     /// Normal at that point
     pub normal: Vector3,
     /// Material at the given intersection
-    // To do: change this to a Rc<dyn Material>
     pub material: Arc<dyn Material>, // &'a Box<dyn Material>
     /// Parameter of the ray at the intersection
     pub t: f64,

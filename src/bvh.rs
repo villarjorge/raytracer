@@ -91,7 +91,6 @@ impl BVHNode {
         // To do: This threshold controls how many objects there are in the leaf nodes. Optimize for performance
         const THRESHOLD: usize = 4;
 
-        // To do: consider using a double end queue instead of a vector
         if objects.len() <= THRESHOLD {
             let mut hittable_list: HittableList = HittableList::default();
 

@@ -1,4 +1,3 @@
-// To do: implement general quadric
 // http://skuld.bmsc.washington.edu/people/merritt/graphics/quadrics.html
 
 use std::ops::Range;
