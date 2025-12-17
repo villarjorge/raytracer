@@ -47,6 +47,7 @@ impl HitRecord {
 
     //     HitRecord {p, normal, material, t, surface_coords, front_face}
     // }
+    /// Sets the normal of the hit record. outward_normal is assumed to have unit lenght
     pub fn set_face_normal(&mut self, ray: &Ray, outward_normal: Vector3) {
         self.front_face = outward_normal.dot(ray.direction) < 0.0;
         self.normal = if self.front_face {

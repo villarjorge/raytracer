@@ -1184,7 +1184,7 @@ fn spherical_mirror() {
     world.add(sphere_light);
 
     let metal: Arc<Metal> = metal(Color::new(0.8, 0.8, 0.8), 0.0);
-    let mirror_sphere_small: Sphere = Sphere::new(Point3::new(0.0, 0.0, 0.0), 10.0, metal.clone());
+    let mirror_sphere_small: Quadric = quadric_sphere(Point3::new(0.0, 0.0, 0.0), 10.0, metal.clone());
     world.add(mirror_sphere_small);
 
     // Group of spheres
@@ -1206,13 +1206,13 @@ fn spherical_mirror() {
         Point3::new(0.0, 0.0, 60.0),
         blue.clone(),
     ));
-
-    let mirror_sphere_big: Sphere = Sphere::new(Point3::new(0.0, 0.0, 0.0), 600.0, metal.clone());
-    world.add(mirror_sphere_big);
+    // To do: being inside a sphere does not seem to work
+    // let mirror_sphere_big: Quadric = quadric_sphere(Point3::new(0.0, 0.0, 0.0), 600.0, metal.clone());
+    // world.add(mirror_sphere_big);
 
     let aspect_ratio: f64 = 1.0;
     let image_width: u32 = 600;
-    let image_quality: ImageQuality = ImageQuality::low_quality();
+    let image_quality: ImageQuality = ImageQuality::medium_quality();
 
     let background_color: Color = Color::black();
 

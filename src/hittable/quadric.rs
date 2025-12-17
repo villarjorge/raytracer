@@ -29,7 +29,6 @@ impl Hittable for Quadric {
         let d: Point3 = ray.direction;
 
         // Use sympy_quadric.py to get these coeficients
-        // To do: clean this up further like in sphere b = -2h => h = -1/2 b
         let a: f64 = self.p1.dot(d * d) + self.p2.dot(prod1(&d, &d));
         let h: f64 =
             -self.p1.dot(d * o) - 0.5 * self.p2.dot(anticross(&d, &o)) - 0.5 * self.p3.dot(d);
@@ -65,14 +64,16 @@ impl Hittable for Quadric {
 
         hit_record.t = root;
         hit_record.p = p;
-
+        // Make the normal unit lenght
+        let outward_normal: Point3 = unit_vector(normal);
+        // Leave this here to remember, this is already done in set face normal
         // If the ray originates inside of the surface, reverse the normal
-        let outward_normal: Point3 = if dot(&d, &p) > 0.0 {
-            -unit_vector(normal)
-        } else {
-            unit_vector(normal)
-        };
-        
+        // let outward_normal: Point3 = if dot(&d, &p) > 0.0 {
+        //     -unit_vector(normal)
+        // } else {
+        //     unit_vector(normal)
+        // };
+
         hit_record.set_face_normal(ray, outward_normal);
 
         hit_record.material = self.material.clone();
