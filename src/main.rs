@@ -1262,7 +1262,7 @@ fn spherical_mirror() {
 
 fn main() {
     let now: Instant = Instant::now();
-    let scene_number: u32 = 14;
+    let scene_number: u32 = 151;
 
     match scene_number {
         0 => many_spheres(),

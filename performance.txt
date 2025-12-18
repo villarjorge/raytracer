@@ -49,3 +49,5 @@
     cornell_model() on low preset: single threaded: 63.50s, multithreaded: 25.04s
         Changed to 12 primitives per leaf of bvh tree and went from 24.11s to 10.68s
         Changed to 14 primitives: 8.82s
+
+    final_scene(400, 20, 4): single threaded: 16.37s, multithreaded (HittableSlice): 8.96s, multithreaded (Arc<HittableArray) 8.39s

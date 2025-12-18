@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use crate::aabb::join_aabbs;
 use crate::hittable::HitRecord;
-use crate::hittable::hittable_list::{HittableArray, HittableList, HittableSlice};
+use crate::hittable::hittable_list::{HittableList, HittableSlice};
 use crate::ray::Ray;
 use crate::{aabb::AABB, hittable::Hittable};
 
@@ -12,7 +12,7 @@ use crate::{aabb::AABB, hittable::Hittable};
 // https://doc.rust-lang.org/std/collections/struct.BTreeMap.html
 pub enum BVHNode {
     Leaf {
-        // objects: HittableArray,
+        // objects: Arc<HittableArray>,
         objects: HittableSlice,
         bounding_box: AABB,
     },
@@ -90,11 +90,13 @@ impl BVHNode {
         for object in &objects {
             bounding_box = join_aabbs(&bounding_box, object.bounding_box())
         }
-        // choose the longest axis to split
+        // Choose the longest axis to split
+        // To do: implement a surface area heuristic
         let axis: u8 = bounding_box.longest_axis();
 
         // To do: This threshold controls how many objects there are in the leaf nodes. Optimize for performance
-        const THRESHOLD: usize = 16;
+        // To do: this threshold needs to be the same as HITTABLEARRAYTHRESHOLD for the program to run
+        const THRESHOLD: usize = 16; // Seems like odd values are slower. Optimum is 16 for cornell_model() scene (8s?)
 
         if objects.len() <= THRESHOLD {
             let mut hittable_list: HittableList = HittableList::default();
@@ -107,7 +109,7 @@ impl BVHNode {
 
             BVHNode::Leaf {
                 objects: HittableSlice::from_hittable_list(hittable_list),
-                // objects: HittableArray::new(hittable_list),
+                // objects: Arc::new(HittableArray::new(hittable_list)),
                 bounding_box,
             }
         } else {

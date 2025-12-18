@@ -114,6 +114,14 @@ pub struct HittableArray {
 
 impl HittableArray {
     pub fn new(mut hittable_list: HittableList) -> HittableArray {
+        if hittable_list.objects.len() > HITTABLEARRAYTHRESHOLD {
+            panic!(
+                "Expected vector of size {}, but was {}",
+                HITTABLEARRAYTHRESHOLD,
+                hittable_list.objects.len()
+            )
+        }
+
         let bounding_box: AABB = hittable_list.bounding_box;
 
         let mut objects: [Option<Arc<dyn Hittable>>; HITTABLEARRAYTHRESHOLD] =
