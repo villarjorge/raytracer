@@ -17,7 +17,7 @@ pub enum BVHNode {
     },
     Internal {
         // When multithreading is implemented, these Boxes will have to become Arc
-        // Or will they? I don't think I need to modify data nor clone pointers on the fly, just access data, so Arc and box should be fine
+        // Or will they? I don't think I need to modify data nor clone pointers on the fly, just access data, so Rc and box should be fine
         left: Arc<dyn Hittable>,
         right: Arc<dyn Hittable>,
         bounding_box: AABB,
@@ -89,11 +89,11 @@ impl BVHNode {
         for object in &objects {
             bounding_box = join_aabbs(&bounding_box, object.bounding_box())
         }
-
+        // choose the longest axis to split
         let axis: u8 = bounding_box.longest_axis();
 
         // To do: This threshold controls how many objects there are in the leaf nodes. Optimize for performance
-        const THRESHOLD: usize = 4;
+        const THRESHOLD: usize = 16;
 
         if objects.len() <= THRESHOLD {
             let mut hittable_list: HittableList = HittableList::default();

@@ -47,3 +47,5 @@
     With multithreading I am only seeing an improvement of around 2 times in the final scene
 18/10/2025
     cornell_model() on low preset: single threaded: 63.50s, multithreaded: 25.04s
+        Changed to 12 primitives per leaf of bvh tree and went from 24.11s to 10.68s
+        Changed to 14 primitives: 8.82s

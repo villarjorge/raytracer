@@ -102,3 +102,53 @@ impl Hittable for HittableSlice {
         &self.bounding_box
     }
 }
+
+pub const HITTABLEARRAYTHRESHOLD: usize = 16;
+
+pub struct HittableArray {
+    objects: [Arc<dyn Hittable>; HITTABLEARRAYTHRESHOLD],
+    bounding_box: AABB,
+}
+
+impl HittableArray {
+    pub fn new(hittable_list: HittableList) -> HittableArray {
+        let bounding_box: AABB = hittable_list.bounding_box;
+
+        let objects: [Arc<dyn Hittable>; HITTABLEARRAYTHRESHOLD] = hittable_list
+            .objects
+            .try_into()
+            .unwrap_or_else(|v: Vec<Arc<dyn Hittable>>| {
+                panic!(
+                    "Expected a Vec of length {} but it was {}",
+                    HITTABLEARRAYTHRESHOLD,
+                    v.len()
+                )
+            });
+
+        HittableArray {
+            objects,
+            bounding_box,
+        }
+    }
+}
+
+impl Hittable for HittableArray {
+    fn hit(&self, ray: &Ray, ray_t: &Range<f64>, hit_record: &mut HitRecord) -> bool {
+        let mut temp_record: HitRecord = hit_record.clone();
+        let mut hit_anything: bool = false;
+        let mut closest_so_far: f64 = ray_t.end; // max
+        // Dereference the outer arc
+        for object in &self.objects {
+            if object.hit(ray, &(ray_t.start..closest_so_far), &mut temp_record) {
+                hit_anything = true;
+                closest_so_far = temp_record.t;
+                *hit_record = temp_record.clone();
+            }
+        }
+
+        hit_anything
+    }
+    fn bounding_box(&self) -> &AABB {
+        &self.bounding_box
+    }
+}
