@@ -243,7 +243,7 @@ impl Camera {
     // Very easy to convert into parallel code once you know that par_enumerate_pixels_mut exists and you manage to sort out its dependencies
     // For a while it said that image_buffer.par_enumerate_pixels_mut() was not an iterator
     // The constraint also needed to be added to the traits: Hittable, Material and Texture
-    // To do: Multithreadin only gets you about a 2 times speed improvement
+    // To do: Multithreading only gets you about a 2 times speed improvement
     pub fn thrender(&self, world: &(dyn Hittable + Sync + Send)) {
         let mut image_buffer: ImageBuffer<image::Rgb<u8>, Vec<u8>> =
             RgbImage::new(self.image_width, self.image_height);
@@ -269,6 +269,23 @@ impl Camera {
         image_buffer.save("images/image.png").unwrap();
     }
 }
+
+// For reference, here is how you could iterate over one range and unpack i and j.
+// These two for loops produce the same result
+// let w = 5;
+// let h = 2;
+
+// for x in 0..w*h {
+//     let i = x%w;
+//     let j = x/w;
+//     println!("i:{}, j:{}", i, j);
+// }
+// println!();
+// for j in 0..h {
+//     for i in 0..w {
+//         println!("i:{}, j:{}", i, j);
+//     }
+// }
 
 // Private
 

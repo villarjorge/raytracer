@@ -33,7 +33,8 @@ pub fn create_perlin_noise() -> PerlinNoise {
 fn perlin_generate_perm() -> [u32; POINT_COUNT as usize] {
     let mut perm: [u32; POINT_COUNT as usize] = from_fn(|i| i as u32);
     // You have to reverse it, something like n..1 will be silently initialized as empty
-    for i in (1..POINT_COUNT as usize).rev() {
+    // for i in (1..POINT_COUNT as usize).rev() { // Clippy will cach this error unless you do an "as" conversion, like Im doing in this commented line
+    for i in (POINT_COUNT as usize)..0 {
         let j: usize = random_range(0..=i) as usize;
         perm.swap(i, j);
     }

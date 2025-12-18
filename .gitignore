@@ -3,3 +3,4 @@
 /textures
 /models
 Cargo.lock
+cargo-flamegraph.stacks

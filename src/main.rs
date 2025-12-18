@@ -494,10 +494,18 @@ fn create_empty_cornell_box() -> HittableList {
         Point3::new(0.0, 0.0, 555.0),
         red,
     ));
+    // Smaller light
+    // world.add(Parallelogram::new(
+    //     Point3::new(343.0, 554.0, 332.0),
+    //     Point3::new(-130.0, 0.0, 0.0),
+    //     Point3::new(0.0, 0.0, -105.0),
+    //     diffuse_light,
+    // ));
+    // Bigger light
     world.add(Parallelogram::new(
-        Point3::new(343.0, 554.0, 332.0),
-        Point3::new(-130.0, 0.0, 0.0),
-        Point3::new(0.0, 0.0, -105.0),
+        Point3::new(113.0, 554.0, 127.0),
+        Point3::new(330.0, 0.0, 0.0),
+        Point3::new(0.0, 0.0, 305.0),
         diffuse_light,
     ));
     world.add(Parallelogram::new(

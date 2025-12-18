@@ -24,5 +24,13 @@ And the one that I have added:
 
 - Quadric: Can represent a wide range of primitives. Currently only cylinder, sphere and cone
 
+## Profiling
+
+I tried to use cargo flamegraph, but it failed miserably. It gave the following error:
+
+    Error: failed to read dtrace expected output file 'cargo-flamegraph.stacks'
+
+Saing that it ran out of memory. The file 'cargo-flamegraph.stacks' was around 300 Gb.
+
 [one_weekend]: https://raytracing.github.io/books/RayTracingInOneWeekend.html
 [next_week]: https://raytracing.github.io/books/RayTracingTheNextWeek.html
