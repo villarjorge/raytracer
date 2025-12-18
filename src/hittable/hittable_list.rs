@@ -1,3 +1,5 @@
+// To do: rename this file to hittable_collections or move HittableSlice and HittableArray to diferent files
+
 use std::ops::Range;
 use std::sync::Arc;
 
@@ -106,24 +108,20 @@ impl Hittable for HittableSlice {
 pub const HITTABLEARRAYTHRESHOLD: usize = 16;
 
 pub struct HittableArray {
-    objects: [Arc<dyn Hittable>; HITTABLEARRAYTHRESHOLD],
+    objects: [Option<Arc<dyn Hittable>>; HITTABLEARRAYTHRESHOLD],
     bounding_box: AABB,
 }
 
 impl HittableArray {
-    pub fn new(hittable_list: HittableList) -> HittableArray {
+    pub fn new(mut hittable_list: HittableList) -> HittableArray {
         let bounding_box: AABB = hittable_list.bounding_box;
 
-        let objects: [Arc<dyn Hittable>; HITTABLEARRAYTHRESHOLD] = hittable_list
-            .objects
-            .try_into()
-            .unwrap_or_else(|v: Vec<Arc<dyn Hittable>>| {
-                panic!(
-                    "Expected a Vec of length {} but it was {}",
-                    HITTABLEARRAYTHRESHOLD,
-                    v.len()
-                )
-            });
+        let mut objects: [Option<Arc<dyn Hittable>>; HITTABLEARRAYTHRESHOLD] =
+            [const { None }; HITTABLEARRAYTHRESHOLD];
+
+        for (i, obj) in hittable_list.objects.drain(..).enumerate() {
+            objects[i] = Some(obj);
+        }
 
         HittableArray {
             objects,
@@ -137,12 +135,17 @@ impl Hittable for HittableArray {
         let mut temp_record: HitRecord = hit_record.clone();
         let mut hit_anything: bool = false;
         let mut closest_so_far: f64 = ray_t.end; // max
-        // Dereference the outer arc
-        for object in &self.objects {
-            if object.hit(ray, &(ray_t.start..closest_so_far), &mut temp_record) {
-                hit_anything = true;
-                closest_so_far = temp_record.t;
-                *hit_record = temp_record.clone();
+
+        for option_object in &self.objects {
+            match option_object {
+                Some(object) => {
+                    if object.hit(ray, &(ray_t.start..closest_so_far), &mut temp_record) {
+                        hit_anything = true;
+                        closest_so_far = temp_record.t;
+                        *hit_record = temp_record.clone();
+                    }
+                }
+                None => break,
             }
         }
 

@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use crate::aabb::join_aabbs;
 use crate::hittable::HitRecord;
-use crate::hittable::hittable_list::{HittableList, HittableSlice};
+use crate::hittable::hittable_list::{HittableArray, HittableList, HittableSlice};
 use crate::ray::Ray;
 use crate::{aabb::AABB, hittable::Hittable};
 
@@ -12,6 +12,7 @@ use crate::{aabb::AABB, hittable::Hittable};
 // https://doc.rust-lang.org/std/collections/struct.BTreeMap.html
 pub enum BVHNode {
     Leaf {
+        // objects: HittableArray,
         objects: HittableSlice,
         bounding_box: AABB,
     },
@@ -106,6 +107,7 @@ impl BVHNode {
 
             BVHNode::Leaf {
                 objects: HittableSlice::from_hittable_list(hittable_list),
+                // objects: HittableArray::new(hittable_list),
                 bounding_box,
             }
         } else {
