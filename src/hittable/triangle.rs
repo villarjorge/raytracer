@@ -28,9 +28,9 @@ pub struct Triangle {
 }
 
 fn create_aabb_para(q: Point3, u: Point3, v: Point3) -> AABB {
-    // Create the bounding boxes for each diagonal and then join them
-    let bounding_box0: AABB = AABB::from_points(q, q + u + v);
-    let bounding_box1: AABB = AABB::from_points(q + u, q + v);
+    // Create bounding boxes for the two sides and join them
+    let bounding_box0: AABB = AABB::from_points(q, q + u);
+    let bounding_box1: AABB = AABB::from_points(q, q + v);
 
     join_aabbs(&bounding_box0, &bounding_box1)
 }

@@ -268,6 +268,26 @@ impl Camera {
         println!("\nRender done!");
         image_buffer.save("images/image.png").unwrap();
     }
+
+    // pub fn thrender(&self, world: &(dyn Hittable + Sync + Send)) {
+    //     println!("Scan lines progress:");
+    //     // To do: change this progress to something that does not update as often
+    //     let image_buffer: ImageBuffer<image::Rgb<u8>, Vec<u8>> =
+    //         ImageBuffer::from_par_fn(self.image_width, self.image_height, |i: u32, j: u32| {
+    //             let pixel_color: Color = (0..self.samples_per_pixel)
+    //                 .into_par_iter()
+    //                 .map(|_| {
+    //                     let r: Ray = self.get_ray(i, j);
+    //                     ray_color2(&r, self.max_depth, world, self.background_color)
+    //                 })
+    //                 .sum();
+    //             image::Rgb(proccess_color(
+    //                 pixel_color / (self.samples_per_pixel as f64),
+    //             ))
+    //         });
+    //     println!("\nRender done!");
+    //     image_buffer.save("images/image.png").unwrap();
+    // }
 }
 
 // For reference, here is how you could iterate over one range and unpack i and j.
@@ -291,11 +311,7 @@ impl Camera {
 
 fn ray_color(given_ray: &Ray, depth: u32, world: &dyn Hittable, background_color: Color) -> Color {
     if depth == 0 {
-        return Color {
-            x: 0.0,
-            y: 0.0,
-            z: 0.0,
-        };
+        return Color::black();
     }
 
     let mut hit_record: HitRecord = HitRecord {

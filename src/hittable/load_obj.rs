@@ -12,6 +12,7 @@ use crate::point3::{Point3, Vector3};
 /// Load a BVHNode of polygons from a .obj file.
 /// Code from: https://www.justinthein.dev/ray_tracer/2021/07/21/ray_tracer_parser.html, extended a bit by me
 // To do: make use of the normals in the file, if they exist. In the creation of a polygon, is n normalized?
+// To do: triangulate polygons with more than three vertices https://en.wikipedia.org/wiki/Fan_triangulation
 // To do: support loading materials if provided. You would have to deal with .mtl, converting them to a Material
 pub fn load_model(model_path: &str, scale: f64, material: Arc<dyn Material>) -> BVHNode {
     let file: File = File::open(model_path).unwrap();
@@ -67,7 +68,7 @@ pub fn load_model(model_path: &str, scale: f64, material: Arc<dyn Material>) -> 
         Vector3::new(scale * coord[0], scale * coord[1], scale * coord[2])
     };
 
-    // To do: implement a general polygon and clean up this code
+    // To do: Instead of implementing a general polygon, triangulate non triangle polygons
 
     let get_triangle = |face: &Vec<usize>| -> Arc<dyn Hittable> {
         let v1: Point3 = point_from_vec(&vertex_coords[face[0]]);
