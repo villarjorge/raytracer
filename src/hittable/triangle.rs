@@ -62,8 +62,10 @@ impl Triangle {
         material: Arc<dyn Material>,
     ) -> Triangle {
         let q: Point3 = v1;
-        let u: Point3 = q - v2;
-        let v: Point3 = q - v3;
+        // q + u = v2 => u = v2 - q
+        let u: Point3 = v2 - q;
+        // q + v = v3 => v = v3 - q
+        let v: Point3 = v3 - q;
 
         let bounding_box: AABB = create_aabb_para(q, u, v);
 
@@ -91,8 +93,8 @@ impl Triangle {
         material: Arc<dyn Material>,
     ) -> Triangle {
         let q: Point3 = v1;
-        let u: Point3 = q - v2;
-        let v: Point3 = q - v3;
+        let u: Point3 = v2 - q;
+        let v: Point3 = v3 - q;
 
         let bounding_box: AABB = create_aabb_para(q, u, v);
 

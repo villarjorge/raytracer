@@ -1138,8 +1138,8 @@ fn cornell_model() {
     let mut world: HittableList = create_empty_cornell_box();
     let white: Arc<Lambertian> = Lambertian::from_color(Point3::new(0.73, 0.73, 0.73));
 
-    // let model: BVHNode = load_model("models/Pawn/CHAHIN_PAWN.obj", 750.0, white.clone());
-    let model: BVHNode = load_model("models/teapot.obj", 75.0, white.clone());
+    let model: BVHNode = load_model("models/Pawn/CHAHIN_PAWN.obj", 750.0, white.clone());
+    // let model: BVHNode = load_model("models/teapot.obj", 75.0, white.clone());
 
     world.add(Translate::new(
         Arc::new(model),
@@ -1260,9 +1260,56 @@ fn spherical_mirror() {
     cam.thrender(&world.to_hittable_slice());
 }
 
+fn debug_model() {
+    let mut world: HittableList = HittableList::default();
+
+    let white: Arc<Lambertian> = Lambertian::from_color(Point3::new(0.73, 0.73, 0.73));
+    // let model: BVHNode = load_model("models/Pawn/CHAHIN_PAWN.obj", 1.0, white.clone());
+    let model: BVHNode = load_model("models/teapot.obj", 1.0, white.clone());
+
+    world.add(model);
+
+    let aspect_ratio: f64 = 16.0/9.0;
+    let image_width: u32 = 600;
+    let image_quality: ImageQuality = ImageQuality::medium_quality();
+
+    let background_color: Color = Color::white();
+
+    let vfov: f64 = 40.0;
+    let defocus_angle: f64 = 0.0;
+    let focus_distance: f64 = 10.0;
+
+    let lens: ThinLens = ThinLens {
+        defocus_angle,
+        focus_distance,
+    };
+
+    let look_from: Point3 = Point3::new(0.0, 3.0, 8.0);
+    let look_at: Point3 = Point3::new(0.0, 2.0, 0.0);
+    let view_up: Point3 = Point3::new(0.0, 1.0, 0.0);
+
+    let camera_position: CameraPosition = CameraPosition {
+        look_from,
+        look_at,
+        view_up,
+    };
+
+    let cam: Camera = Camera::new(
+        aspect_ratio,
+        image_width,
+        image_quality,
+        vfov,
+        lens,
+        camera_position,
+        background_color,
+    );
+
+    cam.thrender(&world.to_hittable_slice());
+}
+
 fn main() {
     let now: Instant = Instant::now();
-    let scene_number: u32 = 151;
+    let scene_number: u32 = 16;
 
     match scene_number {
         0 => many_spheres(),
@@ -1281,6 +1328,7 @@ fn main() {
         13 => final_scene(800, 200, 50),
         14 => cornell_model(),
         15 => spherical_mirror(),
+        16 => debug_model(),
         _ => final_scene(400, 20, 4),
     }
 

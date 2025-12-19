@@ -26,11 +26,7 @@ pub trait Material: Sync + Send {
     }
 
     fn emitted(&self, _surface_coords: SurfaceCoordinate, _p: &Point3) -> Color {
-        Color {
-            x: 0.0,
-            y: 0.0,
-            z: 0.0,
-        }
+        Color::black()
     }
 }
 
@@ -82,10 +78,6 @@ impl Lambertian {
         Arc::new(Lambertian { texture })
     }
 }
-
-// pub fn lambertian(texture: Arc<dyn Texture>) -> Arc<Lambertian> {
-//     Arc::new(Lambertian{ texture })
-// }
 
 /// A metal material: it reflects according to Snell's law, with some randomness added, controled by the fuzz parameter
 pub struct Metal {

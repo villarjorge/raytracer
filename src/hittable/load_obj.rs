@@ -4,7 +4,6 @@ use std::sync::Arc;
 
 use crate::bvh::BVHNode;
 use crate::hittable::Hittable;
-use crate::hittable::parallelogram::Parallelogram;
 use crate::hittable::triangle::Triangle;
 use crate::material::Material;
 use crate::point3::{Point3, Vector3};
@@ -12,7 +11,6 @@ use crate::point3::{Point3, Vector3};
 /// Load a BVHNode of polygons from a .obj file.
 /// Code from: https://www.justinthein.dev/ray_tracer/2021/07/21/ray_tracer_parser.html, extended a bit by me
 // To do: make use of the normals in the file, if they exist. In the creation of a polygon, is n normalized?
-// To do: triangulate polygons with more than three vertices https://en.wikipedia.org/wiki/Fan_triangulation
 // To do: support loading materials if provided. You would have to deal with .mtl, converting them to a Material
 pub fn load_model(model_path: &str, scale: f64, material: Arc<dyn Material>) -> BVHNode {
     let file: File = File::open(model_path).unwrap();
@@ -39,9 +37,9 @@ pub fn load_model(model_path: &str, scale: f64, material: Arc<dyn Material>) -> 
                         .map(|s| s.split("/").next().unwrap().parse::<usize>().unwrap())
                         .map(|i| i - 1) // normalize into 0 index
                         .collect();
-                    if vertices.len() != 3 && vertices.len() != 4 {
-                        panic!("Only triangles and parallelogram polygons are supported")
-                    }
+                    // if vertices.len() != 3 && vertices.len() != 4 {
+                    //     panic!("Only triangles and parallelogram polygons are supported")
+                    // }
 
                     faces.push(vertices);
                 }
@@ -63,56 +61,37 @@ pub fn load_model(model_path: &str, scale: f64, material: Arc<dyn Material>) -> 
             }
         }
     }
-
+    // To do: move this to point3/mod.rs
     let point_from_vec = |coord: &Vec<f64>| -> Vector3 {
         Vector3::new(scale * coord[0], scale * coord[1], scale * coord[2])
     };
 
-    // To do: Instead of implementing a general polygon, triangulate non triangle polygons
-
-    let get_triangle = |face: &Vec<usize>| -> Arc<dyn Hittable> {
+    // triangulate polygons with more than three vertices by supposing that they are convex and going around in a fan https://en.wikipedia.org/wiki/Fan_triangulation
+    let get_triangles = |face: &Vec<usize>| -> Vec<Arc<dyn Hittable>> {
         let v1: Point3 = point_from_vec(&vertex_coords[face[0]]);
-        let v2: Point3 = point_from_vec(&vertex_coords[face[1]]);
-        let v3: Point3 = point_from_vec(&vertex_coords[face[2]]);
-        Arc::new(Triangle::from_vertex_locations(
-            v1,
-            v2,
-            v3,
-            material.clone(),
-        ))
-    };
 
-    let get_quadrilateral = |face: &Vec<usize>| -> Arc<dyn Hittable> {
-        let v1: Point3 = point_from_vec(&vertex_coords[face[0]]);
-        let v2: Point3 = point_from_vec(&vertex_coords[face[1]]);
-        let v3: Point3 = point_from_vec(&vertex_coords[face[2]]);
-        Arc::new(Parallelogram::from_vertex_locations(
-            v1,
-            v2,
-            v3,
-            material.clone(),
-        ))
-    };
+        let mut triangles_vec: Vec<Arc<dyn Hittable>> = Vec::new();
 
-    let get_polygon = |face: &Vec<usize>| -> Arc<dyn Hittable> {
-        // Ignore the last face value
-        if face.len() == 3 {
-            get_triangle(face)
-        } else if face.len() == 4 {
-            get_quadrilateral(face)
-        } else {
-            panic!()
+        // Weirldly, .windows returns slices, not something with a garanteed size
+        for slice in face[1..].windows(2) {
+            let v2: Point3 = point_from_vec(&vertex_coords[slice[0]]);
+            let v3: Point3 = point_from_vec(&vertex_coords[slice[1]]);
+
+            triangles_vec.push(Arc::new(Triangle::from_vertex_locations(
+                v1,
+                v2,
+                v3,
+                material.clone(),
+            )))
         }
+        triangles_vec
     };
 
-    let mut polygons: Vec<Arc<dyn Hittable>> = Vec::new();
+    let mut triangles: Vec<Arc<dyn Hittable>> = Vec::new();
 
     for face in faces {
-        polygons.push(get_polygon(&face));
+        triangles.extend(get_triangles(&face));
     }
 
-    BVHNode::from_vec(polygons)
-
-    // Remember how to get a slice https://stackoverflow.com/questions/39785597/how-do-i-get-a-slice-of-a-vect-in-rust
-    // And how to flatten the two zips https://stackoverflow.com/questions/29669287/how-can-i-zip-more-than-two-iterators
+    BVHNode::from_vec(triangles)
 }
