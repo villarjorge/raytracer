@@ -1138,19 +1138,28 @@ fn cornell_model() {
     let mut world: HittableList = create_empty_cornell_box();
     let white: Arc<Lambertian> = Lambertian::from_color(Point3::new(0.73, 0.73, 0.73));
 
-    let model: BVHNode = load_model("models/Pawn/CHAHIN_PAWN.obj", 750.0, white.clone());
-    // let model: BVHNode = load_model("models/teapot.obj", 75.0, white.clone());
+    let pawn: BVHNode = load_model("models/Pawn/CHAHIN_PAWN.obj", 600.0, white.clone());
 
     world.add(Translate::new(
-        Arc::new(model),
-        Point3::new(300.0, 175.0, 300.0),
+        Arc::new(pawn),
+        Point3::new(400.0, 200.0, 400.0),
+    ));
+
+    let teapot: BVHNode = load_model("models/teapot.obj", 50.0, white.clone());
+
+    world.add(RotateY::new(
+        Arc::new(Translate::new(
+            Arc::new(teapot),
+            Point3::new(75.0, 0.0, 200.0),
+        )),
+        50.0,
     ));
 
     let aspect_ratio: f64 = 1.0;
     // let image_width: u32 = 300;
     let image_width: u32 = 600;
-    let image_quality: ImageQuality = ImageQuality::low_quality();
-    // let image_quality: ImageQuality = ImageQuality::medium_quality();
+    // let image_quality: ImageQuality = ImageQuality::low_quality();
+    let image_quality: ImageQuality = ImageQuality::medium_quality();
 
     let background_color: Point3 = Point3::new(0.0, 0.0, 0.0);
 
@@ -1269,7 +1278,7 @@ fn debug_model() {
 
     world.add(model);
 
-    let aspect_ratio: f64 = 16.0/9.0;
+    let aspect_ratio: f64 = 16.0 / 9.0;
     let image_width: u32 = 600;
     let image_quality: ImageQuality = ImageQuality::low_quality();
 

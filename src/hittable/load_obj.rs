@@ -57,14 +57,14 @@ pub fn load_model(model_path: &str, scale: f64, material: Arc<dyn Material>) -> 
                         eprintln!("Ignoring normals");
                         seen_normals = false;
                     }
-                }, // ignore normals
-                "#" => (),                             // ignore comment line
+                } // ignore normals
+                "#" => (), // ignore comment line
                 "vt" => {
                     if seen_texture_coords {
                         eprintln!("Ignoring texture coordinates");
                         seen_texture_coords = false;
                     }
-                }, // ignore texture coordinates
+                } // ignore texture coordinates
                 "s" => eprintln!("Smooth shading is not supported, ignoring"),
                 "o" => eprintln!("Loading object with name {}", line_iter.collect::<String>()),
                 "vp" => eprintln!("Free form geometries are not supported"),
@@ -105,6 +105,6 @@ pub fn load_model(model_path: &str, scale: f64, material: Arc<dyn Material>) -> 
     for face in faces {
         triangles.extend(get_triangles(&face));
     }
-
+    println!("Loaded model with {} triangles", triangles.len());
     BVHNode::from_vec(triangles)
 }

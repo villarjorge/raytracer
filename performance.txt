@@ -51,3 +51,6 @@
         Changed to 14 primitives: 8.82s
 
     final_scene(400, 20, 4): single threaded: 16.37s, multithreaded (HittableSlice): 8.96s, multithreaded (Arc<HittableArray) 8.39s
+
+19/12/2025
+    cornell_model() on medium preset with 6230 + 176 triangles: 111.21s
