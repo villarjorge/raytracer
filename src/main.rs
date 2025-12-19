@@ -1143,7 +1143,7 @@ fn cornell_model() {
 
     world.add(Translate::new(
         Arc::new(model),
-        Point3::new(300.0, 150.0, 300.0),
+        Point3::new(300.0, 175.0, 300.0),
     ));
 
     let aspect_ratio: f64 = 1.0;
@@ -1264,14 +1264,14 @@ fn debug_model() {
     let mut world: HittableList = HittableList::default();
 
     let white: Arc<Lambertian> = Lambertian::from_color(Point3::new(0.73, 0.73, 0.73));
-    // let model: BVHNode = load_model("models/Pawn/CHAHIN_PAWN.obj", 1.0, white.clone());
-    let model: BVHNode = load_model("models/teapot.obj", 1.0, white.clone());
+    let model: BVHNode = load_model("models/Pawn/CHAHIN_PAWN.obj", 1.0, white.clone());
+    // let model: BVHNode = load_model("models/teapot.obj", 1.0, white.clone());
 
     world.add(model);
 
     let aspect_ratio: f64 = 16.0/9.0;
     let image_width: u32 = 600;
-    let image_quality: ImageQuality = ImageQuality::medium_quality();
+    let image_quality: ImageQuality = ImageQuality::low_quality();
 
     let background_color: Color = Color::white();
 
@@ -1284,8 +1284,8 @@ fn debug_model() {
         focus_distance,
     };
 
-    let look_from: Point3 = Point3::new(0.0, 3.0, 8.0);
-    let look_at: Point3 = Point3::new(0.0, 2.0, 0.0);
+    let look_from: Point3 = Point3::new(0.0, 0.0, 2.0);
+    let look_at: Point3 = Point3::new(0.0, 0.0, 0.0);
     let view_up: Point3 = Point3::new(0.0, 1.0, 0.0);
 
     let camera_position: CameraPosition = CameraPosition {
@@ -1309,7 +1309,7 @@ fn debug_model() {
 
 fn main() {
     let now: Instant = Instant::now();
-    let scene_number: u32 = 16;
+    let scene_number: u32 = 14;
 
     match scene_number {
         0 => many_spheres(),

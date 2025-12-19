@@ -20,6 +20,9 @@ pub fn load_model(model_path: &str, scale: f64, material: Arc<dyn Material>) -> 
     let mut faces: Vec<Vec<usize>> = Vec::new();
     // let mut vertex_normals: Vec<Vec<f64>> = Vec::new();
 
+    let mut seen_normals: bool = true;
+    let mut seen_texture_coords: bool = true;
+
     for line in lines.map_while(Result::ok) {
         let mut line_iter = line.split_ascii_whitespace();
         if let Some(first_word) = line_iter.next() {
@@ -49,9 +52,19 @@ pub fn load_model(model_path: &str, scale: f64, material: Arc<dyn Material>) -> 
                 //     .collect();
                 //     vertex_normals.push(normals);
                 // },
-                "vn" => eprintln!("Ignoring normals"), // ignore normals
+                "vn" => {
+                    if seen_normals {
+                        eprintln!("Ignoring normals");
+                        seen_normals = false;
+                    }
+                }, // ignore normals
                 "#" => (),                             // ignore comment line
-                "vt" => eprintln!("Ignoring texture coordinates"), // ignore texture coordinates
+                "vt" => {
+                    if seen_texture_coords {
+                        eprintln!("Ignoring texture coordinates");
+                        seen_texture_coords = false;
+                    }
+                }, // ignore texture coordinates
                 "s" => eprintln!("Smooth shading is not supported, ignoring"),
                 "o" => eprintln!("Loading object with name {}", line_iter.collect::<String>()),
                 "vp" => eprintln!("Free form geometries are not supported"),
