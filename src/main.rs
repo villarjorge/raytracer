@@ -847,9 +847,9 @@ fn cornell_quadric() {
 
     let aspect_ratio: f64 = 1.0;
     // let image_width: u32 = 300;
-    // let image_quality: ImageQuality = ImageQuality::low_quality();
+    // let image_quality: ImageQuality = ImageQuality::low();
     let image_width: u32 = 600;
-    let image_quality: ImageQuality = ImageQuality::medium_quality();
+    let image_quality: ImageQuality = ImageQuality::medium();
 
     let background_color: Point3 = Point3::new(0.0, 0.0, 0.0);
 
@@ -959,9 +959,9 @@ fn cornell_triangle() {
 
     let aspect_ratio: f64 = 1.0;
     let image_width: u32 = 300;
-    let image_quality: ImageQuality = ImageQuality::low_quality();
+    let image_quality: ImageQuality = ImageQuality::low();
     // let image_width: u32 = 600;
-    // let image_quality: ImageQuality = ImageQuality::medium_quality();
+    // let image_quality: ImageQuality = ImageQuality::medium();
 
     let background_color: Point3 = Point3::new(0.0, 0.0, 0.0);
 
@@ -1157,9 +1157,11 @@ fn cornell_model() {
 
     let aspect_ratio: f64 = 1.0;
     // let image_width: u32 = 300;
-    let image_width: u32 = 600;
-    // let image_quality: ImageQuality = ImageQuality::low_quality();
-    let image_quality: ImageQuality = ImageQuality::medium_quality();
+    // let image_width: u32 = 600;
+    let image_width: u32 = 800;
+    // let image_quality: ImageQuality = ImageQuality::low();
+    // let image_quality: ImageQuality = ImageQuality::medium();
+    let image_quality: ImageQuality = ImageQuality::new(800, 50);
 
     let background_color: Point3 = Point3::new(0.0, 0.0, 0.0);
 
@@ -1232,8 +1234,9 @@ fn spherical_mirror() {
     // world.add(mirror_sphere_big);
 
     let aspect_ratio: f64 = 1.0;
-    let image_width: u32 = 600;
-    let image_quality: ImageQuality = ImageQuality::medium_quality();
+    let image_width: u32 = 800;
+    // let image_quality: ImageQuality = ImageQuality::medium();
+    let image_quality: ImageQuality = ImageQuality { samples_per_pixel: 800, max_depth: 50 };
 
     let background_color: Color = Color::black();
 
@@ -1280,7 +1283,7 @@ fn debug_model() {
 
     let aspect_ratio: f64 = 16.0 / 9.0;
     let image_width: u32 = 600;
-    let image_quality: ImageQuality = ImageQuality::low_quality();
+    let image_quality: ImageQuality = ImageQuality::low();
 
     let background_color: Color = Color::white();
 
@@ -1316,9 +1319,56 @@ fn debug_model() {
     cam.thrender(&world.to_hittable_slice());
 }
 
+fn bust() {
+    let mut world: HittableList = HittableList::default();
+
+    let white: Arc<Lambertian> = Lambertian::from_color(Point3::new(0.73, 0.73, 0.73));
+    // let model: BVHNode = load_model("models/David.obj", 1.0, white.clone()); // 766484 triangles
+    let model: BVHNode = load_model("models/Emperor.obj", 1.0, white.clone());
+
+    world.add(model);
+
+    let aspect_ratio: f64 = 16.0 / 9.0;
+    let image_width: u32 = 600;
+    let image_quality: ImageQuality = ImageQuality::low();
+
+    let background_color: Color = Color::white();
+
+    let vfov: f64 = 40.0;
+    let defocus_angle: f64 = 0.0;
+    let focus_distance: f64 = 10.0;
+
+    let lens: ThinLens = ThinLens {
+        defocus_angle,
+        focus_distance,
+    };
+
+    let look_from: Point3 = Point3::new(0.0, 0.0, 200.0);
+    let look_at: Point3 = Point3::new(0.0, 0.0, 0.0);
+    let view_up: Point3 = Point3::new(0.0, 1.0, 0.0);
+
+    let camera_position: CameraPosition = CameraPosition {
+        look_from,
+        look_at,
+        view_up,
+    };
+
+    let cam: Camera = Camera::new(
+        aspect_ratio,
+        image_width,
+        image_quality,
+        vfov,
+        lens,
+        camera_position,
+        background_color,
+    );
+
+    cam.thrender(&world.to_hittable_slice());
+}
+
 fn main() {
     let now: Instant = Instant::now();
-    let scene_number: u32 = 14;
+    let scene_number: u32 = 17;
 
     match scene_number {
         0 => many_spheres(),
@@ -1338,6 +1388,7 @@ fn main() {
         14 => cornell_model(),
         15 => spherical_mirror(),
         16 => debug_model(),
+        17 => bust(),
         _ => final_scene(400, 20, 4),
     }
 

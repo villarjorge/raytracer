@@ -60,14 +60,14 @@ impl ImageQuality {
         }
     }
     /// A low quality preset for debuging and prototyping. It has 20 samples per pixel and rays stop after 4 bounces
-    pub const fn low_quality() -> ImageQuality {
+    pub const fn low() -> ImageQuality {
         ImageQuality {
             samples_per_pixel: 20,
             max_depth: 4,
         }
     }
     /// A medium quality preset. It has 200 samples per pixel and rays stop after 50 bounces
-    pub const fn medium_quality() -> ImageQuality {
+    pub const fn medium() -> ImageQuality {
         ImageQuality {
             samples_per_pixel: 200,
             max_depth: 50,

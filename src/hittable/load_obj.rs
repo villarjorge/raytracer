@@ -70,7 +70,8 @@ pub fn load_model(model_path: &str, scale: f64, material: Arc<dyn Material>) -> 
                 "vp" => eprintln!("Free form geometries are not supported"),
                 "usemtl" => eprintln!("Ignoring use material"),
                 "mtllib" => eprintln!("Ignoring material definition"),
-                _ => panic!("Unexpected line in `.obj` file."),
+                "g" => eprintln!("Ignoring object groups"),
+                _ => panic!("Unexpected line in `.obj` file. Line is: {}{}", first_word, line_iter.collect::<String>()),
             }
         }
     }
