@@ -54,3 +54,6 @@
 
 19/12/2025
     cornell_model() on medium preset with 6230 + 176 triangles: 111.21s
+
+07/01/2026
+    Reimplemented multithreading myself. On flying_spheres with rayon I get 19.65s and my implementation gets 21.53s (without merging the resulting images using 16 threads)

@@ -79,7 +79,7 @@ impl Texture for CheckerTexture {
     }
 }
 
-/// An image texture, build on the image crate. Create with create_image_texture().
+/// An image texture, built on the image crate. Create with new_or_fallback().
 /// If the path gives an error, load an error texture that is easy to see
 pub struct ImageTexture {
     image: ImageBuffer<Rgb<u8>, Vec<u8>>,

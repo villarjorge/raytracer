@@ -71,7 +71,11 @@ pub fn load_model(model_path: &str, scale: f64, material: Arc<dyn Material>) -> 
                 "usemtl" => eprintln!("Ignoring use material"),
                 "mtllib" => eprintln!("Ignoring material definition"),
                 "g" => eprintln!("Ignoring object groups"),
-                _ => panic!("Unexpected line in `.obj` file. Line is: {}{}", first_word, line_iter.collect::<String>()),
+                _ => panic!(
+                    "Unexpected line in `.obj` file. Line is: {}{}",
+                    first_word,
+                    line_iter.collect::<String>()
+                ),
             }
         }
     }

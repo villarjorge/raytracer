@@ -2,6 +2,7 @@ use std::{
     cmp,
     fs::File,
     io::{BufWriter, Write},
+    thread,
 };
 
 use image::{ImageBuffer, RgbImage};
@@ -288,6 +289,42 @@ impl Camera {
     //     println!("\nRender done!");
     //     image_buffer.save("images/image.png").unwrap();
     // }
+}
+
+/// A version of the render function meant to be used in a multithreaded setting. 
+/// The number will be used to name the image, which will be saved in images/temp/
+pub fn render_two(camera: &Camera, world: &dyn Hittable, samples: u32, number: u32) {
+    let mut image_buffer: ImageBuffer<image::Rgb<u8>, Vec<u8>> =
+        RgbImage::new(camera.image_width, camera.image_height);
+
+    for j in 0..camera.image_height {
+        for i in 0..camera.image_width {
+            let pixel_color: Color = (0..samples)
+                .map(|_| {
+                    let r: Ray = camera.get_ray(i, j);
+                    ray_color(&r, camera.max_depth, world, camera.background_color)
+                })
+                .sum();
+            let pixel: &mut image::Rgb<u8> = image_buffer.get_pixel_mut(i, j);
+            *pixel = image::Rgb(proccess_color(pixel_color / (samples as f64)));
+        }
+    }
+    // image_buffer
+    image_buffer
+        .save(format!("images/temp/{}.png", number))
+        .unwrap();
+}
+
+// To do: do not save images here, make the threads return image buffers and then convining them with image::par_from_fn to sum 
+pub fn thrender_no_rayon(camera: &Camera, world: &(dyn Hittable + Sync + Send)) {
+    const MAX_SAMPLES: u32 = 16;
+    thread::scope(|s| {
+        for i in 0_u32..MAX_SAMPLES {
+            s.spawn(move || {
+                render_two(camera, world, camera.samples_per_pixel/MAX_SAMPLES, i);
+            });
+        }
+    });
 }
 
 // For reference, here is how you could iterate over one range and unpack i and j.

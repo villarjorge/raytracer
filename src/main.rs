@@ -16,7 +16,7 @@ use rand::rngs::SmallRng;
 use rand::{Rng, SeedableRng};
 
 use crate::bvh::BVHNode;
-use crate::camera::{Camera, CameraPosition, ImageQuality, ThinLens};
+use crate::camera::{Camera, CameraPosition, ImageQuality, ThinLens, thrender_no_rayon};
 use crate::hittable::hittable_list::HittableSlice;
 use crate::hittable::load_obj::load_model;
 use crate::hittable::quadric::{Quadric, quadric_sphere};
@@ -1236,7 +1236,10 @@ fn spherical_mirror() {
     let aspect_ratio: f64 = 1.0;
     let image_width: u32 = 800;
     // let image_quality: ImageQuality = ImageQuality::medium();
-    let image_quality: ImageQuality = ImageQuality { samples_per_pixel: 800, max_depth: 50 };
+    let image_quality: ImageQuality = ImageQuality {
+        samples_per_pixel: 800,
+        max_depth: 50,
+    };
 
     let background_color: Color = Color::black();
 
@@ -1269,7 +1272,8 @@ fn spherical_mirror() {
         background_color,
     );
 
-    cam.thrender(&world.to_hittable_slice());
+    // cam.thrender(&world.to_hittable_slice());
+    thrender_no_rayon(&cam, &world.to_hittable_slice());
 }
 
 fn debug_model() {
@@ -1368,7 +1372,7 @@ fn bust() {
 
 fn main() {
     let now: Instant = Instant::now();
-    let scene_number: u32 = 17;
+    let scene_number: u32 = 15;
 
     match scene_number {
         0 => many_spheres(),
